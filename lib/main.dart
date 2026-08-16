@@ -10,11 +10,15 @@ import 'providers/user_preferences_provider.dart';
 import 'utils/string_extensions.dart';
 import 'services/recurring_processing_service.dart';
 import 'widgets/pending_approvals_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
     ChangeNotifierProvider(
-      create: (_) => UserPreferencesProvider(),
+      create: (_) => UserPreferencesProvider(prefs),
       child: const MainApp(),
     ),
   );
@@ -90,7 +94,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_appBarTitles[_selectedIndex].cased(context))),
+      appBar: AppBar(
+        title: Text(
+          _appBarTitles[_selectedIndex].localized(context).cased(context),
+        ),
+      ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: CupertinoTabBar(
         items: <BottomNavigationBarItem>[

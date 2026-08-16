@@ -173,7 +173,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             TextField(
               controller: _titleController,
               decoration: _getInputDecoration(
-                hintText: 'e.g. groceries'.cased(context),
+                hintText: 'e.g. Groceries'.cased(context),
               ),
             ),
           ),

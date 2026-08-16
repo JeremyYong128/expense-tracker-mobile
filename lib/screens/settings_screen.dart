@@ -57,6 +57,43 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 32.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Use US English'.cased(context),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4.0),
+                        Text(
+                          'Change spellings like Colour to Color'.cased(context),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  CustomSwitch(
+                    value: Provider.of<UserPreferencesProvider>(context).useUsEnglish,
+                    onChanged: (bool value) {
+                      Provider.of<UserPreferencesProvider>(
+                        context,
+                        listen: false,
+                      ).toggleUsEnglish(value);
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         ),

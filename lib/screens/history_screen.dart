@@ -33,10 +33,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       _isLoading = false;
     });
   }
+
   Category _getCategory(int id) {
     return _categories.firstWhere(
       (cat) => cat.id == id,
-      orElse: () => _categories.isNotEmpty ? _categories[0] : Category(name: 'unknown'),
+      orElse: () =>
+          _categories.isNotEmpty ? _categories[0] : Category(name: 'unknown'),
     );
   }
 

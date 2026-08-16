@@ -99,3 +99,4 @@ flutter run
 - Need to figure out how to track category names. What happens if a user renames a category, what happens if a user deletes and then creates a category of the same name, etc. Also need to figure out how category names will be impacted when a user changes the "Lower caps" setting.
 - For pending approvals, redesign modal.
 - Change theme colours, possibly add a setting to set custom themes.
+- For lower casing: should user-typed strings be forced to lower case too?
