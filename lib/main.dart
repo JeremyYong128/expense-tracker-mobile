@@ -94,11 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _appBarTitles[_selectedIndex].localized(context).cased(context),
-        ),
-      ),
+      appBar: AppBar(title: Text(_appBarTitles[_selectedIndex].cased(context))),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: CupertinoTabBar(
         items: <BottomNavigationBarItem>[
