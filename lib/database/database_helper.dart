@@ -33,7 +33,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         colorHex TEXT,
-        iconString TEXT
+        iconString TEXT,
+        isActive INTEGER NOT NULL DEFAULT 1
       )
     ''');
 
@@ -102,6 +103,107 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       return Category.fromMap(maps[i]);
     });
+  }
+
+  Future<int> insertCategory(Category category) async {
+    final db = await instance.database;
+    
+    // Check if a category with the same name already exists (case-insensitive)
+    final maps = await db.query(
+      'categories',
+      where: 'LOWER(name) = ?',
+      whereArgs: [category.name.toLowerCase()],
+    );
+
+    if (maps.isNotEmpty) {
+      // Revive and merge with existing category
+      final existingId = maps.first['id'] as int;
+      await db.update(
+        'categories',
+        {
+          'name': category.name, // Keep the new exact casing
+          'colorHex': category.colorHex,
+          'iconString': category.iconString,
+          'isActive': 1,
+        },
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+      return existingId;
+    }
+
+    // Insert as a brand new category
+    return await db.insert('categories', category.toMap());
+  }
+
+  Future<int> updateCategory(Category category) async {
+    final db = await instance.database;
+    
+    // Check if another category with the same name exists
+    final maps = await db.query(
+      'categories',
+      where: 'LOWER(name) = ? AND id != ?',
+      whereArgs: [category.name.toLowerCase(), category.id],
+    );
+
+    if (maps.isNotEmpty) {
+      final existingId = maps.first['id'] as int;
+      
+      // Move all transactions to the existingId
+      await db.update(
+        'transactions',
+        {'categoryId': existingId},
+        where: 'categoryId = ?',
+        whereArgs: [category.id],
+      );
+      
+      await db.update(
+        'recurring_transactions',
+        {'categoryId': existingId},
+        where: 'categoryId = ?',
+        whereArgs: [category.id],
+      );
+      
+      // Hard delete the old category
+      await db.delete(
+        'categories',
+        where: 'id = ?',
+        whereArgs: [category.id],
+      );
+      
+      // Update the revived category
+      await db.update(
+        'categories',
+        {
+          'name': category.name,
+          'colorHex': category.colorHex,
+          'iconString': category.iconString,
+          'isActive': 1,
+        },
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+      
+      return existingId;
+    }
+
+    await db.update(
+      'categories',
+      category.toMap(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
+    return category.id!;
+  }
+
+  Future<int> deleteCategory(int id) async {
+    final db = await instance.database;
+    return await db.update(
+      'categories',
+      {'isActive': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<List<Transaction>> getTransactions() async {

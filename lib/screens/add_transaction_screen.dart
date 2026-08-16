@@ -48,7 +48,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Future<void> _loadCategories() async {
     final categories = await DataService.getCategories();
     setState(() {
-      _categories = categories;
+      _categories = categories.where((c) => c.isActive).toList();
       _isLoadingCategories = false;
     });
   }

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../theme/app_theme.dart';
 import '../models/category.dart';
 import '../utils/string_extensions.dart';
+import '../services/data_service.dart';
 
 class ManageCategoriesModal extends StatefulWidget {
   final List<Category> initialCategories;
@@ -41,15 +42,18 @@ class _ManageCategoriesModalState extends State<ManageCategoriesModal> {
     super.dispose();
   }
 
-  void _addCategory() {
+  Future<void> _addCategory() async {
     final text = _addController.text.trim();
     if (text.isNotEmpty &&
         !_categories.any(
           (c) => c.name.toLowerCase() == text.toLowerCase(),
         )) {
+      final newCategory = Category(name: text, iconString: 'category', colorHex: '#9E9E9E');
+      final newId = await DataService.addCategory(newCategory);
+      
       setState(() {
         _categories.add(
-          Category(name: text, iconString: 'category', colorHex: '#9E9E9E'),
+          Category(id: newId, name: text, iconString: 'category', colorHex: '#9E9E9E'),
         );
       });
       _addController.clear();
@@ -57,7 +61,12 @@ class _ManageCategoriesModalState extends State<ManageCategoriesModal> {
     }
   }
 
-  void _deleteCategory(int index) {
+  Future<void> _deleteCategory(int index) async {
+    final category = _categories[index];
+    if (category.id != null) {
+      await DataService.deleteCategory(category.id!);
+    }
+    
     setState(() {
       _categories.removeAt(index);
       if (_editingIndex == index) {
@@ -74,30 +83,100 @@ class _ManageCategoriesModalState extends State<ManageCategoriesModal> {
     });
   }
 
-  void _saveEdit(int index) {
+  Future<void> _saveEdit(int index) async {
     final text = _editController.text.trim();
-    if (text.isNotEmpty &&
-        !_categories.any(
+    final existing = _categories[index];
+
+    if (text.isEmpty ||
+        _categories.any(
           (c) =>
               c.name.toLowerCase() == text.toLowerCase() &&
               _categories.indexOf(c) != index,
         )) {
       setState(() {
-        final existing = _categories[index];
+        _editingIndex = null;
+      });
+      return;
+    }
+
+    if (text == existing.name) {
+      setState(() {
+        _editingIndex = null;
+      });
+      return;
+    }
+
+    final option = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Category'.cased(context)),
+          content: Text('Do you want to apply this change to all past transactions, or only to new transactions?'.cased(context)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(0), // Cancel
+              child: Text('Cancel'.cased(context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(1),
+              child: Text('All Past'.cased(context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(2),
+              child: Text('Only New'.cased(context)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (option == null || option == 0) {
+      setState(() {
+        _editingIndex = null;
+      });
+      return;
+    }
+
+    if (option == 1) {
+      final updatedCategory = Category(
+        id: existing.id,
+        name: text,
+        colorHex: existing.colorHex,
+        iconString: existing.iconString,
+      );
+      final newId = await DataService.updateCategory(updatedCategory);
+      setState(() {
         _categories[index] = Category(
-          id: existing.id,
+          id: newId,
+          name: updatedCategory.name,
+          colorHex: updatedCategory.colorHex,
+          iconString: updatedCategory.iconString,
+          isActive: updatedCategory.isActive,
+        );
+        _editingIndex = null;
+      });
+    } else if (option == 2) {
+      if (existing.id != null) {
+        await DataService.deleteCategory(existing.id!);
+      }
+      final newCategory = Category(
+        name: text,
+        colorHex: existing.colorHex,
+        iconString: existing.iconString,
+      );
+      final newId = await DataService.addCategory(newCategory);
+      setState(() {
+        _categories[index] = Category(
+          id: newId,
           name: text,
           colorHex: existing.colorHex,
           iconString: existing.iconString,
         );
         _editingIndex = null;
       });
-      widget.onCategoriesUpdated(_categories);
-    } else {
-      setState(() {
-        _editingIndex = null;
-      });
     }
+
+    widget.onCategoriesUpdated(_categories);
   }
 
   @override

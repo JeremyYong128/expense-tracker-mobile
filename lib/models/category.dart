@@ -3,12 +3,14 @@ class Category {
   final String name;
   final String? colorHex;
   final String? iconString;
+  final bool isActive;
 
   Category({
     this.id,
     required this.name,
     this.colorHex,
     this.iconString,
+    this.isActive = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class Category {
       'name': name,
       'colorHex': colorHex,
       'iconString': iconString,
+      'isActive': isActive ? 1 : 0,
     };
   }
 
@@ -26,6 +29,7 @@ class Category {
       name: map['name'],
       colorHex: map['colorHex'],
       iconString: map['iconString'],
+      isActive: map['isActive'] == null ? true : map['isActive'] == 1,
     );
   }
 }

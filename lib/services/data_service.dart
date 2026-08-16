@@ -10,6 +10,18 @@ class DataService {
     return await DatabaseHelper.instance.getCategories();
   }
 
+  static Future<int> addCategory(Category category) async {
+    return await DatabaseHelper.instance.insertCategory(category);
+  }
+
+  static Future<int> updateCategory(Category category) async {
+    return await DatabaseHelper.instance.updateCategory(category);
+  }
+
+  static Future<void> deleteCategory(int id) async {
+    await DatabaseHelper.instance.deleteCategory(id);
+  }
+
   // --- Transaction Methods ---
 
   static Future<void> addTransaction({
