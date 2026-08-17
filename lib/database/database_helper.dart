@@ -21,9 +21,6 @@ class DatabaseHelper {
     final dbPath = await getApplicationDocumentsDirectory();
     final path = join(dbPath.path, filePath);
 
-    // Development only: Delete existing database on every app launch
-    await deleteDatabase(path);
-
     return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -78,28 +75,13 @@ class DatabaseHelper {
       ('Transport', '#2196F3')
     ''');
 
-    // Insert some mock transactions
-    final now = DateTime.now();
-    await db.execute('''
-      INSERT INTO transactions (amount, title, date, categoryId, note, isIncome) VALUES 
-      (45.99, 'Trader Joe''s', '${now.subtract(const Duration(days: 2)).toIso8601String()}', 1, '', 0),
-      (1500.00, 'Paycheck', '${now.subtract(const Duration(days: 3)).toIso8601String()}', 4, '', 1),
-      (15.00, 'Starbucks', '${now.subtract(const Duration(days: 1)).toIso8601String()}', 2, 'morning coffee', 0),
-      (120.50, 'Electric Bill', '${now.subtract(const Duration(days: 4)).toIso8601String()}', 3, '', 0)
-    ''');
-
-    // Insert some mock recurring transactions
-    await db.execute('''
-      INSERT INTO recurring_transactions (amount, title, categoryId, note, isIncome, interval, period, nextDueDate) VALUES 
-      (15.99, 'Netflix Subscription', 4, '', 0, 1, 'month(s)', '${now.subtract(const Duration(days: 70)).toIso8601String()}'),
-      (49.99, 'Gym Membership', 5, '', 0, 1, 'month(s)', '${now.subtract(const Duration(days: 5)).toIso8601String()}')
-    ''');
+    // (Mock transactions removed for production behavior)
   }
 
   Future<List<Category>> getCategories() async {
     final db = await instance.database;
     final maps = await db.query('categories');
-    
+
     return List.generate(maps.length, (i) {
       return Category.fromMap(maps[i]);
     });
@@ -107,7 +89,7 @@ class DatabaseHelper {
 
   Future<int> insertCategory(Category category) async {
     final db = await instance.database;
-    
+
     // Check if a category with the same name already exists (case-insensitive)
     final maps = await db.query(
       'categories',
@@ -138,7 +120,7 @@ class DatabaseHelper {
 
   Future<int> updateCategory(Category category) async {
     final db = await instance.database;
-    
+
     // Check if another category with the same name exists
     final maps = await db.query(
       'categories',
@@ -148,7 +130,7 @@ class DatabaseHelper {
 
     if (maps.isNotEmpty) {
       final existingId = maps.first['id'] as int;
-      
+
       // Move all transactions to the existingId
       await db.update(
         'transactions',
@@ -156,21 +138,17 @@ class DatabaseHelper {
         where: 'categoryId = ?',
         whereArgs: [category.id],
       );
-      
+
       await db.update(
         'recurring_transactions',
         {'categoryId': existingId},
         where: 'categoryId = ?',
         whereArgs: [category.id],
       );
-      
+
       // Hard delete the old category
-      await db.delete(
-        'categories',
-        where: 'id = ?',
-        whereArgs: [category.id],
-      );
-      
+      await db.delete('categories', where: 'id = ?', whereArgs: [category.id]);
+
       // Update the revived category
       await db.update(
         'categories',
@@ -183,7 +161,7 @@ class DatabaseHelper {
         where: 'id = ?',
         whereArgs: [existingId],
       );
-      
+
       return existingId;
     }
 
@@ -208,10 +186,7 @@ class DatabaseHelper {
 
   Future<List<Transaction>> getTransactions() async {
     final db = await instance.database;
-    final maps = await db.query(
-      'transactions',
-      orderBy: 'date DESC',
-    );
+    final maps = await db.query('transactions', orderBy: 'date DESC');
 
     return List.generate(maps.length, (i) {
       return Transaction.fromMap(maps[i]);
@@ -263,7 +238,9 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> insertRecurringTransaction(RecurringTransaction transaction) async {
+  Future<int> insertRecurringTransaction(
+    RecurringTransaction transaction,
+  ) async {
     final db = await instance.database;
     return await db.insert(
       'recurring_transactions',
@@ -272,7 +249,9 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> updateRecurringTransaction(RecurringTransaction transaction) async {
+  Future<int> updateRecurringTransaction(
+    RecurringTransaction transaction,
+  ) async {
     final db = await instance.database;
     return await db.update(
       'recurring_transactions',
