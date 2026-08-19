@@ -95,7 +95,7 @@ flutter run
 ## Decisions
 
 ## Dev tracking
-- Home tab: analytics.
 - For pending approvals, redesign modal.
 - Change theme colours, possibly add a setting to set custom themes.
 - For lower casing: should user-typed strings be forced to lower case too?
+= Handle category icons and colours.

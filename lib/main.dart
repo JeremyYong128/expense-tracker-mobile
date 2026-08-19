@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/add_transaction_screen.dart';
 import 'screens/recurring_transactions_screen.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   static const List<Widget> _widgetOptions = <Widget>[
-    Center(child: Text('Home Screen')),
+    DashboardScreen(),
     HistoryScreen(),
     AddTransactionScreen(),
     RecurringTransactionsScreen(),
