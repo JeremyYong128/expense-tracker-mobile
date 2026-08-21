@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/transaction.dart';
 import '../models/category.dart';
 import '../services/data_service.dart';
 import '../utils/string_extensions.dart';
@@ -17,10 +16,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   double _totalIncome = 0;
   double _totalExpense = 0;
-  List<Transaction> _recentTransactions = [];
+
   Map<Category, double> _topCategories = {};
   List<Category> _categories = [];
-  
+
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
@@ -33,10 +32,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final now = DateTime.now();
     final allTransactions = await DataService.getTransactions();
     _categories = await DataService.getCategories();
-    
+
     // Filter to current month
-    final currentMonthTransactions = allTransactions.where((t) => 
-        t.date.year == now.year && t.date.month == now.month).toList();
+    final currentMonthTransactions = allTransactions
+        .where((t) => t.date.year == now.year && t.date.month == now.month)
+        .toList();
 
     double income = 0;
     double expense = 0;
@@ -47,23 +47,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         income += tx.amount;
       } else {
         expense += tx.amount;
-        categorySpending[tx.categoryId] = (categorySpending[tx.categoryId] ?? 0) + tx.amount;
+        categorySpending[tx.categoryId] =
+            (categorySpending[tx.categoryId] ?? 0) + tx.amount;
       }
     }
-    
-    // Recent transactions (top 4 all time)
-    _recentTransactions = allTransactions.take(4).toList();
 
     // Sort category spending to get top ones
     final sortedCategories = categorySpending.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-      
+
     // Map to Category objects (take top 4)
     Map<Category, double> topCatMap = {};
     for (var entry in sortedCategories.take(4)) {
       final category = _categories.firstWhere(
-        (c) => c.id == entry.key, 
-        orElse: () => Category(id: -1, name: 'Unknown', isActive: false)
+        (c) => c.id == entry.key,
+        orElse: () => Category(id: -1, name: 'Unknown', isActive: false),
       );
       topCatMap[category] = entry.value;
     }
@@ -112,11 +110,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return Icons.category;
     }
   }
-  
+
   Category _getCategory(int categoryId) {
     return _categories.firstWhere(
       (c) => c.id == categoryId,
-      orElse: () => _categories.isNotEmpty ? _categories[0] : Category(name: 'Unknown'),
+      orElse: () =>
+          _categories.isNotEmpty ? _categories[0] : Category(name: 'Unknown'),
     );
   }
 
@@ -137,55 +136,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(24.0),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, Color(0xFF1B4958)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.0),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Current Balance'.cased(context),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _currencyFormat.format(balance),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildIncomeExpenseColumn('Income', _totalIncome, AppColors.income, Icons.arrow_upward),
-                    Container(height: 40, width: 1, color: Colors.white24),
-                    _buildIncomeExpenseColumn('Expense', _totalExpense, const Color(0xFFEF5350), Icons.arrow_downward), // Lighter red for dark background
+                    _buildIncomeExpenseColumn(
+                      'Income',
+                      _totalIncome,
+                      AppColors.income,
+                      Icons.arrow_upward,
+                    ),
+                    Container(height: 40, width: 1, color: AppColors.grey.withValues(alpha: 0.5)),
+                    _buildIncomeExpenseColumn(
+                      'Expense',
+                      _totalExpense,
+                      const Color(0xFFEF5350),
+                      Icons.arrow_downward,
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // TOP CATEGORIES
           if (_topCategories.isNotEmpty) ...[
             Text(
@@ -201,8 +181,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final category = entry.key;
               final amount = entry.value;
               final color = _fromHex(category.colorHex);
-              final percentage = _totalExpense > 0 ? (amount / _totalExpense) : 0.0;
-              
+              final percentage = _totalExpense > 0
+                  ? (amount / _totalExpense)
+                  : 0.0;
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Row(
@@ -248,7 +230,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: percentage,
-                              backgroundColor: AppColors.grey.withValues(alpha: 0.3),
+                              backgroundColor: AppColors.grey.withValues(
+                                alpha: 0.3,
+                              ),
                               valueColor: AlwaysStoppedAnimation<Color>(color),
                               minHeight: 6,
                             ),
@@ -262,117 +246,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }),
             const SizedBox(height: 24),
           ],
-
-          // RECENT ACTIVITY
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Recent Activity'.cased(context),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_recentTransactions.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  'No recent activity'.cased(context),
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
-              ),
-            )
-          else
-            ..._recentTransactions.map((tx) {
-              final category = _getCategory(tx.categoryId);
-              final color = _fromHex(category.colorHex);
-              
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Icon(
-                          _getIconData(category.iconString),
-                          color: color,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16.0),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tx.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 4.0),
-                            Text(
-                              '${DateFormat.jm().format(tx.date).cased(context)} • ${category.name}',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12.0),
-                      Text(
-                        tx.isIncome
-                            ? '+\$${tx.amount.toStringAsFixed(2)}'
-                            : '-\$${tx.amount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: tx.isIncome ? AppColors.income : AppColors.expense,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
         ],
       ),
     );
   }
 
-  Widget _buildIncomeExpenseColumn(String label, double amount, Color iconColor, IconData icon) {
+  Widget _buildIncomeExpenseColumn(
+    String label,
+    double amount,
+    Color iconColor,
+    IconData icon,
+  ) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: iconColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -383,16 +273,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Text(
               label.cased(context),
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 2),
             Text(
               _currencyFormat.format(amount),
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
