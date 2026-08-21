@@ -17,6 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   double _totalIncome = 0;
   double _totalExpense = 0;
+  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   Map<Category, double> _topCategories = {};
   List<Category> _categories = [];
@@ -30,13 +31,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
-    final now = DateTime.now();
     final allTransactions = await DataService.getTransactions();
     _categories = await DataService.getCategories();
 
     // Filter to current month
     final currentMonthTransactions = allTransactions
-        .where((t) => t.date.year == now.year && t.date.month == now.month)
+        .where((t) => t.date.year == _currentMonth.year && t.date.month == _currentMonth.month)
         .toList();
 
     double income = 0;
@@ -77,6 +77,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  void _navigateMonth(int monthOffset) {
+    setState(() {
+      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + monthOffset);
+    });
+    _loadDashboardData();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -92,12 +99,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
-                onPressed: () {}, // TODO: Navigate to previous month
+                onPressed: () => _navigateMonth(-1),
                 padding: EdgeInsets.zero,
               ),
               Expanded(
                 child: Text(
-                  DateFormat('MMMM yyyy').format(DateTime.now()).cased(context),
+                  DateFormat('MMMM yyyy').format(_currentMonth).cased(context),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 24,
@@ -108,7 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
-                onPressed: () {}, // TODO: Navigate to next month
+                onPressed: () => _navigateMonth(1),
                 padding: EdgeInsets.zero,
               ),
             ],
@@ -220,7 +227,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSummaryCard(String label, double amount, Color color) {
     return Container(
-      height: 100,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
@@ -228,7 +234,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
             label.cased(context),
