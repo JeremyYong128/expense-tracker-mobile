@@ -72,14 +72,6 @@ class SettingsScreen extends StatelessWidget {
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 4.0),
-                        Text(
-                          'Change spellings like Colour to Color'.cased(context),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
                       ],
                     ),
                   ),

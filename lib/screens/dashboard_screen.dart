@@ -77,58 +77,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
-  Category _getCategory(int categoryId) {
-    return _categories.firstWhere(
-      (c) => c.id == categoryId,
-      orElse: () =>
-          _categories.isNotEmpty ? _categories[0] : Category(name: 'Unknown'),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final balance = _totalIncome - _totalExpense;
-
     return SingleChildScrollView(
       padding: AppStyles.screenPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // SUMMARY CARD
-          Container(
-            padding: const EdgeInsets.all(24.0),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildIncomeExpenseColumn(
-                      'Income',
-                      _totalIncome,
-                      AppColors.income,
-                      Icons.arrow_upward,
-                    ),
-                    Container(height: 40, width: 1, color: AppColors.grey.withValues(alpha: 0.5)),
-                    _buildIncomeExpenseColumn(
-                      'Expense',
-                      _totalExpense,
-                      const Color(0xFFEF5350),
-                      Icons.arrow_downward,
-                    ),
-                  ],
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () {}, // TODO: Navigate to previous month
+                padding: EdgeInsets.zero,
+              ),
+              Expanded(
+                child: Text(
+                  DateFormat('MMMM yyyy').format(DateTime.now()).cased(context),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () {}, // TODO: Navigate to next month
+                padding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // SUMMARY CARDS
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryCard(
+                  'Income',
+                  _totalIncome,
+                  AppColors.income,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildSummaryCard(
+                  'Expense',
+                  _totalExpense,
+                  AppColors.expense,
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 32),
@@ -162,11 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      child: Icon(
-                        category.iconData,
-                        color: color,
-                        size: 24,
-                      ),
+                      child: Icon(category.iconData, color: color, size: 24),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -218,42 +218,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildIncomeExpenseColumn(
-    String label,
-    double amount,
-    Color iconColor,
-    IconData icon,
-  ) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label.cased(context),
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+  Widget _buildSummaryCard(String label, double amount, Color color) {
+    return Container(
+      height: 100,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            label.cased(context),
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 2),
-            Text(
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
               _currencyFormat.format(amount),
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 16,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
