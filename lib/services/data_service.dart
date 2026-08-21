@@ -1,25 +1,107 @@
+import 'package:drift/drift.dart' as drift;
 import '../models/transaction.dart';
 import '../models/recurring_transaction.dart';
 import '../models/category.dart';
-import '../database/database_helper.dart';
+import '../database/drift_database.dart';
 
 class DataService {
+  static final AppDatabase _db = AppDatabase();
+
+  // --- Mappers ---
+  
+  static Category _mapCategory(CategoryTableData data) {
+    return Category(
+      id: data.id,
+      name: data.name,
+      colorHex: data.colorHex,
+      iconString: data.iconString,
+      isActive: data.isActive,
+    );
+  }
+
+  static Transaction _mapTransaction(TransactionTableData data) {
+    return Transaction(
+      id: data.id,
+      amount: data.amount,
+      title: data.title,
+      date: DateTime.parse(data.date),
+      categoryId: data.categoryId,
+      note: data.note,
+      isIncome: data.isIncome,
+      recurringId: data.recurringId,
+    );
+  }
+
+  static RecurringTransaction _mapRecurringTransaction(RecurringTransactionTableData data) {
+    return RecurringTransaction(
+      id: data.id,
+      amount: data.amount,
+      title: data.title,
+      categoryId: data.categoryId,
+      note: data.note,
+      isIncome: data.isIncome,
+      interval: data.interval,
+      period: data.period,
+      nextDueDate: DateTime.parse(data.nextDueDate),
+    );
+  }
+
   // --- Category Methods ---
 
   static Future<List<Category>> getCategories() async {
-    return await DatabaseHelper.instance.getCategories();
+    final list = await _db.select(_db.categories).get();
+    return list.map(_mapCategory).toList();
   }
 
   static Future<int> addCategory(Category category) async {
-    return await DatabaseHelper.instance.insertCategory(category);
+    final existing = await (_db.select(_db.categories)
+          ..where((c) => c.name.lower().equals(category.name.toLowerCase())))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (_db.update(_db.categories)..where((c) => c.id.equals(existing.id))).write(
+        CategoriesCompanion(
+          isActive: const drift.Value(true),
+          colorHex: drift.Value(category.colorHex),
+          iconString: drift.Value(category.iconString),
+        ),
+      );
+      return existing.id;
+    }
+
+    return await _db.into(_db.categories).insert(
+      CategoriesCompanion.insert(
+        name: category.name,
+        colorHex: drift.Value(category.colorHex),
+        iconString: drift.Value(category.iconString),
+        isActive: drift.Value(category.isActive),
+      ),
+    );
   }
 
   static Future<int> updateCategory(Category category) async {
-    return await DatabaseHelper.instance.updateCategory(category);
+    await (_db.update(_db.categories)..where((c) => c.id.equals(category.id!))).write(
+      CategoriesCompanion(
+        name: drift.Value(category.name),
+        colorHex: drift.Value(category.colorHex),
+        iconString: drift.Value(category.iconString),
+        isActive: drift.Value(category.isActive),
+      ),
+    );
+    return category.id!;
   }
 
   static Future<void> deleteCategory(int id) async {
-    await DatabaseHelper.instance.deleteCategory(id);
+    final txCount = await (_db.select(_db.transactions)..where((t) => t.categoryId.equals(id))).get();
+    final recCount = await (_db.select(_db.recurringTransactions)..where((r) => r.categoryId.equals(id))).get();
+
+    if (txCount.isNotEmpty || recCount.isNotEmpty) {
+      await (_db.update(_db.categories)..where((c) => c.id.equals(id))).write(
+        const CategoriesCompanion(isActive: drift.Value(false)),
+      );
+    } else {
+      await (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
+    }
   }
 
   // --- Transaction Methods ---
@@ -35,7 +117,6 @@ class DataService {
     required String recurringPeriod,
     required String note,
   }) async {
-    // 1. Validation
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
       throw Exception('Please enter a valid amount greater than 0.');
@@ -55,49 +136,90 @@ class DataService {
         throw Exception('Please enter a valid recurring interval.');
       }
 
-      // Calculate next due date based on current selected date
-      final nextDueDate = calculateNextDueDate(
-        date,
-        recurringInterval,
-        recurringPeriod,
-      );
+      final nextDueDate = calculateNextDueDate(date, recurringInterval, recurringPeriod);
 
-      final transaction = RecurringTransaction(
-        amount: amount,
-        title: title.trim(),
-        categoryId: category.id!,
-        isIncome: isIncome,
-        interval: recurringInterval,
-        period: recurringPeriod,
-        nextDueDate: nextDueDate,
-        note: note.trim().isEmpty ? null : note.trim(),
+      await _db.into(_db.recurringTransactions).insert(
+        RecurringTransactionsCompanion.insert(
+          amount: amount,
+          title: title.trim(),
+          categoryId: category.id!,
+          isIncome: drift.Value(isIncome),
+          interval: recurringInterval,
+          period: recurringPeriod,
+          nextDueDate: nextDueDate.toIso8601String(),
+          note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+        ),
       );
-
-      await DatabaseHelper.instance.insertRecurringTransaction(transaction);
     } else {
-      final transaction = Transaction(
-        amount: amount,
-        title: title.trim(),
-        date: date,
-        categoryId: category.id!,
-        isIncome: isIncome,
-        note: note.trim().isEmpty ? null : note.trim(),
+      await _db.into(_db.transactions).insert(
+        TransactionsCompanion.insert(
+          amount: amount,
+          title: title.trim(),
+          date: date.toIso8601String(),
+          categoryId: category.id!,
+          isIncome: drift.Value(isIncome),
+          note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+        ),
       );
-
-      await DatabaseHelper.instance.insertTransaction(transaction);
     }
   }
 
   static Future<void> updateTransaction(Transaction transaction) async {
-    await DatabaseHelper.instance.updateTransaction(transaction);
+    await (_db.update(_db.transactions)..where((t) => t.id.equals(transaction.id!))).write(
+      TransactionsCompanion(
+        amount: drift.Value(transaction.amount),
+        title: drift.Value(transaction.title),
+        date: drift.Value(transaction.date.toIso8601String()),
+        categoryId: drift.Value(transaction.categoryId),
+        isIncome: drift.Value(transaction.isIncome),
+        note: drift.Value(transaction.note),
+      ),
+    );
   }
 
   static Future<List<Transaction>> getTransactions() async {
-    return await DatabaseHelper.instance.getTransactions();
+    final list = await _db.select(_db.transactions).get();
+    return list.map(_mapTransaction).toList();
   }
 
   static Future<List<RecurringTransaction>> getRecurringTransactions() async {
-    return await DatabaseHelper.instance.getRecurringTransactions();
+    final list = await _db.select(_db.recurringTransactions).get();
+    return list.map(_mapRecurringTransaction).toList();
+  }
+  
+  static Future<RecurringTransaction?> getRecurringTransactionById(int id) async {
+    final data = await (_db.select(_db.recurringTransactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+    if (data == null) return null;
+    return _mapRecurringTransaction(data);
+  }
+  
+  static Future<void> updateRecurringTransaction(RecurringTransaction transaction) async {
+    await (_db.update(_db.recurringTransactions)..where((t) => t.id.equals(transaction.id!))).write(
+      RecurringTransactionsCompanion(
+        amount: drift.Value(transaction.amount),
+        title: drift.Value(transaction.title),
+        categoryId: drift.Value(transaction.categoryId),
+        isIncome: drift.Value(transaction.isIncome),
+        interval: drift.Value(transaction.interval),
+        period: drift.Value(transaction.period),
+        nextDueDate: drift.Value(transaction.nextDueDate.toIso8601String()),
+        note: drift.Value(transaction.note),
+      ),
+    );
+  }
+  
+  static Future<void> insertTransaction(Transaction transaction) async {
+    await _db.into(_db.transactions).insert(
+      TransactionsCompanion.insert(
+        amount: transaction.amount,
+        title: transaction.title,
+        date: transaction.date.toIso8601String(),
+        categoryId: transaction.categoryId,
+        isIncome: drift.Value(transaction.isIncome),
+        note: drift.Value(transaction.note),
+        recurringId: drift.Value(transaction.recurringId),
+      ),
+    );
   }
 
   static DateTime calculateNextDueDate(
@@ -117,7 +239,6 @@ class DataService {
           nextMonth -= 12;
           nextYear++;
         }
-        // Ensure day is valid for next month
         int nextDay = date.day;
         final daysInNextMonth = DateTime(nextYear, nextMonth + 1, 0).day;
         if (nextDay > daysInNextMonth) {
@@ -125,7 +246,6 @@ class DataService {
         }
         return DateTime(nextYear, nextMonth, nextDay, date.hour, date.minute);
       case 'year(s)':
-        // Ensure day is valid for next year (e.g. leap years)
         int nextYear = date.year + interval;
         int nextDay = date.day;
         final daysInNextMonth = DateTime(nextYear, date.month + 1, 0).day;

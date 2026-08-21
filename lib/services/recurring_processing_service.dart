@@ -1,6 +1,5 @@
 import '../models/transaction.dart';
 import 'data_service.dart';
-import '../database/database_helper.dart';
 
 class RecurringProcessingService {
   /// Fetches all recurring transactions whose nextDueDate has passed
@@ -38,7 +37,7 @@ class RecurringProcessingService {
   /// Approves the transaction: Inserts it into history and advances the nextDueDate of the recurring one.
   static Future<void> approveTransaction(Transaction pendingTx) async {
     // 1. Insert into history
-    await DatabaseHelper.instance.insertTransaction(pendingTx);
+    await DataService.insertTransaction(pendingTx);
 
     // 2. Advance the next due date for the recurring template
     await _advanceNextDueDate(pendingTx);
@@ -52,7 +51,7 @@ class RecurringProcessingService {
   static Future<void> _advanceNextDueDate(Transaction pendingTx) async {
     if (pendingTx.recurringId == null) return;
     
-    final template = await DatabaseHelper.instance.getRecurringTransactionById(pendingTx.recurringId!);
+    final template = await DataService.getRecurringTransactionById(pendingTx.recurringId!);
     if (template == null) return;
 
     final newDueDate = DataService.calculateNextDueDate(
@@ -65,6 +64,6 @@ class RecurringProcessingService {
       nextDueDate: newDueDate,
     );
 
-    await DatabaseHelper.instance.updateRecurringTransaction(updatedTx);
+    await DataService.updateRecurringTransaction(updatedTx);
   }
 }

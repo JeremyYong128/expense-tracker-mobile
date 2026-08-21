@@ -7,6 +7,7 @@ environment:
   sdk: ^3.12.2
 
 dependencies:
+  drift: ^2.34.3
   flutter:
     sdk: flutter
   google_fonts: ^8.2.1
@@ -16,6 +17,8 @@ dependencies:
   provider: ^6.1.5+1
   shared_preferences: ^2.5.5
   sqflite: ^2.4.3
+  sqlite3: ^3.5.2
+  sqlite3_flutter_libs: ^0.6.0+eol
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +26,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
+  drift_dev: ^2.34.5
+  build_runner: ^2.15.1
 
 flutter:
   uses-material-design: true
