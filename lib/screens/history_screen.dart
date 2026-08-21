@@ -3,9 +3,10 @@ import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../services/data_service.dart';
-import '../utils/category_appearance.dart';
 import '../theme/app_theme.dart';
+import '../utils/category_appearance.dart';
 import '../utils/string_extensions.dart';
+import '../widgets/edit_transaction_modal.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -42,7 +43,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
           _categories.isNotEmpty ? _categories[0] : Category(name: 'unknown'),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -111,62 +111,78 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Icon(
-                        category.iconData,
-                        color: color,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16.0),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            transaction.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(24.0),
+                  onTap: () async {
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) =>
+                          EditTransactionModal(transaction: transaction),
+                    );
+                    _loadData();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
-                          const SizedBox(height: 4.0),
-                          Text(
-                            '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
+                          child: Icon(
+                            category.iconData,
+                            color: color,
+                            size: 24,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                transaction.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4.0),
+                              Text(
+                                '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16.0),
+                        Text(
+                          transaction.isIncome
+                              ? '+\$${transaction.amount.toStringAsFixed(2)}'
+                              : '-\$${transaction.amount.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: transaction.isIncome
+                                ? AppColors.income
+                                : AppColors.expense,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16.0),
-                    Text(
-                      transaction.isIncome
-                          ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                          : '-\$${transaction.amount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: transaction.isIncome
-                            ? AppColors.income
-                            : AppColors.expense,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ), // End of Container
+            ),
           ],
         );
       },

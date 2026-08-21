@@ -27,6 +27,9 @@ class AppColors {
 class AppStyles {
   // Standardized padding for the main body of screens
   static const EdgeInsets screenPadding = EdgeInsets.all(24.0);
+  
+  // Standardized padding for slide-up modals
+  static const EdgeInsets modalPadding = EdgeInsets.all(16.0);
 }
 
 class AppTheme {

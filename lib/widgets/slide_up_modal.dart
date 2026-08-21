@@ -111,7 +111,16 @@ class SlideUpModal extends StatelessWidget {
           ),
           
           // Content
-          Expanded(child: child),
+          Expanded(
+            child: SafeArea(
+              bottom: true,
+              top: false,
+              child: Padding(
+                padding: AppStyles.modalPadding,
+                child: child,
+              ),
+            ),
+          ),
         ],
       ),
     );

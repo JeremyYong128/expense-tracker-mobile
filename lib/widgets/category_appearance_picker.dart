@@ -45,7 +45,6 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
       },
       heightFraction: 0.75,
       child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

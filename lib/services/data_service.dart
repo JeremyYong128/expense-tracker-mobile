@@ -207,6 +207,13 @@ class DataService {
       ),
     );
   }
+  static Future<void> deleteTransaction(int id) async {
+    await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+  }
+
+  static Future<void> deleteRecurringTransaction(int id) async {
+    await (_db.delete(_db.recurringTransactions)..where((t) => t.id.equals(id))).go();
+  }
   
   static Future<void> insertTransaction(Transaction transaction) async {
     await _db.into(_db.transactions).insert(

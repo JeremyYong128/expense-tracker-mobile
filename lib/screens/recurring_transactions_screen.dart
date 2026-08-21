@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/recurring_transaction.dart';
+import '../models/category.dart';
 import '../services/data_service.dart';
+import '../utils/category_appearance.dart';
 import '../theme/app_theme.dart';
 import '../utils/string_extensions.dart';
+import '../widgets/edit_transaction_modal.dart';
 
 class RecurringTransactionsScreen extends StatefulWidget {
   const RecurringTransactionsScreen({super.key});
@@ -16,6 +19,7 @@ class RecurringTransactionsScreen extends StatefulWidget {
 class _RecurringTransactionsScreenState
     extends State<RecurringTransactionsScreen> {
   List<RecurringTransaction> _recurringTransactions = [];
+  List<Category> _categories = [];
   bool _isLoading = true;
 
   @override
@@ -26,27 +30,15 @@ class _RecurringTransactionsScreenState
 
   Future<void> _loadData() async {
     final transactions = await DataService.getRecurringTransactions();
+    final categories = await DataService.getCategories();
     setState(() {
       _recurringTransactions = transactions;
+      _categories = categories;
       _isLoading = false;
     });
   }
 
-  IconData _getCategoryIcon(int categoryId) {
-    switch (categoryId) {
-      case 1:
-        return Icons.restaurant;
-      case 2:
-        return Icons.directions_car;
-      case 3:
-        return Icons.movie;
-      case 4:
-        return Icons.attach_money;
-      case 5:
-      default:
-        return Icons.category;
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +60,12 @@ class _RecurringTransactionsScreenState
               itemCount: _recurringTransactions.length,
               itemBuilder: (context, index) {
                 final tx = _recurringTransactions[index];
+                final category = _categories.firstWhere(
+                  (c) => c.id == tx.categoryId,
+                  orElse: () => Category(name: 'Unknown', colorHex: null, iconString: null, isActive: true),
+                );
+                final color = category.color;
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12.0),
                   shape: RoundedRectangleBorder(
@@ -75,19 +73,32 @@ class _RecurringTransactionsScreenState
                   ),
                   elevation: 0,
                   color: Colors.white,
-                  child: Padding(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: () async {
+                      await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => EditTransactionModal(
+                          recurringTransaction: tx,
+                        ),
+                      );
+                      _loadData();
+                    },
+                    child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
+                            color: color.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            _getCategoryIcon(tx.categoryId),
-                            color: AppColors.primary,
+                            category.iconData,
+                            color: color,
                           ),
                         ),
                         const SizedBox(width: 16.0),
@@ -135,6 +146,7 @@ class _RecurringTransactionsScreenState
                       ],
                     ),
                   ),
+                ),
                 );
               },
             ),

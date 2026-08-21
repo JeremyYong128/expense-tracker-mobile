@@ -251,7 +251,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
         children: [
           // Add New Category Row
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(bottom: 16.0),
             child: Row(
               children: [
                 GestureDetector(
@@ -340,7 +340,6 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
 
                       return Card(
                         margin: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
                           vertical: 6.0,
                         ),
                         elevation: 0,
