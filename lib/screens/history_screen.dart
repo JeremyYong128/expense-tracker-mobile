@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../services/data_service.dart';
+import '../utils/category_appearance.dart';
 import '../theme/app_theme.dart';
 import '../utils/string_extensions.dart';
 
@@ -42,30 +43,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // Parse hex to Color
-  Color _fromHex(String? hexString) {
-    if (hexString == null) return Colors.grey;
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  // Get icon from string
-  IconData _getIconData(String? iconString) {
-    switch (iconString) {
-      case 'shopping_cart':
-        return Icons.shopping_cart;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'receipt':
-        return Icons.receipt;
-      case 'attach_money':
-        return Icons.attach_money;
-      default:
-        return Icons.category;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +60,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       itemBuilder: (context, index) {
         final transaction = sortedTransactions[index];
         final category = _getCategory(transaction.categoryId);
-        final color = _fromHex(category.colorHex);
+        final color = category.color;
 
         bool showDateHeader = false;
         if (index == 0) {
@@ -145,9 +122,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Icon(
-                        _getIconData(category.iconString),
+                        category.iconData,
                         color: color,
-                        size: 28,
+                        size: 24,
                       ),
                     ),
                     const SizedBox(width: 16.0),

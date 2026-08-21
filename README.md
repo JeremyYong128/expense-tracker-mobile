@@ -97,7 +97,4 @@ flutter run
 ## Dev tracking
 - For pending approvals, redesign modal.
 - Change theme colours, possibly add a setting to set custom themes.
-- For lower casing: should user-typed strings be forced to lower case too?
--  Handle category icons and colours.
-- Dashboard: no net value, just monthly income and expenses.
 - Tag expenses to cards, with tracking for benefits (cashback, miles)

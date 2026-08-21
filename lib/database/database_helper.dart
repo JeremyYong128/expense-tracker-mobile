@@ -74,8 +74,6 @@ class DatabaseHelper {
       ('Entertainment', '#9C27B0'),
       ('Transport', '#2196F3')
     ''');
-
-    // (Mock transactions removed for production behavior)
   }
 
   Future<List<Category>> getCategories() async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/category.dart';
 import '../services/data_service.dart';
+import '../utils/category_appearance.dart';
 import '../utils/string_extensions.dart';
 import '../theme/app_theme.dart';
 
@@ -76,40 +77,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Color _fromHex(String? hexString) {
-    if (hexString == null) return Colors.grey;
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  IconData _getIconData(String? iconString) {
-    switch (iconString) {
-      case 'shopping_cart':
-        return Icons.shopping_cart;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'receipt':
-        return Icons.receipt;
-      case 'movie':
-        return Icons.movie;
-      case 'directions_car':
-        return Icons.directions_car;
-      case 'home':
-        return Icons.home;
-      case 'health_and_safety':
-        return Icons.health_and_safety;
-      case 'school':
-        return Icons.school;
-      case 'work':
-        return Icons.work;
-      case 'monetization_on':
-        return Icons.monetization_on;
-      default:
-        return Icons.category;
-    }
-  }
 
   Category _getCategory(int categoryId) {
     return _categories.firstWhere(
@@ -180,7 +147,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ..._topCategories.entries.map((entry) {
               final category = entry.key;
               final amount = entry.value;
-              final color = _fromHex(category.colorHex);
+              final color = category.color;
               final percentage = _totalExpense > 0
                   ? (amount / _totalExpense)
                   : 0.0;
@@ -196,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: Icon(
-                        _getIconData(category.iconString),
+                        category.iconData,
                         color: color,
                         size: 24,
                       ),

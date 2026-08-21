@@ -3,10 +3,10 @@ import '../theme/app_theme.dart';
 import '../widgets/custom_date_picker_field.dart';
 import '../widgets/custom_time_picker_field.dart';
 import '../widgets/custom_dropdown_field.dart';
-import '../widgets/custom_category_dropdown_field.dart';
+import '../widgets/category_dropdown.dart';
 import '../models/category.dart';
 import '../services/data_service.dart';
-import '../widgets/manage_categories_modal.dart';
+import '../widgets/edit_categories_modal.dart';
 import '../widgets/transaction_type_toggle.dart';
 import '../widgets/custom_switch.dart';
 import '../utils/string_extensions.dart';
@@ -182,18 +182,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             padding: const EdgeInsets.only(bottom: 24.0),
             child: _isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
-                : CustomCategoryDropdownField(
+                : CategoryDropdown(
                     label: 'Category'.cased(context),
                     hintText: 'Select a category...'.cased(context),
                     items: _categories,
                     selectedItem: _selectedCategory,
                     onChanged: (val) => setState(() => _selectedCategory = val),
-                    onManagePressed: () {
+                    onEditPressed: () {
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
-                        builder: (context) => ManageCategoriesModal(
+                        builder: (context) => EditCategoriesModal(
                           initialCategories: _categories,
                           onCategoriesUpdated: (newCategories) {
                             setState(() {
