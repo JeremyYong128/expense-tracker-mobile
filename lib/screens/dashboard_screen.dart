@@ -228,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                category.name.cased(context),
+                                category.name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
@@ -328,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              tx.title.cased(context),
+                              tx.title,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
@@ -336,7 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(height: 4.0),
                             Text(
-                              '${DateFormat.jm().format(tx.date).cased(context)} • ${category.name.cased(context)}',
+                              '${DateFormat.jm().format(tx.date).cased(context)} • ${category.name}',
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,

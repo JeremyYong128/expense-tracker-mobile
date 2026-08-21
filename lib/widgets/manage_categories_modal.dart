@@ -314,7 +314,7 @@ class _ManageCategoriesModalState extends State<ManageCategoriesModal> {
                                             left: 8.0,
                                           ),
                                           child: Text(
-                                            _categories[index].name.cased(context),
+                                            _categories[index].name,
                                             style: const TextStyle(
                                               fontSize: 16,
                                             ),

@@ -114,7 +114,7 @@ class CustomCategoryDropdownField extends StatelessWidget {
                           children: items.map((Category value) {
                             return Center(
                               child: Text(
-                                value.name.cased(context),
+                                value.name,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   color: AppColors.textPrimary,
@@ -168,7 +168,7 @@ class CustomCategoryDropdownField extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      selectedItem?.name.cased(context) ?? hintText ?? '',
+                      selectedItem?.name ?? hintText ?? '',
                       style: TextStyle(
                         fontSize: 16,
                         color: selectedItem != null

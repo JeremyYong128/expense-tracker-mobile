@@ -156,7 +156,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            transaction.title.cased(context),
+                            transaction.title,
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -164,7 +164,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ),
                           const SizedBox(height: 4.0),
                           Text(
-                            '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name.cased(context)}',
+                            '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
