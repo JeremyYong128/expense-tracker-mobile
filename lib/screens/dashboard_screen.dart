@@ -17,6 +17,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   double _totalIncome = 0;
   double _totalExpense = 0;
+  double? _incomePercentageChange;
+  double? _expensePercentageChange;
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   Map<Category, double> _topCategories = {};
@@ -36,7 +38,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Filter to current month
     final currentMonthTransactions = allTransactions
-        .where((t) => t.date.year == _currentMonth.year && t.date.month == _currentMonth.month)
+        .where(
+          (t) =>
+              t.date.year == _currentMonth.year &&
+              t.date.month == _currentMonth.month,
+        )
+        .toList();
+
+    // Filter to past month
+    final pastMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+    final pastMonthTransactions = allTransactions
+        .where(
+          (t) =>
+              t.date.year == pastMonth.year && t.date.month == pastMonth.month,
+        )
         .toList();
 
     double income = 0;
@@ -51,6 +66,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
         categorySpending[tx.categoryId] =
             (categorySpending[tx.categoryId] ?? 0) + tx.amount;
       }
+    }
+
+    double pastIncome = 0;
+    double pastExpense = 0;
+    for (var tx in pastMonthTransactions) {
+      if (tx.isIncome) {
+        pastIncome += tx.amount;
+      } else {
+        pastExpense += tx.amount;
+      }
+    }
+
+    double? incomePercentageChange;
+    if (pastIncome == 0) {
+      if (income > 0) incomePercentageChange = 100.0;
+    } else {
+      incomePercentageChange = ((income - pastIncome) / pastIncome) * 100;
+    }
+
+    double? expensePercentageChange;
+    if (pastExpense == 0) {
+      if (expense > 0) expensePercentageChange = 100.0;
+    } else {
+      expensePercentageChange = ((expense - pastExpense) / pastExpense) * 100;
     }
 
     // Sort category spending to get top ones
@@ -71,6 +110,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _totalIncome = income;
         _totalExpense = expense;
+        _incomePercentageChange = incomePercentageChange;
+        _expensePercentageChange = expensePercentageChange;
         _topCategories = topCatMap;
         _isLoading = false;
       });
@@ -79,7 +120,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _navigateMonth(int monthOffset) {
     setState(() {
-      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + monthOffset);
+      _currentMonth = DateTime(
+        _currentMonth.year,
+        _currentMonth.month + monthOffset,
+      );
     });
     _loadDashboardData();
   }
@@ -128,7 +172,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: _buildSummaryCard(
                   'Income',
                   _totalIncome,
-                  AppColors.income,
+                  AppColors.primary,
+                  percentageChange: _incomePercentageChange,
                 ),
               ),
               const SizedBox(width: 16),
@@ -136,7 +181,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: _buildSummaryCard(
                   'Expense',
                   _totalExpense,
-                  AppColors.expense,
+                  AppColors.primary,
+                  percentageChange: _expensePercentageChange,
                 ),
               ),
             ],
@@ -225,7 +271,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSummaryCard(String label, double amount, Color color) {
+  Widget _buildSummaryCard(
+    String label,
+    double amount,
+    Color color, {
+    double? percentageChange,
+  }) {
+    bool isGood = false;
+    if (percentageChange != null) {
+      if (label.toLowerCase() == 'income') {
+        isGood = percentageChange >= 0;
+      } else {
+        isGood = percentageChange <= 0;
+      }
+    }
+    Color changeColor = isGood ? AppColors.income : AppColors.expense;
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -255,6 +316,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                (percentageChange == null || percentageChange == 0)
+                    ? Icons.horizontal_rule
+                    : (percentageChange > 0
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward),
+                size: 16,
+                color: (percentageChange == null || percentageChange == 0)
+                    ? AppColors.textSecondary
+                    : changeColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                percentageChange == null
+                    ? ''
+                    : '${percentageChange.abs().toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ],
       ),

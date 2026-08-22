@@ -98,3 +98,6 @@ flutter run
 - For pending approvals, redesign modal.
 - Change theme colours, possibly add a setting to set custom themes.
 - Tag expenses to cards, with tracking for benefits (cashback, miles)
+
+- Possible changes to consider:
+    - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
