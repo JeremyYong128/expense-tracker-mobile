@@ -38,21 +38,16 @@ class _RecurringTransactionsScreenState
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : _recurringTransactions.isEmpty
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _recurringTransactions.isEmpty
           ? Center(
               child: Text(
                 'No recurring transactions found.'.cased(context),
-                style: const TextStyle(
-                  color: AppColors.grey,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: AppColors.grey, fontSize: 16),
               ),
             )
           : ListView.builder(
@@ -62,93 +57,150 @@ class _RecurringTransactionsScreenState
                 final tx = _recurringTransactions[index];
                 final category = _categories.firstWhere(
                   (c) => c.id == tx.categoryId,
-                  orElse: () => Category(name: 'Unknown', colorHex: null, iconString: null, isActive: true),
+                  orElse: () => Category(
+                    name: 'Unknown',
+                    colorHex: null,
+                    iconString: null,
+                    isActive: true,
+                  ),
                 );
                 final color = category.color;
 
-                return Card(
+                return Container(
                   margin: const EdgeInsets.only(bottom: 12.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(
+                          alpha: 0.04,
+                        ), // soft shadow using primary color
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  elevation: 0,
-                  color: Colors.white,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16.0),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24.0),
                     onTap: () async {
                       await showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
-                        builder: (context) => EditTransactionModal(
-                          recurringTransaction: tx,
-                        ),
+                        builder: (context) =>
+                            EditTransactionModal(recurringTransaction: tx),
                       );
                       _loadData();
                     },
                     child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12.0),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
+                      padding: const EdgeInsets.all(12.0),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  child: Icon(
+                                    category.iconData,
+                                    color: color,
+                                    size: 24,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(width: 16.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tx.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2.0),
+                                Text(
+                                  category.name,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2.0),
+                                Text(
+                                  'Every ${tx.interval} ${tx.period}'.cased(
+                                    context,
+                                  ),
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 2.0),
+                                Text(
+                                  'Due: ${DateFormat('d MMMM y').format(tx.nextDueDate).cased(context)}'
+                                      .cased(context),
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                if (tx.note != null &&
+                                    tx.note!.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 2.0),
+                                  Text(
+                                    tx.note!,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                          child: Icon(
-                            category.iconData,
-                            color: color,
-                          ),
-                        ),
-                        const SizedBox(width: 16.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                tx.title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                tx.isIncome
+                                    ? '+\$${tx.amount.toStringAsFixed(2)}'
+                                    : '-\$${tx.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 4.0),
-                              Text(
-                                'Every ${tx.interval} ${tx.period}'
-                                    .cased(context),
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4.0),
-                              Text(
-                                'Due: ${DateFormat('d MMMM y').format(tx.nextDueDate).cased(context)}'
-                                    .cased(context),
-                                style: const TextStyle(
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  color: tx.isIncome
+                                      ? AppColors.income
+                                      : AppColors.expense,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        Text(
-                          '-\$${tx.amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppColors.expense,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
                     ),
                   ),
                 ),
-                );
-              },
+              );
+            },
             ),
     );
   }

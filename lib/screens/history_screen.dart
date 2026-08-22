@@ -127,20 +127,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12.0),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: Icon(
+                                  category.iconData,
+                                  color: color,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Icon(
-                            category.iconData,
-                            color: color,
-                            size: 24,
-                          ),
-                        ),
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: Column(
@@ -153,32 +160,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   fontSize: 16,
                                 ),
                               ),
-                              const SizedBox(height: 4.0),
+                              const SizedBox(height: 2.0),
                               Text(
                                 '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
                                 style: const TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 13,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                              if (transaction.note != null &&
+                                  transaction.note!.trim().isNotEmpty) ...[
+                                const SizedBox(height: 4.0),
+                                Text(
+                                  transaction.note!,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ],
                           ),
                         ),
                         const SizedBox(width: 16.0),
-                        Text(
-                          transaction.isIncome
-                              ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                              : '-\$${transaction.amount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            color: transaction.isIncome
-                                ? AppColors.income
-                                : AppColors.expense,
-                          ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              transaction.isIncome
+                                  ? '+\$${transaction.amount.toStringAsFixed(2)}'
+                                  : '-\$${transaction.amount.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: transaction.isIncome
+                                    ? AppColors.income
+                                    : AppColors.expense,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),

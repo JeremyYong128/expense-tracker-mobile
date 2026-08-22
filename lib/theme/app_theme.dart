@@ -9,8 +9,6 @@ class AppColors {
   // Vibrant accent and brand color (Deep Blue)
   static const Color primary = Color(0xFF245F73);
 
-  // Accent color for expenses/warnings (Brown)
-  static const Color accent = Color(0xFF733E24);
 
   // Grey for unselected states
   static const Color grey = Color(0xFFBBBDBC); // Original light grey
@@ -49,9 +47,9 @@ class AppTheme {
 
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
-        secondary: AppColors.accent,
+        secondary: AppColors.primary,
         surface: AppColors.surface,
-        error: AppColors.accent,
+        error: AppColors.expense,
       ),
 
       appBarTheme: const AppBarTheme(
