@@ -22,6 +22,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     _loadData();
+    DataService.onDataChanged.addListener(_onDataChanged);
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      setState(() {
+        _loadData();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    DataService.onDataChanged.removeListener(_onDataChanged);
+    super.dispose();
   }
 
   void _loadData() {

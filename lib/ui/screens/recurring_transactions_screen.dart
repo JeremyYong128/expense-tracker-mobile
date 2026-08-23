@@ -29,6 +29,19 @@ class _RecurringTransactionsScreenState
   void initState() {
     super.initState();
     _loadData();
+    DataService.onDataChanged.addListener(_onDataChanged);
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
+    DataService.onDataChanged.removeListener(_onDataChanged);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

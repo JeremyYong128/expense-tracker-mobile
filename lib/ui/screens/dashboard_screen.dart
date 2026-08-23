@@ -21,6 +21,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadDashboardData();
+    DataService.onDataChanged.addListener(_onDataChanged);
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      setState(() {
+        _loadDashboardData();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    DataService.onDataChanged.removeListener(_onDataChanged);
+    super.dispose();
   }
 
   void _loadDashboardData() {

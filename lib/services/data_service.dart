@@ -4,9 +4,11 @@ import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
 import 'package:expense_tracker_mobile/database/drift_database.dart';
+import 'package:expense_tracker_mobile/services/data_change_notifier.dart';
 
 class DataService {
   static final AppDatabase _db = AppDatabase();
+  static final DataChangeNotifier onDataChanged = DataChangeNotifier();
 
   // --- Mappers ---
   
@@ -77,10 +79,11 @@ class DataService {
           iconString: drift.Value(category.iconString),
         ),
       );
+      onDataChanged.notify();
       return existing.id;
     }
 
-    return await _db.into(_db.categories).insert(
+    final newId = await _db.into(_db.categories).insert(
       CategoriesCompanion.insert(
         name: category.name,
         colorHex: drift.Value(category.colorHex),
@@ -88,9 +91,50 @@ class DataService {
         isActive: drift.Value(category.isActive),
       ),
     );
+    onDataChanged.notify();
+    return newId;
   }
 
   static Future<int> updateCategory(Category category) async {
+    // Check for a collision with an existing (likely soft-deleted) category
+    final existing = await (_db.select(_db.categories)
+          ..where((c) => c.name.lower().equals(category.name.toLowerCase()))
+          ..where((c) => c.id.equals(category.id!).not()))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      // Merge: Update the existing soft-deleted category
+      await (_db.update(_db.categories)..where((c) => c.id.equals(existing.id))).write(
+        CategoriesCompanion(
+          name: drift.Value(category.name),
+          colorHex: drift.Value(category.colorHex),
+          iconString: drift.Value(category.iconString),
+          isActive: const drift.Value(true), // Reactivate
+        ),
+      );
+
+      // Migrate transactions to the existing category
+      await (_db.update(_db.transactions)..where((t) => t.categoryId.equals(category.id!))).write(
+        TransactionsCompanion(
+          categoryId: drift.Value(existing.id),
+        ),
+      );
+
+      // Migrate recurring transactions
+      await (_db.update(_db.recurringTransactions)..where((r) => r.categoryId.equals(category.id!))).write(
+        RecurringTransactionsCompanion(
+          categoryId: drift.Value(existing.id),
+        ),
+      );
+
+      // Delete the old category
+      await (_db.delete(_db.categories)..where((c) => c.id.equals(category.id!))).go();
+
+      onDataChanged.notify();
+      return existing.id;
+    }
+
+    // Normal update
     await (_db.update(_db.categories)..where((c) => c.id.equals(category.id!))).write(
       CategoriesCompanion(
         name: drift.Value(category.name),
@@ -99,6 +143,7 @@ class DataService {
         isActive: drift.Value(category.isActive),
       ),
     );
+    onDataChanged.notify();
     return category.id!;
   }
 
@@ -113,6 +158,7 @@ class DataService {
     } else {
       await (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
     }
+    onDataChanged.notify();
   }
 
   // --- Credit Card Methods ---
@@ -123,13 +169,15 @@ class DataService {
   }
 
   static Future<int> addCreditCard(CreditCard card) async {
-    return await _db.into(_db.creditCards).insert(
+    final id = await _db.into(_db.creditCards).insert(
       CreditCardsCompanion.insert(
         name: card.name,
         rewardType: card.rewardType,
         rewardRate: card.rewardRate,
       ),
     );
+    onDataChanged.notify();
+    return id;
   }
 
   static Future<void> updateCreditCard(CreditCard card) async {
@@ -140,10 +188,12 @@ class DataService {
         rewardRate: drift.Value(card.rewardRate),
       ),
     );
+    onDataChanged.notify();
   }
 
   static Future<void> deleteCreditCard(int id) async {
     await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+    onDataChanged.notify();
   }
 
   // --- Transaction Methods ---
@@ -217,6 +267,7 @@ class DataService {
         creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
+    onDataChanged.notify();
   }
 
   static Future<List<Transaction>> getTransactions() async {
@@ -249,13 +300,16 @@ class DataService {
         creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
+    onDataChanged.notify();
   }
   static Future<void> deleteTransaction(int id) async {
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+    onDataChanged.notify();
   }
 
   static Future<void> deleteRecurringTransaction(int id) async {
     await (_db.delete(_db.recurringTransactions)..where((t) => t.id.equals(id))).go();
+    onDataChanged.notify();
   }
   
   static Future<void> insertTransaction(Transaction transaction) async {

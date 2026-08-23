@@ -21,6 +21,19 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
   void initState() {
     super.initState();
     _loadData();
+    DataService.onDataChanged.addListener(_onDataChanged);
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
+    DataService.onDataChanged.removeListener(_onDataChanged);
+    super.dispose();
   }
 
   void _loadData() {

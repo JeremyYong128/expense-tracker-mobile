@@ -104,13 +104,11 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 - Bugs:
     - User gets stuck in notes when filling up the form. Keyboard can't close.
-    - Form validation
     - Pressing on the manage tab, when already on the manage tab, should bring the user back to the main manage screen if not already there.
-- Organise code better
 - Credit cards
     - Improve design of credit card reward section on dashboard and credit card screen
     - Need some indication in the history and recurring cards when an expense is tagged with a credit card
     - Should a user add a credit card from just the cc screen or from the drop down too?
-
+- Swipe left then click to delete a transaction
 - Possible changes to consider:
     - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
