@@ -5,7 +5,7 @@ import 'theme/app_theme.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/add_transaction_screen.dart';
-import 'screens/recurring_transactions_screen.dart';
+import 'screens/manage_screen.dart';
 import 'screens/settings_screen.dart';
 import 'providers/user_preferences_provider.dart';
 import 'utils/string_extensions.dart';
@@ -47,21 +47,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
 
-  static const List<String> _appBarTitles = [
-    'Home',
-    'History',
-    'Add Transaction',
-    'Recurring',
-    'Settings',
-  ];
 
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardScreen(),
     HistoryScreen(),
     AddTransactionScreen(),
-    RecurringTransactionsScreen(),
+    ManageScreen(),
     SettingsScreen(),
   ];
 
@@ -86,18 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_appBarTitles[_selectedIndex].cased(context))),
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: CupertinoTabBar(
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
@@ -135,18 +121,23 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.event_repeat),
-            label: 'Recurring'.cased(context),
+            icon: const Icon(Icons.apps),
+            label: 'Manage'.cased(context),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
             label: 'Settings'.cased(context),
           ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
         activeColor: AppColors.primary,
       ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            return _widgetOptions[index];
+          },
+        );
+      },
     );
   }
 }

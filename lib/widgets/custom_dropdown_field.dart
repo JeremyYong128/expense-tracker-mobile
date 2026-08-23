@@ -115,9 +115,7 @@ class CustomDropdownField<T> extends StatelessWidget {
           ),
           const SizedBox(height: 8.0),
         ],
-        SizedBox(
-          height: 60.0,
-          child: InkWell(
+        InkWell(
             onTap: () => _showPicker(context),
             borderRadius: BorderRadius.circular(12.0),
             child: InputDecorator(
@@ -135,7 +133,6 @@ class CustomDropdownField<T> extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ],
     );
   }

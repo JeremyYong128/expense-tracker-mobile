@@ -19,6 +19,7 @@ class RecurringProcessingService {
           note: tx.note,
           isIncome: tx.isIncome,
           recurringId: tx.id,
+          creditCardId: tx.creditCardId,
         ));
         
         currentDueDate = DataService.calculateNextDueDate(

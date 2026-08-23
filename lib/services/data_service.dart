@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import '../models/transaction.dart';
 import '../models/recurring_transaction.dart';
 import '../models/category.dart';
+import '../models/credit_card.dart';
 import '../database/drift_database.dart';
 
 class DataService {
@@ -29,6 +30,16 @@ class DataService {
       note: data.note,
       isIncome: data.isIncome,
       recurringId: data.recurringId,
+      creditCardId: data.creditCardId,
+    );
+  }
+
+  static CreditCard _mapCreditCard(CreditCardTableData data) {
+    return CreditCard(
+      id: data.id,
+      name: data.name,
+      rewardType: data.rewardType,
+      rewardRate: data.rewardRate,
     );
   }
 
@@ -104,18 +115,50 @@ class DataService {
     }
   }
 
+  // --- Credit Card Methods ---
+
+  static Future<List<CreditCard>> getCreditCards() async {
+    final list = await _db.select(_db.creditCards).get();
+    return list.map(_mapCreditCard).toList();
+  }
+
+  static Future<int> addCreditCard(CreditCard card) async {
+    return await _db.into(_db.creditCards).insert(
+      CreditCardsCompanion.insert(
+        name: card.name,
+        rewardType: card.rewardType,
+        rewardRate: card.rewardRate,
+      ),
+    );
+  }
+
+  static Future<void> updateCreditCard(CreditCard card) async {
+    await (_db.update(_db.creditCards)..where((c) => c.id.equals(card.id!))).write(
+      CreditCardsCompanion(
+        name: drift.Value(card.name),
+        rewardType: drift.Value(card.rewardType),
+        rewardRate: drift.Value(card.rewardRate),
+      ),
+    );
+  }
+
+  static Future<void> deleteCreditCard(int id) async {
+    await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+  }
+
   // --- Transaction Methods ---
 
   static Future<void> addTransaction({
     required String amountText,
     required String title,
     required DateTime date,
-    required Category? category,
+    required int categoryId,
     required bool isIncome,
     required bool isRecurring,
     required String recurringIntervalText,
     required String recurringPeriod,
     required String note,
+    int? creditCardId,
   }) async {
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
@@ -124,10 +167,6 @@ class DataService {
 
     if (title.trim().isEmpty) {
       throw Exception('Please enter a title.');
-    }
-
-    if (category == null || category.id == null) {
-      throw Exception('Please select a valid category.');
     }
 
     if (isRecurring) {
@@ -142,12 +181,13 @@ class DataService {
         RecurringTransactionsCompanion.insert(
           amount: amount,
           title: title.trim(),
-          categoryId: category.id!,
+          categoryId: categoryId,
           isIncome: drift.Value(isIncome),
           interval: recurringInterval,
           period: recurringPeriod,
           nextDueDate: nextDueDate.toIso8601String(),
           note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+          creditCardId: drift.Value(creditCardId),
         ),
       );
     } else {
@@ -156,9 +196,10 @@ class DataService {
           amount: amount,
           title: title.trim(),
           date: date.toIso8601String(),
-          categoryId: category.id!,
+          categoryId: categoryId,
           isIncome: drift.Value(isIncome),
           note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+          creditCardId: drift.Value(creditCardId),
         ),
       );
     }
@@ -173,6 +214,7 @@ class DataService {
         categoryId: drift.Value(transaction.categoryId),
         isIncome: drift.Value(transaction.isIncome),
         note: drift.Value(transaction.note),
+        creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
   }
@@ -204,6 +246,7 @@ class DataService {
         period: drift.Value(transaction.period),
         nextDueDate: drift.Value(transaction.nextDueDate.toIso8601String()),
         note: drift.Value(transaction.note),
+        creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
   }
@@ -225,8 +268,14 @@ class DataService {
         isIncome: drift.Value(transaction.isIncome),
         note: drift.Value(transaction.note),
         recurringId: drift.Value(transaction.recurringId),
+        creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
+  }
+
+  static Future<List<Transaction>> getTransactionsForCard(int creditCardId) async {
+    final list = await (_db.select(_db.transactions)..where((t) => t.creditCardId.equals(creditCardId))).get();
+    return list.map(_mapTransaction).toList();
   }
 
   static DateTime calculateNextDueDate(

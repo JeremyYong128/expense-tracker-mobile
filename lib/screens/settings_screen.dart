@@ -14,7 +14,11 @@ class SettingsScreen extends StatelessWidget {
       context,
     ).isLowerCaps;
 
-    return Scaffold(
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(title: Text('Settings'.cased(context))),
       body: SafeArea(
         child: Padding(
           padding: AppStyles.screenPadding,
@@ -89,6 +93,7 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -359,6 +359,309 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
   }
 }
 
+class $CreditCardsTable extends CreditCards
+    with TableInfo<$CreditCardsTable, CreditCardTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CreditCardsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rewardTypeMeta = const VerificationMeta(
+    'rewardType',
+  );
+  @override
+  late final GeneratedColumn<String> rewardType = GeneratedColumn<String>(
+    'rewardType',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rewardRateMeta = const VerificationMeta(
+    'rewardRate',
+  );
+  @override
+  late final GeneratedColumn<double> rewardRate = GeneratedColumn<double>(
+    'rewardRate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, rewardType, rewardRate];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'credit_cards';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CreditCardTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('rewardType')) {
+      context.handle(
+        _rewardTypeMeta,
+        rewardType.isAcceptableOrUnknown(data['rewardType']!, _rewardTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rewardTypeMeta);
+    }
+    if (data.containsKey('rewardRate')) {
+      context.handle(
+        _rewardRateMeta,
+        rewardRate.isAcceptableOrUnknown(data['rewardRate']!, _rewardRateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rewardRateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CreditCardTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CreditCardTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      rewardType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rewardType'],
+      )!,
+      rewardRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}rewardRate'],
+      )!,
+    );
+  }
+
+  @override
+  $CreditCardsTable createAlias(String alias) {
+    return $CreditCardsTable(attachedDatabase, alias);
+  }
+}
+
+class CreditCardTableData extends DataClass
+    implements Insertable<CreditCardTableData> {
+  final int id;
+  final String name;
+  final String rewardType;
+  final double rewardRate;
+  const CreditCardTableData({
+    required this.id,
+    required this.name,
+    required this.rewardType,
+    required this.rewardRate,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['rewardType'] = Variable<String>(rewardType);
+    map['rewardRate'] = Variable<double>(rewardRate);
+    return map;
+  }
+
+  CreditCardsCompanion toCompanion(bool nullToAbsent) {
+    return CreditCardsCompanion(
+      id: Value(id),
+      name: Value(name),
+      rewardType: Value(rewardType),
+      rewardRate: Value(rewardRate),
+    );
+  }
+
+  factory CreditCardTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CreditCardTableData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      rewardType: serializer.fromJson<String>(json['rewardType']),
+      rewardRate: serializer.fromJson<double>(json['rewardRate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'rewardType': serializer.toJson<String>(rewardType),
+      'rewardRate': serializer.toJson<double>(rewardRate),
+    };
+  }
+
+  CreditCardTableData copyWith({
+    int? id,
+    String? name,
+    String? rewardType,
+    double? rewardRate,
+  }) => CreditCardTableData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    rewardType: rewardType ?? this.rewardType,
+    rewardRate: rewardRate ?? this.rewardRate,
+  );
+  CreditCardTableData copyWithCompanion(CreditCardsCompanion data) {
+    return CreditCardTableData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      rewardType: data.rewardType.present
+          ? data.rewardType.value
+          : this.rewardType,
+      rewardRate: data.rewardRate.present
+          ? data.rewardRate.value
+          : this.rewardRate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CreditCardTableData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('rewardType: $rewardType, ')
+          ..write('rewardRate: $rewardRate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, rewardType, rewardRate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CreditCardTableData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.rewardType == this.rewardType &&
+          other.rewardRate == this.rewardRate);
+}
+
+class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> rewardType;
+  final Value<double> rewardRate;
+  const CreditCardsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.rewardType = const Value.absent(),
+    this.rewardRate = const Value.absent(),
+  });
+  CreditCardsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required String rewardType,
+    required double rewardRate,
+  }) : name = Value(name),
+       rewardType = Value(rewardType),
+       rewardRate = Value(rewardRate);
+  static Insertable<CreditCardTableData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? rewardType,
+    Expression<double>? rewardRate,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (rewardType != null) 'rewardType': rewardType,
+      if (rewardRate != null) 'rewardRate': rewardRate,
+    });
+  }
+
+  CreditCardsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? rewardType,
+    Value<double>? rewardRate,
+  }) {
+    return CreditCardsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      rewardType: rewardType ?? this.rewardType,
+      rewardRate: rewardRate ?? this.rewardRate,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (rewardType.present) {
+      map['rewardType'] = Variable<String>(rewardType.value);
+    }
+    if (rewardRate.present) {
+      map['rewardRate'] = Variable<double>(rewardRate.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CreditCardsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('rewardType: $rewardType, ')
+          ..write('rewardRate: $rewardRate')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RecurringTransactionsTable extends RecurringTransactions
     with TableInfo<$RecurringTransactionsTable, RecurringTransactionTableData> {
   @override
@@ -463,6 +766,18 @@ class $RecurringTransactionsTable extends RecurringTransactions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _creditCardIdMeta = const VerificationMeta(
+    'creditCardId',
+  );
+  @override
+  late final GeneratedColumn<int> creditCardId = GeneratedColumn<int>(
+    'creditCardId',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES credit_cards(id) ON DELETE SET NULL',
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -474,6 +789,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     interval,
     period,
     nextDueDate,
+    creditCardId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -553,6 +869,15 @@ class $RecurringTransactionsTable extends RecurringTransactions
     } else if (isInserting) {
       context.missing(_nextDueDateMeta);
     }
+    if (data.containsKey('creditCardId')) {
+      context.handle(
+        _creditCardIdMeta,
+        creditCardId.isAcceptableOrUnknown(
+          data['creditCardId']!,
+          _creditCardIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -601,6 +926,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.string,
         data['${effectivePrefix}nextDueDate'],
       )!,
+      creditCardId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}creditCardId'],
+      ),
     );
   }
 
@@ -621,6 +950,7 @@ class RecurringTransactionTableData extends DataClass
   final int interval;
   final String period;
   final String nextDueDate;
+  final int? creditCardId;
   const RecurringTransactionTableData({
     required this.id,
     required this.amount,
@@ -631,6 +961,7 @@ class RecurringTransactionTableData extends DataClass
     required this.interval,
     required this.period,
     required this.nextDueDate,
+    this.creditCardId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -646,6 +977,9 @@ class RecurringTransactionTableData extends DataClass
     map['interval'] = Variable<int>(interval);
     map['period'] = Variable<String>(period);
     map['nextDueDate'] = Variable<String>(nextDueDate);
+    if (!nullToAbsent || creditCardId != null) {
+      map['creditCardId'] = Variable<int>(creditCardId);
+    }
     return map;
   }
 
@@ -660,6 +994,9 @@ class RecurringTransactionTableData extends DataClass
       interval: Value(interval),
       period: Value(period),
       nextDueDate: Value(nextDueDate),
+      creditCardId: creditCardId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creditCardId),
     );
   }
 
@@ -678,6 +1015,7 @@ class RecurringTransactionTableData extends DataClass
       interval: serializer.fromJson<int>(json['interval']),
       period: serializer.fromJson<String>(json['period']),
       nextDueDate: serializer.fromJson<String>(json['nextDueDate']),
+      creditCardId: serializer.fromJson<int?>(json['creditCardId']),
     );
   }
   @override
@@ -693,6 +1031,7 @@ class RecurringTransactionTableData extends DataClass
       'interval': serializer.toJson<int>(interval),
       'period': serializer.toJson<String>(period),
       'nextDueDate': serializer.toJson<String>(nextDueDate),
+      'creditCardId': serializer.toJson<int?>(creditCardId),
     };
   }
 
@@ -706,6 +1045,7 @@ class RecurringTransactionTableData extends DataClass
     int? interval,
     String? period,
     String? nextDueDate,
+    Value<int?> creditCardId = const Value.absent(),
   }) => RecurringTransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -716,6 +1056,7 @@ class RecurringTransactionTableData extends DataClass
     interval: interval ?? this.interval,
     period: period ?? this.period,
     nextDueDate: nextDueDate ?? this.nextDueDate,
+    creditCardId: creditCardId.present ? creditCardId.value : this.creditCardId,
   );
   RecurringTransactionTableData copyWithCompanion(
     RecurringTransactionsCompanion data,
@@ -734,6 +1075,9 @@ class RecurringTransactionTableData extends DataClass
       nextDueDate: data.nextDueDate.present
           ? data.nextDueDate.value
           : this.nextDueDate,
+      creditCardId: data.creditCardId.present
+          ? data.creditCardId.value
+          : this.creditCardId,
     );
   }
 
@@ -748,7 +1092,8 @@ class RecurringTransactionTableData extends DataClass
           ..write('isIncome: $isIncome, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
-          ..write('nextDueDate: $nextDueDate')
+          ..write('nextDueDate: $nextDueDate, ')
+          ..write('creditCardId: $creditCardId')
           ..write(')'))
         .toString();
   }
@@ -764,6 +1109,7 @@ class RecurringTransactionTableData extends DataClass
     interval,
     period,
     nextDueDate,
+    creditCardId,
   );
   @override
   bool operator ==(Object other) =>
@@ -777,7 +1123,8 @@ class RecurringTransactionTableData extends DataClass
           other.isIncome == this.isIncome &&
           other.interval == this.interval &&
           other.period == this.period &&
-          other.nextDueDate == this.nextDueDate);
+          other.nextDueDate == this.nextDueDate &&
+          other.creditCardId == this.creditCardId);
 }
 
 class RecurringTransactionsCompanion
@@ -791,6 +1138,7 @@ class RecurringTransactionsCompanion
   final Value<int> interval;
   final Value<String> period;
   final Value<String> nextDueDate;
+  final Value<int?> creditCardId;
   const RecurringTransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -801,6 +1149,7 @@ class RecurringTransactionsCompanion
     this.interval = const Value.absent(),
     this.period = const Value.absent(),
     this.nextDueDate = const Value.absent(),
+    this.creditCardId = const Value.absent(),
   });
   RecurringTransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -812,6 +1161,7 @@ class RecurringTransactionsCompanion
     required int interval,
     required String period,
     required String nextDueDate,
+    this.creditCardId = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        categoryId = Value(categoryId),
@@ -828,6 +1178,7 @@ class RecurringTransactionsCompanion
     Expression<int>? interval,
     Expression<String>? period,
     Expression<String>? nextDueDate,
+    Expression<int>? creditCardId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -839,6 +1190,7 @@ class RecurringTransactionsCompanion
       if (interval != null) 'interval': interval,
       if (period != null) 'period': period,
       if (nextDueDate != null) 'nextDueDate': nextDueDate,
+      if (creditCardId != null) 'creditCardId': creditCardId,
     });
   }
 
@@ -852,6 +1204,7 @@ class RecurringTransactionsCompanion
     Value<int>? interval,
     Value<String>? period,
     Value<String>? nextDueDate,
+    Value<int?>? creditCardId,
   }) {
     return RecurringTransactionsCompanion(
       id: id ?? this.id,
@@ -863,6 +1216,7 @@ class RecurringTransactionsCompanion
       interval: interval ?? this.interval,
       period: period ?? this.period,
       nextDueDate: nextDueDate ?? this.nextDueDate,
+      creditCardId: creditCardId ?? this.creditCardId,
     );
   }
 
@@ -896,6 +1250,9 @@ class RecurringTransactionsCompanion
     if (nextDueDate.present) {
       map['nextDueDate'] = Variable<String>(nextDueDate.value);
     }
+    if (creditCardId.present) {
+      map['creditCardId'] = Variable<int>(creditCardId.value);
+    }
     return map;
   }
 
@@ -910,7 +1267,8 @@ class RecurringTransactionsCompanion
           ..write('isIncome: $isIncome, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
-          ..write('nextDueDate: $nextDueDate')
+          ..write('nextDueDate: $nextDueDate, ')
+          ..write('creditCardId: $creditCardId')
           ..write(')'))
         .toString();
   }
@@ -1011,6 +1369,18 @@ class $TransactionsTable extends Transactions
     $customConstraints:
         'REFERENCES recurring_transactions(id) ON DELETE SET NULL',
   );
+  static const VerificationMeta _creditCardIdMeta = const VerificationMeta(
+    'creditCardId',
+  );
+  @override
+  late final GeneratedColumn<int> creditCardId = GeneratedColumn<int>(
+    'creditCardId',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES credit_cards(id) ON DELETE SET NULL',
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1021,6 +1391,7 @@ class $TransactionsTable extends Transactions
     note,
     isIncome,
     recurringId,
+    creditCardId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1090,6 +1461,15 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('creditCardId')) {
+      context.handle(
+        _creditCardIdMeta,
+        creditCardId.isAcceptableOrUnknown(
+          data['creditCardId']!,
+          _creditCardIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1131,6 +1511,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}recurringId'],
       ),
+      creditCardId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}creditCardId'],
+      ),
     );
   }
 
@@ -1150,6 +1534,7 @@ class TransactionTableData extends DataClass
   final String? note;
   final bool isIncome;
   final int? recurringId;
+  final int? creditCardId;
   const TransactionTableData({
     required this.id,
     required this.amount,
@@ -1159,6 +1544,7 @@ class TransactionTableData extends DataClass
     this.note,
     required this.isIncome,
     this.recurringId,
+    this.creditCardId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1175,6 +1561,9 @@ class TransactionTableData extends DataClass
     if (!nullToAbsent || recurringId != null) {
       map['recurringId'] = Variable<int>(recurringId);
     }
+    if (!nullToAbsent || creditCardId != null) {
+      map['creditCardId'] = Variable<int>(creditCardId);
+    }
     return map;
   }
 
@@ -1190,6 +1579,9 @@ class TransactionTableData extends DataClass
       recurringId: recurringId == null && nullToAbsent
           ? const Value.absent()
           : Value(recurringId),
+      creditCardId: creditCardId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creditCardId),
     );
   }
 
@@ -1207,6 +1599,7 @@ class TransactionTableData extends DataClass
       note: serializer.fromJson<String?>(json['note']),
       isIncome: serializer.fromJson<bool>(json['isIncome']),
       recurringId: serializer.fromJson<int?>(json['recurringId']),
+      creditCardId: serializer.fromJson<int?>(json['creditCardId']),
     );
   }
   @override
@@ -1221,6 +1614,7 @@ class TransactionTableData extends DataClass
       'note': serializer.toJson<String?>(note),
       'isIncome': serializer.toJson<bool>(isIncome),
       'recurringId': serializer.toJson<int?>(recurringId),
+      'creditCardId': serializer.toJson<int?>(creditCardId),
     };
   }
 
@@ -1233,6 +1627,7 @@ class TransactionTableData extends DataClass
     Value<String?> note = const Value.absent(),
     bool? isIncome,
     Value<int?> recurringId = const Value.absent(),
+    Value<int?> creditCardId = const Value.absent(),
   }) => TransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -1242,6 +1637,7 @@ class TransactionTableData extends DataClass
     note: note.present ? note.value : this.note,
     isIncome: isIncome ?? this.isIncome,
     recurringId: recurringId.present ? recurringId.value : this.recurringId,
+    creditCardId: creditCardId.present ? creditCardId.value : this.creditCardId,
   );
   TransactionTableData copyWithCompanion(TransactionsCompanion data) {
     return TransactionTableData(
@@ -1257,6 +1653,9 @@ class TransactionTableData extends DataClass
       recurringId: data.recurringId.present
           ? data.recurringId.value
           : this.recurringId,
+      creditCardId: data.creditCardId.present
+          ? data.creditCardId.value
+          : this.creditCardId,
     );
   }
 
@@ -1270,7 +1669,8 @@ class TransactionTableData extends DataClass
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
-          ..write('recurringId: $recurringId')
+          ..write('recurringId: $recurringId, ')
+          ..write('creditCardId: $creditCardId')
           ..write(')'))
         .toString();
   }
@@ -1285,6 +1685,7 @@ class TransactionTableData extends DataClass
     note,
     isIncome,
     recurringId,
+    creditCardId,
   );
   @override
   bool operator ==(Object other) =>
@@ -1297,7 +1698,8 @@ class TransactionTableData extends DataClass
           other.categoryId == this.categoryId &&
           other.note == this.note &&
           other.isIncome == this.isIncome &&
-          other.recurringId == this.recurringId);
+          other.recurringId == this.recurringId &&
+          other.creditCardId == this.creditCardId);
 }
 
 class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
@@ -1309,6 +1711,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
   final Value<String?> note;
   final Value<bool> isIncome;
   final Value<int?> recurringId;
+  final Value<int?> creditCardId;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -1318,6 +1721,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.creditCardId = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -1328,6 +1732,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.creditCardId = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        date = Value(date),
@@ -1341,6 +1746,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Expression<String>? note,
     Expression<bool>? isIncome,
     Expression<int>? recurringId,
+    Expression<int>? creditCardId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1351,6 +1757,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       if (note != null) 'note': note,
       if (isIncome != null) 'isIncome': isIncome,
       if (recurringId != null) 'recurringId': recurringId,
+      if (creditCardId != null) 'creditCardId': creditCardId,
     });
   }
 
@@ -1363,6 +1770,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Value<String?>? note,
     Value<bool>? isIncome,
     Value<int?>? recurringId,
+    Value<int?>? creditCardId,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -1373,6 +1781,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       note: note ?? this.note,
       isIncome: isIncome ?? this.isIncome,
       recurringId: recurringId ?? this.recurringId,
+      creditCardId: creditCardId ?? this.creditCardId,
     );
   }
 
@@ -1403,6 +1812,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     if (recurringId.present) {
       map['recurringId'] = Variable<int>(recurringId.value);
     }
+    if (creditCardId.present) {
+      map['creditCardId'] = Variable<int>(creditCardId.value);
+    }
     return map;
   }
 
@@ -1416,7 +1828,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
-          ..write('recurringId: $recurringId')
+          ..write('recurringId: $recurringId, ')
+          ..write('creditCardId: $creditCardId')
           ..write(')'))
         .toString();
   }
@@ -1426,6 +1839,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
+  late final $CreditCardsTable creditCards = $CreditCardsTable(this);
   late final $RecurringTransactionsTable recurringTransactions =
       $RecurringTransactionsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
@@ -1435,6 +1849,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     categories,
+    creditCards,
     recurringTransactions,
     transactions,
   ];
@@ -1442,7 +1857,21 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
     WritePropagation(
       on: TableUpdateQuery.onTableName(
+        'credit_cards',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('recurring_transactions', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
         'recurring_transactions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('transactions', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'credit_cards',
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('transactions', kind: UpdateKind.update)],
@@ -1857,6 +2286,397 @@ typedef $$CategoriesTableProcessedTableManager =
         bool transactionsRefs,
       })
     >;
+typedef $$CreditCardsTableCreateCompanionBuilder =
+    CreditCardsCompanion Function({
+      Value<int> id,
+      required String name,
+      required String rewardType,
+      required double rewardRate,
+    });
+typedef $$CreditCardsTableUpdateCompanionBuilder =
+    CreditCardsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> rewardType,
+      Value<double> rewardRate,
+    });
+
+final class $$CreditCardsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $CreditCardsTable, CreditCardTableData> {
+  $$CreditCardsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<
+    $RecurringTransactionsTable,
+    List<RecurringTransactionTableData>
+  >
+  _recurringTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringTransactions,
+        aliasName: 'credit_cards__id__recurring_transactions__creditCardId',
+      );
+
+  $$RecurringTransactionsTableProcessedTableManager
+  get recurringTransactionsRefs {
+    final manager = $$RecurringTransactionsTableTableManager(
+      $_db,
+      $_db.recurringTransactions,
+    ).filter((f) => f.creditCardId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionTableData>>
+  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: 'credit_cards__id__transactions__creditCardId',
+  );
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.creditCardId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$CreditCardsTableFilterComposer
+    extends Composer<_$AppDatabase, $CreditCardsTable> {
+  $$CreditCardsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rewardType => $composableBuilder(
+    column: $table.rewardType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rewardRate => $composableBuilder(
+    column: $table.rewardRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> recurringTransactionsRefs(
+    Expression<bool> Function($$RecurringTransactionsTableFilterComposer f) f,
+  ) {
+    final $$RecurringTransactionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.creditCardId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> transactionsRefs(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.creditCardId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CreditCardsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CreditCardsTable> {
+  $$CreditCardsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rewardType => $composableBuilder(
+    column: $table.rewardType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get rewardRate => $composableBuilder(
+    column: $table.rewardRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CreditCardsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CreditCardsTable> {
+  $$CreditCardsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get rewardType => $composableBuilder(
+    column: $table.rewardType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get rewardRate => $composableBuilder(
+    column: $table.rewardRate,
+    builder: (column) => column,
+  );
+
+  Expression<T> recurringTransactionsRefs<T extends Object>(
+    Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.creditCardId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> transactionsRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.creditCardId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CreditCardsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CreditCardsTable,
+          CreditCardTableData,
+          $$CreditCardsTableFilterComposer,
+          $$CreditCardsTableOrderingComposer,
+          $$CreditCardsTableAnnotationComposer,
+          $$CreditCardsTableCreateCompanionBuilder,
+          $$CreditCardsTableUpdateCompanionBuilder,
+          (CreditCardTableData, $$CreditCardsTableReferences),
+          CreditCardTableData,
+          PrefetchHooks Function({
+            bool recurringTransactionsRefs,
+            bool transactionsRefs,
+          })
+        > {
+  $$CreditCardsTableTableManager(_$AppDatabase db, $CreditCardsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CreditCardsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CreditCardsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CreditCardsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> rewardType = const Value.absent(),
+                Value<double> rewardRate = const Value.absent(),
+              }) => CreditCardsCompanion(
+                id: id,
+                name: name,
+                rewardType: rewardType,
+                rewardRate: rewardRate,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                required String rewardType,
+                required double rewardRate,
+              }) => CreditCardsCompanion.insert(
+                id: id,
+                name: name,
+                rewardType: rewardType,
+                rewardRate: rewardRate,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CreditCardsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({recurringTransactionsRefs = false, transactionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (recurringTransactionsRefs) db.recurringTransactions,
+                    if (transactionsRefs) db.transactions,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (recurringTransactionsRefs)
+                        await $_getPrefetchedData<
+                          CreditCardTableData,
+                          $CreditCardsTable,
+                          RecurringTransactionTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreditCardsTableReferences
+                              ._recurringTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreditCardsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.creditCardId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transactionsRefs)
+                        await $_getPrefetchedData<
+                          CreditCardTableData,
+                          $CreditCardsTable,
+                          TransactionTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreditCardsTableReferences
+                              ._transactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreditCardsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.creditCardId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$CreditCardsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CreditCardsTable,
+      CreditCardTableData,
+      $$CreditCardsTableFilterComposer,
+      $$CreditCardsTableOrderingComposer,
+      $$CreditCardsTableAnnotationComposer,
+      $$CreditCardsTableCreateCompanionBuilder,
+      $$CreditCardsTableUpdateCompanionBuilder,
+      (CreditCardTableData, $$CreditCardsTableReferences),
+      CreditCardTableData,
+      PrefetchHooks Function({
+        bool recurringTransactionsRefs,
+        bool transactionsRefs,
+      })
+    >;
 typedef $$RecurringTransactionsTableCreateCompanionBuilder =
     RecurringTransactionsCompanion Function({
       Value<int> id,
@@ -1868,6 +2688,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       required int interval,
       required String period,
       required String nextDueDate,
+      Value<int?> creditCardId,
     });
 typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
     RecurringTransactionsCompanion Function({
@@ -1880,6 +2701,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<int> interval,
       Value<String> period,
       Value<String> nextDueDate,
+      Value<int?> creditCardId,
     });
 
 final class $$RecurringTransactionsTableReferences
@@ -1906,6 +2728,24 @@ final class $$RecurringTransactionsTableReferences
       $_db.categories,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CreditCardsTable _creditCardIdTable(_$AppDatabase db) => db
+      .creditCards
+      .createAlias('recurring_transactions__creditCardId__credit_cards__id');
+
+  $$CreditCardsTableProcessedTableManager? get creditCardId {
+    final $_column = $_itemColumn<int>('creditCardId');
+    if ($_column == null) return null;
+    final manager = $$CreditCardsTableTableManager(
+      $_db,
+      $_db.creditCards,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_creditCardIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -1994,6 +2834,29 @@ class $$RecurringTransactionsTableFilterComposer
           }) => $$CategoriesTableFilterComposer(
             $db: $db,
             $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CreditCardsTableFilterComposer get creditCardId {
+    final $$CreditCardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableFilterComposer(
+            $db: $db,
+            $table: $db.creditCards,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2100,6 +2963,29 @@ class $$RecurringTransactionsTableOrderingComposer
     );
     return composer;
   }
+
+  $$CreditCardsTableOrderingComposer get creditCardId {
+    final $$CreditCardsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creditCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$RecurringTransactionsTableAnnotationComposer
@@ -2160,6 +3046,29 @@ class $$RecurringTransactionsTableAnnotationComposer
     return composer;
   }
 
+  $$CreditCardsTableAnnotationComposer get creditCardId {
+    final $$CreditCardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creditCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   Expression<T> transactionsRefs<T extends Object>(
     Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
   ) {
@@ -2202,7 +3111,11 @@ class $$RecurringTransactionsTableTableManager
             $$RecurringTransactionsTableReferences,
           ),
           RecurringTransactionTableData,
-          PrefetchHooks Function({bool categoryId, bool transactionsRefs})
+          PrefetchHooks Function({
+            bool categoryId,
+            bool creditCardId,
+            bool transactionsRefs,
+          })
         > {
   $$RecurringTransactionsTableTableManager(
     _$AppDatabase db,
@@ -2237,6 +3150,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<int> interval = const Value.absent(),
                 Value<String> period = const Value.absent(),
                 Value<String> nextDueDate = const Value.absent(),
+                Value<int?> creditCardId = const Value.absent(),
               }) => RecurringTransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -2247,6 +3161,7 @@ class $$RecurringTransactionsTableTableManager
                 interval: interval,
                 period: period,
                 nextDueDate: nextDueDate,
+                creditCardId: creditCardId,
               ),
           createCompanionCallback:
               ({
@@ -2259,6 +3174,7 @@ class $$RecurringTransactionsTableTableManager
                 required int interval,
                 required String period,
                 required String nextDueDate,
+                Value<int?> creditCardId = const Value.absent(),
               }) => RecurringTransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -2269,6 +3185,7 @@ class $$RecurringTransactionsTableTableManager
                 interval: interval,
                 period: period,
                 nextDueDate: nextDueDate,
+                creditCardId: creditCardId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -2279,7 +3196,11 @@ class $$RecurringTransactionsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({categoryId = false, transactionsRefs = false}) {
+              ({
+                categoryId = false,
+                creditCardId = false,
+                transactionsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -2312,6 +3233,21 @@ class $$RecurringTransactionsTableTableManager
                                     referencedColumn:
                                         $$RecurringTransactionsTableReferences
                                             ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (creditCardId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.creditCardId,
+                                    referencedTable:
+                                        $$RecurringTransactionsTableReferences
+                                            ._creditCardIdTable(db),
+                                    referencedColumn:
+                                        $$RecurringTransactionsTableReferences
+                                            ._creditCardIdTable(db)
                                             .id,
                                   )
                                   as T;
@@ -2363,7 +3299,11 @@ typedef $$RecurringTransactionsTableProcessedTableManager =
       $$RecurringTransactionsTableUpdateCompanionBuilder,
       (RecurringTransactionTableData, $$RecurringTransactionsTableReferences),
       RecurringTransactionTableData,
-      PrefetchHooks Function({bool categoryId, bool transactionsRefs})
+      PrefetchHooks Function({
+        bool categoryId,
+        bool creditCardId,
+        bool transactionsRefs,
+      })
     >;
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
@@ -2375,6 +3315,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<String?> note,
       Value<bool> isIncome,
       Value<int?> recurringId,
+      Value<int?> creditCardId,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -2386,6 +3327,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String?> note,
       Value<bool> isIncome,
       Value<int?> recurringId,
+      Value<int?> creditCardId,
     });
 
 final class $$TransactionsTableReferences
@@ -2426,6 +3368,24 @@ final class $$TransactionsTableReferences
       $_db.recurringTransactions,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_recurringIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CreditCardsTable _creditCardIdTable(_$AppDatabase db) => db
+      .creditCards
+      .createAlias('transactions__creditCardId__credit_cards__id');
+
+  $$CreditCardsTableProcessedTableManager? get creditCardId {
+    final $_column = $_itemColumn<int>('creditCardId');
+    if ($_column == null) return null;
+    final manager = $$CreditCardsTableTableManager(
+      $_db,
+      $_db.creditCards,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_creditCardIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -2518,6 +3478,29 @@ class $$TransactionsTableFilterComposer
         );
     return composer;
   }
+
+  $$CreditCardsTableFilterComposer get creditCardId {
+    final $$CreditCardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableFilterComposer(
+            $db: $db,
+            $table: $db.creditCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionsTableOrderingComposer
@@ -2605,6 +3588,29 @@ class $$TransactionsTableOrderingComposer
         );
     return composer;
   }
+
+  $$CreditCardsTableOrderingComposer get creditCardId {
+    final $$CreditCardsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creditCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionsTableAnnotationComposer
@@ -2680,6 +3686,29 @@ class $$TransactionsTableAnnotationComposer
         );
     return composer;
   }
+
+  $$CreditCardsTableAnnotationComposer get creditCardId {
+    final $$CreditCardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.creditCardId,
+      referencedTable: $db.creditCards,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreditCardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creditCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -2695,7 +3724,11 @@ class $$TransactionsTableTableManager
           $$TransactionsTableUpdateCompanionBuilder,
           (TransactionTableData, $$TransactionsTableReferences),
           TransactionTableData,
-          PrefetchHooks Function({bool categoryId, bool recurringId})
+          PrefetchHooks Function({
+            bool categoryId,
+            bool recurringId,
+            bool creditCardId,
+          })
         > {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
     : super(
@@ -2718,6 +3751,7 @@ class $$TransactionsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
+                Value<int?> creditCardId = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -2727,6 +3761,7 @@ class $$TransactionsTableTableManager
                 note: note,
                 isIncome: isIncome,
                 recurringId: recurringId,
+                creditCardId: creditCardId,
               ),
           createCompanionCallback:
               ({
@@ -2738,6 +3773,7 @@ class $$TransactionsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
+                Value<int?> creditCardId = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -2747,6 +3783,7 @@ class $$TransactionsTableTableManager
                 note: note,
                 isIncome: isIncome,
                 recurringId: recurringId,
+                creditCardId: creditCardId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -2756,60 +3793,84 @@ class $$TransactionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false, recurringId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-                    if (recurringId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.recurringId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._recurringIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._recurringIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                categoryId = false,
+                recurringId = false,
+                creditCardId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (recurringId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.recurringId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._recurringIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._recurringIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (creditCardId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.creditCardId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._creditCardIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._creditCardIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -2826,7 +3887,11 @@ typedef $$TransactionsTableProcessedTableManager =
       $$TransactionsTableUpdateCompanionBuilder,
       (TransactionTableData, $$TransactionsTableReferences),
       TransactionTableData,
-      PrefetchHooks Function({bool categoryId, bool recurringId})
+      PrefetchHooks Function({
+        bool categoryId,
+        bool recurringId,
+        bool creditCardId,
+      })
     >;
 
 class $AppDatabaseManager {
@@ -2834,6 +3899,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$CategoriesTableTableManager get categories =>
       $$CategoriesTableTableManager(_db, _db.categories);
+  $$CreditCardsTableTableManager get creditCards =>
+      $$CreditCardsTableTableManager(_db, _db.creditCards);
   $$RecurringTransactionsTableTableManager get recurringTransactions =>
       $$RecurringTransactionsTableTableManager(_db, _db.recurringTransactions);
   $$TransactionsTableTableManager get transactions =>

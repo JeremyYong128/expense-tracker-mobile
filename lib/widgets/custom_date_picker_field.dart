@@ -122,9 +122,7 @@ class CustomDatePickerField extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         const SizedBox(height: 8.0),
-        SizedBox(
-          height: 60.0,
-          child: InkWell(
+        InkWell(
             onTap: () => _showPicker(context),
             borderRadius: BorderRadius.circular(12.0),
             child: InputDecorator(
@@ -147,7 +145,6 @@ class CustomDatePickerField extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ],
     );
   }

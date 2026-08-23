@@ -27,6 +27,15 @@ class Transactions extends Table {
   TextColumn get note => text().nullable()();
   BoolColumn get isIncome => boolean().named('isIncome').withDefault(const Constant(false))();
   IntColumn get recurringId => integer().named('recurringId').nullable().customConstraint('REFERENCES recurring_transactions(id) ON DELETE SET NULL')();
+  IntColumn get creditCardId => integer().named('creditCardId').nullable().customConstraint('REFERENCES credit_cards(id) ON DELETE SET NULL')();
+}
+
+@DataClassName('CreditCardTableData')
+class CreditCards extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get rewardType => text().named('rewardType')();
+  RealColumn get rewardRate => real().named('rewardRate')();
 }
 
 @DataClassName('RecurringTransactionTableData')
@@ -40,6 +49,7 @@ class RecurringTransactions extends Table {
   IntColumn get interval => integer()();
   TextColumn get period => text()();
   TextColumn get nextDueDate => text().named('nextDueDate')();
+  IntColumn get creditCardId => integer().named('creditCardId').nullable().customConstraint('REFERENCES credit_cards(id) ON DELETE SET NULL')();
 }
 
 LazyDatabase _openConnection() {
@@ -56,12 +66,12 @@ LazyDatabase _openConnection() {
   });
 }
 
-@DriftDatabase(tables: [Categories, Transactions, RecurringTransactions])
+@DriftDatabase(tables: [Categories, Transactions, RecurringTransactions, CreditCards])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -75,6 +85,15 @@ class AppDatabase extends _$AppDatabase {
         await into(categories).insert(CategoriesCompanion.insert(name: 'Bills', colorHex: const Value('#F44336')));
         await into(categories).insert(CategoriesCompanion.insert(name: 'Entertainment', colorHex: const Value('#9C27B0')));
         await into(categories).insert(CategoriesCompanion.insert(name: 'Transport', colorHex: const Value('#2196F3')));
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.createTable(creditCards);
+          await m.addColumn(transactions, transactions.creditCardId);
+        }
+        if (from < 3) {
+          await m.addColumn(recurringTransactions, recurringTransactions.creditCardId);
+        }
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');

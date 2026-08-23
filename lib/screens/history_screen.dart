@@ -54,10 +54,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final sortedTransactions = List<Transaction>.from(_transactions)
       ..sort((a, b) => b.date.compareTo(a.date));
 
-    return ListView.builder(
-      padding: AppStyles.screenPadding,
-      itemCount: sortedTransactions.length,
-      itemBuilder: (context, index) {
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(title: Text('History'.cased(context))),
+      body: ListView.builder(
+        padding: AppStyles.screenPadding,
+        itemCount: sortedTransactions.length,
+        itemBuilder: (context, index) {
         final transaction = sortedTransactions[index];
         final category = _getCategory(transaction.categoryId);
         final color = category.color;
@@ -214,6 +219,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ],
         );
       },
+    ),
+    ),
     );
   }
 }

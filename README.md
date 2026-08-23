@@ -96,8 +96,20 @@ flutter run
 
 ## Dev tracking
 - For pending approvals, redesign modal.
-- Change theme colours, possibly add a setting to set custom themes.
+- Custom date and time pickers and credit card drop down to match other modals
 - Tag expenses to cards, with tracking for benefits (cashback, miles)
+    - Out of scope: Category-specific multipliers (only flat rate supported).
+    - Out of scope: Sign-up bonuses or caps.
+    - Out of scope: Custom statement periods (tracking is by calendar month).
+    - Out of scope: Historical rate changes (rewards use current rate).
+- Bugs:
+    - User gets stuck in notes when filling up the form. Keyboard can't close.
+    - Form validation
+- Organise code better
+- Credit cards
+    - Improve design of credit card reward section on dashboard and credit card screen
+    - Need some indication in the history and recurring cards when an expense is tagged with a credit card
+    - Should a user add a credit card from just the cc screen or from the drop down too?
 
 - Possible changes to consider:
     - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?

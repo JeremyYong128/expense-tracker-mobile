@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/category.dart';
+import '../models/credit_card.dart';
 import '../services/data_service.dart';
 import '../utils/category_appearance.dart';
 import '../utils/string_extensions.dart';
@@ -23,6 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Map<Category, double> _topCategories = {};
   List<Category> _categories = [];
+  Map<CreditCard, double> _monthlyRewards = {};
 
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
@@ -106,6 +108,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
       topCatMap[category] = entry.value;
     }
 
+    final creditCards = await DataService.getCreditCards();
+    Map<CreditCard, double> rewardsMap = {};
+    
+    // Group spending by credit card ID for current month
+    Map<int, double> cardSpending = {};
+    for (var tx in currentMonthTransactions) {
+      if (!tx.isIncome && tx.creditCardId != null) {
+        cardSpending[tx.creditCardId!] = (cardSpending[tx.creditCardId!] ?? 0) + tx.amount;
+      }
+    }
+
+    for (var card in creditCards) {
+      if (cardSpending.containsKey(card.id)) {
+        double spent = cardSpending[card.id]!;
+        if (card.rewardType == 'Cashback') {
+          rewardsMap[card] = ((spent * (card.rewardRate / 100)) * 100).floorToDouble() / 100;
+        } else {
+          rewardsMap[card] = ((spent * card.rewardRate) * 100).floorToDouble() / 100;
+        }
+      }
+    }
+
     if (mounted) {
       setState(() {
         _totalIncome = income;
@@ -113,6 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _incomePercentageChange = incomePercentageChange;
         _expensePercentageChange = expensePercentageChange;
         _topCategories = topCatMap;
+        _monthlyRewards = rewardsMap;
         _isLoading = false;
       });
     }
@@ -134,9 +159,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SingleChildScrollView(
-      padding: AppStyles.screenPadding,
-      child: Column(
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(title: Text('Home'.cased(context))),
+      body: SingleChildScrollView(
+        padding: AppStyles.screenPadding,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -266,7 +296,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }),
             const SizedBox(height: 24),
           ],
+
+          // REWARDS SECTION
+          if (_monthlyRewards.isNotEmpty) ...[
+            Text(
+              'Rewards Earned'.cased(context),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ..._monthlyRewards.entries.map((entry) {
+              final card = entry.key;
+              final reward = entry.value;
+              final isCashback = card.rewardType == 'Cashback';
+              final rewardText = isCashback
+                  ? '\$${reward.toStringAsFixed(2)}'
+                  : NumberFormat.decimalPattern().format(reward.toInt());
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.stars, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            card.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '+$rewardText ${card.rewardType}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.income,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 24),
+          ],
         ],
+      ),
+      ),
       ),
     );
   }

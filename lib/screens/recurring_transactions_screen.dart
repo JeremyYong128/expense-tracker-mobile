@@ -9,7 +9,9 @@ import '../utils/string_extensions.dart';
 import '../widgets/edit_transaction_modal.dart';
 
 class RecurringTransactionsScreen extends StatefulWidget {
-  const RecurringTransactionsScreen({super.key});
+  final bool showAppBar;
+  
+  const RecurringTransactionsScreen({super.key, this.showAppBar = false});
 
   @override
   State<RecurringTransactionsScreen> createState() =>
@@ -40,7 +42,15 @@ class _RecurringTransactionsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Scaffold(
+        appBar: widget.showAppBar 
+          ? AppBar(
+              title: Text('Recurring Transactions'.cased(context)),
+            ) 
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _recurringTransactions.isEmpty
@@ -202,6 +212,7 @@ class _RecurringTransactionsScreenState
               );
             },
             ),
+      ),
     );
   }
 }
