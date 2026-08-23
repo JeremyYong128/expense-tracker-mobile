@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/credit_card.dart';
-import '../services/data_service.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
-import 'credit_card_details_screen.dart';
-import '../widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/screens/credit_card_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class CreditCardsScreen extends StatefulWidget {
   const CreditCardsScreen({super.key});
@@ -14,8 +15,7 @@ class CreditCardsScreen extends StatefulWidget {
 }
 
 class _CreditCardsScreenState extends State<CreditCardsScreen> {
-  List<CreditCard> _creditCards = [];
-  bool _isLoading = true;
+  late Future<List<CreditCard>> _creditCardsFuture;
 
   @override
   void initState() {
@@ -23,23 +23,16 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
-    final cards = await DataService.getCreditCards();
+  void _loadData() {
     setState(() {
-      _creditCards = cards;
-      _isLoading = false;
+      _creditCardsFuture = DataService.getCreditCards();
     });
   }
 
   void _showAddEditDialog([CreditCard? card]) {
-    showModalBottomSheet(
+    SlideUpModal.showCustom(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CreditCardModal(
-        card: card,
-        onSaved: _loadData,
-      ),
+      builder: (context) => CreditCardModal(card: card, onSaved: _loadData),
     );
   }
 
@@ -97,20 +90,36 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
             ),
           ],
         ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _creditCards.isEmpty
-          ? Center(
-              child: Text(
-                'No credit cards added.'.cased(context),
-                style: const TextStyle(color: AppColors.grey, fontSize: 16),
-              ),
-            )
-          : ListView.builder(
+        body: FutureBuilder<List<CreditCard>>(
+          future: _creditCardsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: AppColors.expense),
+                ),
+              );
+            }
+
+            final creditCards = snapshot.data!;
+            if (creditCards.isEmpty) {
+              return Center(
+                child: Text(
+                  'No credit cards added.'.cased(context),
+                  style: const TextStyle(color: AppColors.grey, fontSize: 16),
+                ),
+              );
+            }
+
+            return ListView.builder(
               padding: const EdgeInsets.all(12),
-              itemCount: _creditCards.length,
+              itemCount: creditCards.length,
               itemBuilder: (context, index) {
-                final card = _creditCards[index];
+                final card = creditCards[index];
                 return Card(
                   color: AppColors.surface,
                   elevation: 0,
@@ -127,7 +136,9 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                           builder: (context) =>
                               CreditCardDetailsScreen(creditCard: card),
                         ),
-                      );
+                      ).then(
+                        (_) => _loadData(),
+                      ); // Refresh if any transactions changed (though they might not change here)
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Padding(
@@ -191,7 +202,9 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                   ),
                 );
               },
-            ),
+            );
+          },
+        ),
       ),
     );
   }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../models/transaction.dart' as t;
-import '../models/recurring_transaction.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart' as t;
+import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 
-import '../utils/string_extensions.dart';
-import '../services/data_service.dart';
-import '../widgets/transaction_form.dart';
-import '../widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class EditTransactionModal extends StatefulWidget {
   final t.Transaction? transaction;
@@ -26,7 +26,8 @@ class EditTransactionModal extends StatefulWidget {
 }
 
 class _EditTransactionModalState extends State<EditTransactionModal> {
-  final GlobalKey<TransactionFormState> _formKey = GlobalKey<TransactionFormState>();
+  final GlobalKey<TransactionFormState> _formKey =
+      GlobalKey<TransactionFormState>();
 
   @override
   void initState() {
@@ -38,56 +39,42 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
     super.dispose();
   }
 
-  void _saveTransaction(TransactionFormData data) async {
-    try {
-      final isRec = widget.recurringTransaction != null;
+  Future<void> _saveTransaction(TransactionFormData data) async {
+    final isRec = widget.recurringTransaction != null;
 
-      if (isRec) {
-        final nextDueDate = DataService.calculateNextDueDate(
-          data.date,
-          data.recurringInterval,
-          data.recurringPeriod,
-        );
+    if (isRec) {
+      final nextDueDate = DataService.calculateNextDueDate(
+        data.date,
+        data.recurringInterval,
+        data.recurringPeriod,
+      );
 
-        final updated = widget.recurringTransaction!.copyWith(
-          amount: data.amount,
-          title: data.title,
-          categoryId: data.categoryId,
-          isIncome: data.isIncome,
-          interval: data.recurringInterval,
-          period: data.recurringPeriod,
-          nextDueDate: nextDueDate,
-          note: data.note,
-          creditCardId: data.creditCardId,
-        );
-        await DataService.updateRecurringTransaction(updated);
-      } else {
-        final updated = widget.transaction!.copyWith(
-          amount: data.amount,
-          title: data.title,
-          categoryId: data.categoryId,
-          date: data.date,
-          isIncome: data.isIncome,
-          note: data.note,
-          creditCardId: data.creditCardId,
-        );
-        await DataService.updateTransaction(updated);
-      }
-
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text(
-              e.toString().replaceAll('Exception: ', ''),
-            ),
-            backgroundColor: AppColors.expense,
-          ),
-        );
-      }
+      final updated = widget.recurringTransaction!.copyWith(
+        amount: data.amount,
+        title: data.title,
+        categoryId: data.categoryId,
+        isIncome: data.isIncome,
+        interval: data.recurringInterval,
+        period: data.recurringPeriod,
+        nextDueDate: nextDueDate,
+        note: data.note,
+        creditCardId: data.creditCardId,
+      );
+      await DataService.updateRecurringTransaction(updated);
+    } else {
+      final updated = widget.transaction!.copyWith(
+        amount: data.amount,
+        title: data.title,
+        categoryId: data.categoryId,
+        date: data.date,
+        isIncome: data.isIncome,
+        note: data.note,
+        creditCardId: data.creditCardId,
+      );
+      await DataService.updateTransaction(updated);
     }
+
+    if (mounted) Navigator.of(context).pop();
   }
 
   void _deleteTransaction() async {
@@ -111,7 +98,6 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

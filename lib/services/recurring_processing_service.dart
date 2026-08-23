@@ -1,5 +1,5 @@
-import '../models/transaction.dart';
-import 'data_service.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
 
 class RecurringProcessingService {
   /// Fetches all recurring transactions whose nextDueDate has passed

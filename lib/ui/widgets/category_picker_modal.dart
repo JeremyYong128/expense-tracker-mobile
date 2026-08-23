@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'slide_up_modal.dart';
-import '../theme/app_theme.dart';
-import '../models/category.dart';
-import '../utils/string_extensions.dart';
-import '../utils/category_appearance.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 
 class CategoryDropdown extends StatelessWidget {
   final String label;
@@ -138,36 +137,36 @@ class CategoryDropdown extends StatelessWidget {
           const SizedBox(height: 8.0),
         ],
         InkWell(
-            onTap: () => _showPicker(context),
-            borderRadius: BorderRadius.circular(12.0),
-            child: InputDecorator(
-              decoration: _getInputDecoration(),
-              child: Row(
-                children: [
-                  if (selectedItem != null) ...[
-                    Icon(
-                      selectedItem!.iconData,
-                      color: selectedItem!.color,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8.0),
-                  ],
-                  Expanded(
-                    child: Text(
-                      selectedItem?.name ?? hintText ?? '',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: selectedItem != null
-                            ? AppColors.textPrimary
-                            : AppColors.grey,
-                      ),
+          onTap: () => _showPicker(context),
+          borderRadius: BorderRadius.circular(12.0),
+          child: InputDecorator(
+            decoration: _getInputDecoration(),
+            child: Row(
+              children: [
+                if (selectedItem != null) ...[
+                  Icon(
+                    selectedItem!.iconData,
+                    color: selectedItem!.color,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8.0),
+                ],
+                Expanded(
+                  child: Text(
+                    selectedItem?.name ?? hintText ?? '',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: selectedItem != null
+                          ? AppColors.textPrimary
+                          : AppColors.grey,
                     ),
                   ),
-                  const Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                ],
-              ),
+                ),
+                const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+              ],
             ),
           ),
+        ),
       ],
     );
   }

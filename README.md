@@ -105,6 +105,7 @@ flutter run
 - Bugs:
     - User gets stuck in notes when filling up the form. Keyboard can't close.
     - Form validation
+    - Pressing on the manage tab, when already on the manage tab, should bring the user back to the main manage screen if not already there.
 - Organise code better
 - Credit cards
     - Improve design of credit card reward section on dashboard and credit card screen

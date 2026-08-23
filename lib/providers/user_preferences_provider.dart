@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferencesProvider extends ChangeNotifier {
-  late SharedPreferences _prefs;
+  final SharedPreferences _prefs;
   
   bool _isLowerCaps = true;
   bool _useUsEnglish = false;

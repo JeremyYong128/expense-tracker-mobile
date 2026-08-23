@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/credit_card.dart';
-import '../models/transaction.dart';
-import '../models/category.dart';
-import '../services/data_service.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
-import '../utils/category_appearance.dart';
+import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 
 class CreditCardDetailsScreen extends StatefulWidget {
   final CreditCard creditCard;

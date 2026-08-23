@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart' as drift;
-import '../models/transaction.dart';
-import '../models/recurring_transaction.dart';
-import '../models/category.dart';
-import '../models/credit_card.dart';
-import '../database/drift_database.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart';
+import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/database/drift_database.dart';
 
 class DataService {
   static final AppDatabase _db = AppDatabase();
@@ -313,4 +313,162 @@ class DataService {
         return date.add(Duration(days: interval));
     }
   }
+
+  static Future<DashboardStats> getDashboardStats(DateTime currentMonth) async {
+    final allTransactions = await getTransactions();
+    final categories = await getCategories();
+
+    // Filter to current month
+    final currentMonthTransactions = allTransactions
+        .where(
+          (t) =>
+              t.date.year == currentMonth.year &&
+              t.date.month == currentMonth.month,
+        )
+        .toList();
+
+    // Filter to past month
+    final pastMonth = DateTime(currentMonth.year, currentMonth.month - 1);
+    final pastMonthTransactions = allTransactions
+        .where(
+          (t) =>
+              t.date.year == pastMonth.year && t.date.month == pastMonth.month,
+        )
+        .toList();
+
+    double income = 0;
+    double expense = 0;
+    Map<int, double> categorySpending = {};
+
+    for (var tx in currentMonthTransactions) {
+      if (tx.isIncome) {
+        income += tx.amount;
+      } else {
+        expense += tx.amount;
+        categorySpending[tx.categoryId] =
+            (categorySpending[tx.categoryId] ?? 0) + tx.amount;
+      }
+    }
+
+    double pastIncome = 0;
+    double pastExpense = 0;
+    for (var tx in pastMonthTransactions) {
+      if (tx.isIncome) {
+        pastIncome += tx.amount;
+      } else {
+        pastExpense += tx.amount;
+      }
+    }
+
+    double? incomePercentageChange;
+    if (pastIncome == 0) {
+      if (income > 0) incomePercentageChange = 100.0;
+    } else {
+      incomePercentageChange = ((income - pastIncome) / pastIncome) * 100;
+    }
+
+    double? expensePercentageChange;
+    if (pastExpense == 0) {
+      if (expense > 0) expensePercentageChange = 100.0;
+    } else {
+      expensePercentageChange = ((expense - pastExpense) / pastExpense) * 100;
+    }
+
+    // Sort category spending to get top ones
+    final sortedCategories = categorySpending.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Map to Category objects (take top 4)
+    Map<Category, double> topCatMap = {};
+    for (var entry in sortedCategories.take(4)) {
+      final category = categories.firstWhere(
+        (c) => c.id == entry.key,
+        orElse: () => Category(id: -1, name: 'Unknown', isActive: false),
+      );
+      topCatMap[category] = entry.value;
+    }
+
+    final creditCards = await getCreditCards();
+    Map<CreditCard, double> rewardsMap = {};
+
+    // Group spending by credit card ID for current month
+    Map<int, double> cardSpending = {};
+    for (var tx in currentMonthTransactions) {
+      if (!tx.isIncome && tx.creditCardId != null) {
+        cardSpending[tx.creditCardId!] =
+            (cardSpending[tx.creditCardId!] ?? 0) + tx.amount;
+      }
+    }
+
+    for (var card in creditCards) {
+      if (cardSpending.containsKey(card.id)) {
+        double spent = cardSpending[card.id]!;
+        if (card.rewardType == 'Cashback') {
+          rewardsMap[card] =
+              ((spent * (card.rewardRate / 100)) * 100).floorToDouble() / 100;
+        } else {
+          rewardsMap[card] =
+              ((spent * card.rewardRate) * 100).floorToDouble() / 100;
+        }
+      }
+    }
+
+    return DashboardStats(
+      totalIncome: income,
+      totalExpense: expense,
+      incomePercentageChange: incomePercentageChange,
+      expensePercentageChange: expensePercentageChange,
+      topCategories: topCatMap,
+      monthlyRewards: rewardsMap,
+    );
+  }
+
+  static Future<HistoryStats> getHistoryStats() async {
+    final transactions = await getTransactions();
+    final categories = await getCategories();
+
+    transactions.sort((a, b) => b.date.compareTo(a.date));
+
+    final Map<DateTime, List<Transaction>> grouped = {};
+    for (var tx in transactions) {
+      final date = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      if (!grouped.containsKey(date)) {
+        grouped[date] = [];
+      }
+      grouped[date]!.add(tx);
+    }
+
+    return HistoryStats(
+      groupedTransactions: grouped,
+      categories: categories,
+    );
+  }
+}
+
+class DashboardStats {
+  final double totalIncome;
+  final double totalExpense;
+  final double? incomePercentageChange;
+  final double? expensePercentageChange;
+  final Map<Category, double> topCategories;
+  final Map<CreditCard, double> monthlyRewards;
+
+  DashboardStats({
+    required this.totalIncome,
+    required this.totalExpense,
+    this.incomePercentageChange,
+    this.expensePercentageChange,
+    required this.topCategories,
+    required this.monthlyRewards,
+  });
+}
+
+class HistoryStats {
+  final Map<DateTime, List<Transaction>> groupedTransactions;
+  final List<Category> categories;
+
+  HistoryStats({
+    required this.groupedTransactions,
+    required this.categories,
+  });
 }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:flutter/cupertino.dart';
-import '../theme/app_theme.dart';
-import '../models/category.dart';
-import '../utils/string_extensions.dart';
-import '../services/data_service.dart';
-import '../utils/category_appearance.dart';
-import 'category_appearance_picker.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/utils/category_appearance.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_appearance_picker_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
 
 class EditCategoriesModal extends StatefulWidget {
   final List<Category> initialCategories;
@@ -33,17 +34,19 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
   final TextEditingController _editController = TextEditingController();
 
   String _newCategoryIcon = 'category';
+
   String _newCategoryColorHex = '#9E9E9E';
+  
+  String? _formError;
+  final _addFormKey = GlobalKey<FormState>();
 
   void _showAppearancePicker({
     required String initialIcon,
     required String initialColorHex,
     required Function(String, String) onSave,
   }) {
-    showModalBottomSheet(
+    SlideUpModal.showCustom(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => CategoryAppearancePicker(
         initialIcon: initialIcon,
         initialColorHex: initialColorHex,
@@ -66,9 +69,12 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
   }
 
   Future<void> _addCategory() async {
+    setState(() => _formError = null);
+    if (!_addFormKey.currentState!.validate()) return;
+
     final text = _addController.text.trim();
-    if (text.isNotEmpty &&
-        !_categories.any((c) => c.name.toLowerCase() == text.toLowerCase())) {
+    
+    try {
       final newCategory = Category(
         name: text,
         iconString: _newCategoryIcon,
@@ -90,6 +96,12 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
       });
       _addController.clear();
       widget.onCategoriesUpdated(_categories);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.toString().replaceAll('Exception: ', '');
+        });
+      }
     }
   }
 
@@ -122,18 +134,28 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
 
     if (confirm != true) return;
 
-    final category = _categories[index];
-    if (category.id != null) {
-      await DataService.deleteCategory(category.id!);
-    }
-
-    setState(() {
-      _categories.removeAt(index);
-      if (_editingIndex == index) {
-        _editingIndex = null;
+    setState(() => _formError = null);
+    
+    try {
+      final category = _categories[index];
+      if (category.id != null) {
+        await DataService.deleteCategory(category.id!);
       }
-    });
-    widget.onCategoriesUpdated(_categories);
+
+      setState(() {
+        _categories.removeAt(index);
+        if (_editingIndex == index) {
+          _editingIndex = null;
+        }
+      });
+      widget.onCategoriesUpdated(_categories);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
   }
 
   void _startEditing(int index) {
@@ -200,46 +222,55 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
       return;
     }
 
-    if (option == 1) {
-      final updatedCategory = Category(
-        id: existing.id,
-        name: text,
-        colorHex: existing.colorHex,
-        iconString: existing.iconString,
-      );
-      final newId = await DataService.updateCategory(updatedCategory);
-      setState(() {
-        _categories[index] = Category(
-          id: newId,
-          name: updatedCategory.name,
-          colorHex: updatedCategory.colorHex,
-          iconString: updatedCategory.iconString,
-          isActive: updatedCategory.isActive,
-        );
-        _editingIndex = null;
-      });
-    } else if (option == 2) {
-      if (existing.id != null) {
-        await DataService.deleteCategory(existing.id!);
-      }
-      final newCategory = Category(
-        name: text,
-        colorHex: existing.colorHex,
-        iconString: existing.iconString,
-      );
-      final newId = await DataService.addCategory(newCategory);
-      setState(() {
-        _categories[index] = Category(
-          id: newId,
+    setState(() => _formError = null);
+    
+    try {
+      if (option == 1) {
+        final updatedCategory = Category(
+          id: existing.id,
           name: text,
           colorHex: existing.colorHex,
           iconString: existing.iconString,
         );
-        _editingIndex = null;
-      });
+        final newId = await DataService.updateCategory(updatedCategory);
+        setState(() {
+          _categories[index] = Category(
+            id: newId,
+            name: updatedCategory.name,
+            colorHex: updatedCategory.colorHex,
+            iconString: updatedCategory.iconString,
+            isActive: updatedCategory.isActive,
+          );
+          _editingIndex = null;
+        });
+      } else if (option == 2) {
+        if (existing.id != null) {
+          await DataService.deleteCategory(existing.id!);
+        }
+        final newCategory = Category(
+          name: text,
+          colorHex: existing.colorHex,
+          iconString: existing.iconString,
+        );
+        final newId = await DataService.addCategory(newCategory);
+        setState(() {
+          _categories[index] = Category(
+            id: newId,
+            name: text,
+            colorHex: existing.colorHex,
+            iconString: existing.iconString,
+          );
+          _editingIndex = null;
+        });
+      }
+      widget.onCategoriesUpdated(_categories);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.toString().replaceAll('Exception: ', '');
+        });
+      }
     }
-
-    widget.onCategoriesUpdated(_categories);
   }
 
   @override
@@ -249,10 +280,23 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
       heightFraction: 0.7,
       child: Column(
         children: [
+          if (_formError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Text(
+                _formError!,
+                style: const TextStyle(
+                  color: AppColors.expense,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           // Add New Category Row
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
-            child: Row(
+            child: Form(
+              key: _addFormKey,
+              child: Row(
               children: [
                 GestureDetector(
                   onTap: () {
@@ -286,22 +330,35 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                 ),
                 const SizedBox(width: 12.0),
                 Expanded(
-                  child: TextField(
-                    controller: _addController,
-                    decoration: InputDecoration(
-                      hintText: 'Add new category...'.cased(context),
-                      hintStyle: const TextStyle(color: AppColors.grey),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
+                  child: CustomValidatedField(
+                    padding: EdgeInsets.zero,
+                    validator: () {
+                      final text = _addController.text.trim();
+                      if (text.isEmpty) {
+                        return 'Category name is required';
+                      }
+                      if (_categories.any((c) => c.name.toLowerCase() == text.toLowerCase())) {
+                        return 'Category already exists';
+                      }
+                      return null;
+                    },
+                    child: TextField(
+                      controller: _addController,
+                      decoration: InputDecoration(
+                        hintText: 'Add new category...'.cased(context),
+                        hintStyle: const TextStyle(color: AppColors.grey),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
+                      onSubmitted: (_) => _addCategory(),
                     ),
-                    onSubmitted: (_) => _addCategory(),
                   ),
                 ),
                 const SizedBox(width: 12.0),
@@ -318,6 +375,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                   ),
                 ),
               ],
+            ),
             ),
           ),
 
@@ -339,9 +397,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                       final isEditing = _editingIndex == index;
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 6.0,
-                        ),
+                        margin: const EdgeInsets.symmetric(vertical: 6.0),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
@@ -411,14 +467,27 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                                 ),
                                 Expanded(
                                   child: isEditing
-                                      ? TextField(
-                                          controller: _editController,
-                                          autofocus: true,
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            border: InputBorder.none,
+                                      ? CustomValidatedField(
+                                          padding: EdgeInsets.zero,
+                                          validator: () {
+                                            final text = _editController.text.trim();
+                                            if (text.isEmpty) {
+                                              return 'Name is required';
+                                            }
+                                            if (_categories.any((c) => c.name.toLowerCase() == text.toLowerCase() && _categories.indexOf(c) != index)) {
+                                              return 'Category already exists';
+                                            }
+                                            return null;
+                                          },
+                                          child: TextField(
+                                            controller: _editController,
+                                            autofocus: true,
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              border: InputBorder.none,
+                                            ),
+                                            onSubmitted: (_) => _saveEdit(index),
                                           ),
-                                          onSubmitted: (_) => _saveEdit(index),
                                         )
                                       : GestureDetector(
                                           behavior: HitTestBehavior.opaque,

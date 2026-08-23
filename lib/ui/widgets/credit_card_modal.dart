@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/credit_card.dart';
-import '../services/data_service.dart';
-import '../utils/string_extensions.dart';
-import '../utils/validators.dart';
-import '../widgets/custom_validated_field.dart';
-import '../theme/app_theme.dart';
-import 'slide_up_modal.dart';
+import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/validators.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class CreditCardModal extends StatefulWidget {
   final CreditCard? card;
@@ -21,6 +21,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
   late TextEditingController _nameController;
   late TextEditingController _rateController;
   late String _rewardType;
+  String? _formError;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -44,6 +45,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
   }
 
   void _saveCreditCard() async {
+    setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     try {
@@ -71,13 +73,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: AppColors.expense,
-          ),
-        );
+        setState(() {
+          _formError = e.toString().replaceAll('Exception: ', '');
+        });
       }
     }
   }
@@ -96,6 +94,17 @@ class _CreditCardModalState extends State<CreditCardModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (_formError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    _formError!,
+                    style: const TextStyle(
+                      color: AppColors.expense,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
               CustomValidatedField(
                 label: 'Card Name'.cased(context),
                 validator: () {
@@ -107,17 +116,23 @@ class _CreditCardModalState extends State<CreditCardModal> {
                 },
                 child: TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Card Name'.cased(context)),
+                  decoration: InputDecoration(
+                    labelText: 'Card Name'.cased(context),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _rewardType,
-                decoration: InputDecoration(labelText: 'Reward Type'.cased(context)),
+                decoration: InputDecoration(
+                  labelText: 'Reward Type'.cased(context),
+                ),
                 items: ['Cashback', 'Miles', 'Points']
                     .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type.cased(context))),
+                      (type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type.cased(context)),
+                      ),
                     )
                     .toList(),
                 onChanged: (value) {

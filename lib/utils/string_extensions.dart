@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
 const Map<String, String> _ukToUsDictionary = {
   'colour': 'color',

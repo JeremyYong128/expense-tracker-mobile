@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class CustomDatePickerField extends StatelessWidget {
   final String label;
@@ -123,28 +123,28 @@ class CustomDatePickerField extends StatelessWidget {
         ),
         const SizedBox(height: 8.0),
         InkWell(
-            onTap: () => _showPicker(context),
-            borderRadius: BorderRadius.circular(12.0),
-            child: InputDecorator(
-              decoration: _getInputDecoration(),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today, color: AppColors.primary),
-                  const SizedBox(width: 8.0),
-                  Expanded(
-                    child: Text(
-                      DateFormat.yMMMd().format(selectedDate).cased(context),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: AppColors.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+          onTap: () => _showPicker(context),
+          borderRadius: BorderRadius.circular(12.0),
+          child: InputDecorator(
+            decoration: _getInputDecoration(),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today, color: AppColors.primary),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    DateFormat.yMMMd().format(selectedDate).cased(context),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
       ],
     );
   }
@@ -176,5 +176,6 @@ class _LowercaseCupertinoLocalizationsDelegate
   }
 
   @override
-  bool shouldReload(covariant _LowercaseCupertinoLocalizationsDelegate old) => old.context != context;
+  bool shouldReload(covariant _LowercaseCupertinoLocalizationsDelegate old) =>
+      old.context != context;
 }

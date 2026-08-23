@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class TransactionTypeToggle extends StatelessWidget {
   final bool isIncome;

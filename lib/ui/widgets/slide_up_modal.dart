@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class SlideUpModal extends StatelessWidget {
   final String? title;
@@ -13,7 +13,7 @@ class SlideUpModal extends StatelessWidget {
   final double heightFraction;
 
   const SlideUpModal({
-    Key? key,
+    super.key,
     this.title,
     this.leftButtonTitle,
     this.onLeftButtonPressed,
@@ -21,7 +21,7 @@ class SlideUpModal extends StatelessWidget {
     this.onRightButtonPressed,
     required this.child,
     this.heightFraction = 0.75,
-  }) : super(key: key);
+  });
 
   static Future<T?> show<T>({
     required BuildContext context,
@@ -33,10 +33,8 @@ class SlideUpModal extends StatelessWidget {
     required Widget child,
     double heightFraction = 0.75,
   }) {
-    return showModalBottomSheet<T>(
+    return showCustom<T>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => SlideUpModal(
         title: title,
         leftButtonTitle: leftButtonTitle,
@@ -46,6 +44,18 @@ class SlideUpModal extends StatelessWidget {
         heightFraction: heightFraction,
         child: child,
       ),
+    );
+  }
+
+  static Future<T?> showCustom<T>({
+    required BuildContext context,
+    required WidgetBuilder builder,
+  }) {
+    return showModalBottomSheet<T>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: builder,
     );
   }
 
@@ -61,10 +71,15 @@ class SlideUpModal extends StatelessWidget {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24.0),
+              ),
               border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Row(
@@ -90,9 +105,7 @@ class SlideUpModal extends StatelessWidget {
                     onPressed: onLeftButtonPressed,
                     child: Text(
                       (leftButtonTitle ?? '').cased(context),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.normal),
                     ),
                   ),
                   CupertinoButton(
@@ -100,25 +113,20 @@ class SlideUpModal extends StatelessWidget {
                     onPressed: onRightButtonPressed,
                     child: Text(
                       (rightButtonTitle ?? '').cased(context),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: SafeArea(
               bottom: true,
               top: false,
-              child: Padding(
-                padding: AppStyles.modalPadding,
-                child: child,
-              ),
+              child: Padding(padding: AppStyles.modalPadding, child: child),
             ),
           ),
         ],

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import '../models/transaction.dart' as t;
-import '../models/recurring_transaction.dart';
-import '../models/category.dart';
-import '../models/credit_card.dart';
-import '../services/data_service.dart';
-import '../widgets/custom_date_picker_field.dart';
-import '../widgets/custom_time_picker_field.dart';
-import '../widgets/custom_dropdown_field.dart';
-import '../widgets/category_dropdown.dart';
-import '../widgets/edit_categories_modal.dart';
-import '../widgets/transaction_type_toggle.dart';
-import '../widgets/custom_switch.dart';
-import '../widgets/custom_validated_field.dart';
-import '../utils/string_extensions.dart';
-import '../utils/validators.dart';
-import '../theme/app_theme.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart' as t;
+import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_picker_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_type_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/validators.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class TransactionFormData {
   final double amount;
@@ -46,7 +47,7 @@ class TransactionForm extends StatefulWidget {
   final t.Transaction? transaction;
   final RecurringTransaction? recurringTransaction;
   final bool showSaveButton;
-  final void Function(TransactionFormData data) onSave;
+  final Future<void> Function(TransactionFormData data) onSave;
 
   const TransactionForm({
     super.key,
@@ -67,10 +68,11 @@ class TransactionFormState extends State<TransactionForm> {
   late final TextEditingController _amountController;
   late final TextEditingController _titleController;
   late final TextEditingController _noteController;
-  
+
   late bool _isRecurring;
   late final TextEditingController _recurringIntervalController;
   late String _recurringPeriod;
+  String? _formError;
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -152,7 +154,10 @@ class TransactionFormState extends State<TransactionForm> {
           _selectedCategory = null;
         }
       } else if (_categories.isNotEmpty) {
-        _selectedCategory = _categories.firstWhere((c) => c.name.toLowerCase() == 'groceries', orElse: () => _categories.first);
+        _selectedCategory = _categories.firstWhere(
+          (c) => c.name.toLowerCase() == 'groceries',
+          orElse: () => _categories.first,
+        );
       }
 
       int? creditCardId;
@@ -164,7 +169,9 @@ class TransactionFormState extends State<TransactionForm> {
 
       if (creditCardId != null) {
         try {
-          _selectedCreditCard = _creditCards.firstWhere((c) => c.id == creditCardId);
+          _selectedCreditCard = _creditCards.firstWhere(
+            (c) => c.id == creditCardId,
+          );
         } catch (e) {
           _selectedCreditCard = null;
         }
@@ -181,18 +188,9 @@ class TransactionFormState extends State<TransactionForm> {
     super.dispose();
   }
 
-  void submit() {
+  void submit() async {
+    setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
-    
-    if (_selectedCategory == null || _selectedCategory!.id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a valid category.'),
-          backgroundColor: AppColors.expense,
-        ),
-      );
-      return;
-    }
 
     FocusScope.of(context).unfocus();
 
@@ -202,14 +200,28 @@ class TransactionFormState extends State<TransactionForm> {
       categoryId: _selectedCategory!.id!,
       date: _selectedDate,
       isIncome: _isIncome,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-      creditCardId: !_isIncome && _selectedCreditCard != null ? _selectedCreditCard!.id : null,
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
+      creditCardId: !_isIncome && _selectedCreditCard != null
+          ? _selectedCreditCard!.id
+          : null,
       isRecurring: _isRecurring,
-      recurringInterval: _isRecurring ? int.parse(_recurringIntervalController.text) : 1,
+      recurringInterval: _isRecurring
+          ? int.parse(_recurringIntervalController.text)
+          : 1,
       recurringPeriod: _recurringPeriod,
     );
 
-    widget.onSave(data);
+    try {
+      await widget.onSave(data);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
   }
 
   InputDecoration _getInputDecoration({String? hintText, Widget? prefixIcon}) {
@@ -230,13 +242,25 @@ class TransactionFormState extends State<TransactionForm> {
   @override
   Widget build(BuildContext context) {
     // If both are null, it's Add mode. If one is not null, it's Edit mode.
-    final isEditMode = widget.transaction != null || widget.recurringTransaction != null;
+    final isEditMode =
+        widget.transaction != null || widget.recurringTransaction != null;
 
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_formError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Text(
+                _formError!,
+                style: const TextStyle(
+                  color: AppColors.expense,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           // Income / Expense Toggle
           TransactionTypeToggle(
             isIncome: _isIncome,
@@ -249,10 +273,15 @@ class TransactionFormState extends State<TransactionForm> {
             validator: () => Validators.greaterThanZero(_amountController.text),
             child: TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: _getInputDecoration(
                 hintText: '0.00',
-                prefixIcon: const Icon(Icons.attach_money, color: AppColors.primary),
+                prefixIcon: const Icon(
+                  Icons.attach_money,
+                  color: AppColors.primary,
+                ),
               ),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -270,7 +299,10 @@ class TransactionFormState extends State<TransactionForm> {
           ),
 
           CustomValidatedField(
-            validator: () => Validators.required(_selectedCategory?.name, 'Please select a valid category.'),
+            validator: () => Validators.required(
+              _selectedCategory?.name,
+              'Please select a valid category.',
+            ),
             child: _isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
                 : CategoryDropdown(
@@ -280,16 +312,17 @@ class TransactionFormState extends State<TransactionForm> {
                     selectedItem: _selectedCategory,
                     onChanged: (val) => setState(() => _selectedCategory = val),
                     onEditPressed: () {
-                      showModalBottomSheet(
+                      SlideUpModal.showCustom(
                         context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
                         builder: (context) => EditCategoriesModal(
                           initialCategories: _categories,
                           onCategoriesUpdated: (newCategories) {
                             setState(() {
                               _categories = newCategories;
-                              if (_selectedCategory != null && !_categories.any((c) => c.id == _selectedCategory!.id)) {
+                              if (_selectedCategory != null &&
+                                  !_categories.any(
+                                    (c) => c.id == _selectedCategory!.id,
+                                  )) {
                                 _selectedCategory = null;
                               }
                             });
@@ -310,9 +343,12 @@ class TransactionFormState extends State<TransactionForm> {
               children: [
                 Expanded(
                   child: CustomDatePickerField(
-                    label: _isRecurring && isEditMode ? 'Start Date'.cased(context) : 'Date'.cased(context),
+                    label: _isRecurring && isEditMode
+                        ? 'Start Date'.cased(context)
+                        : 'Date'.cased(context),
                     selectedDate: _selectedDate,
-                    onDateSelected: (newDate) => setState(() => _selectedDate = newDate),
+                    onDateSelected: (newDate) =>
+                        setState(() => _selectedDate = newDate),
                   ),
                 ),
                 const SizedBox(width: 16.0),
@@ -320,7 +356,8 @@ class TransactionFormState extends State<TransactionForm> {
                   child: CustomTimePickerField(
                     label: 'Time'.cased(context),
                     selectedTime: _selectedDate,
-                    onTimeSelected: (newTime) => setState(() => _selectedDate = newTime),
+                    onTimeSelected: (newTime) =>
+                        setState(() => _selectedDate = newTime),
                   ),
                 ),
               ],
@@ -334,11 +371,12 @@ class TransactionFormState extends State<TransactionForm> {
                 label: 'Credit Card'.cased(context),
                 selectedItem: _selectedCreditCard,
                 items: [null, ..._creditCards],
-                displayText: (card) => card == null ? 'None'.cased(context) : card.name,
+                displayText: (card) =>
+                    card == null ? 'None'.cased(context) : card.name,
                 onChanged: (val) => setState(() => _selectedCreditCard = val),
               ),
             ),
-            
+
           // Recurring Transaction Logic
           if (!isEditMode) ...[
             // Add Mode: Show toggle to turn on/off recurring
@@ -352,7 +390,10 @@ class TransactionFormState extends State<TransactionForm> {
                     children: [
                       Text(
                         'Recurring transaction'.cased(context),
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                       CustomSwitch(
                         value: _isRecurring,
@@ -364,13 +405,14 @@ class TransactionFormState extends State<TransactionForm> {
                     duration: const Duration(milliseconds: 300),
                     switchInCurve: Curves.easeInOut,
                     switchOutCurve: Curves.easeInOut,
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                      return SizeTransition(
-                        sizeFactor: animation,
-                        alignment: const Alignment(-1.0, -1.0),
-                        child: child,
-                      );
-                    },
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return SizeTransition(
+                            sizeFactor: animation,
+                            alignment: const Alignment(-1.0, -1.0),
+                            child: child,
+                          );
+                        },
                     child: _isRecurring
                         ? SizedBox(
                             key: const ValueKey('recurring_fields'),
@@ -399,7 +441,10 @@ class TransactionFormState extends State<TransactionForm> {
                 children: [
                   Text(
                     'Repeat frequency'.cased(context),
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8.0),
                   _buildRecurringInputs(context),
@@ -435,7 +480,10 @@ class TransactionFormState extends State<TransactionForm> {
                 ),
                 child: Text(
                   'Save Transaction'.cased(context),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -455,7 +503,8 @@ class TransactionFormState extends State<TransactionForm> {
           flex: 1,
           child: CustomValidatedField(
             padding: EdgeInsets.zero,
-            validator: () => Validators.greaterThanZero(_recurringIntervalController.text),
+            validator: () =>
+                Validators.greaterThanZero(_recurringIntervalController.text),
             child: TextField(
               controller: _recurringIntervalController,
               keyboardType: TextInputType.number,

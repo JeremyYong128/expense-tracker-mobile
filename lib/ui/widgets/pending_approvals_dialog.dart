@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/transaction.dart';
-import '../services/recurring_processing_service.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/models/transaction.dart';
+import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class PendingApprovalsDialog extends StatefulWidget {
   final List<Transaction> initialPending;
@@ -143,9 +143,9 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          DateFormat('MMM dd, yyyy')
-                                              .format(tx.date)
-                                              .cased(context),
+                                          DateFormat(
+                                            'MMM dd, yyyy',
+                                          ).format(tx.date).cased(context),
                                           style: TextStyle(
                                             color: Colors.grey.shade800,
                                             fontWeight: FontWeight.w500,

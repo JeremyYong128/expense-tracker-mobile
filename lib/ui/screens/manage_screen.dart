@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'recurring_transactions_screen.dart';
-import 'credit_cards_screen.dart';
-import '../utils/string_extensions.dart';
-import '../theme/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/credit_cards_screen.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
@@ -15,40 +15,41 @@ class ManageScreen extends StatelessWidget {
       bottom: true,
       child: Scaffold(
         appBar: AppBar(title: Text('Manage'.cased(context))),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          _buildManageCard(
-            context,
-            title: 'Recurring Transactions',
-            icon: Icons.event_repeat,
-            color: Colors.purple,
-            onTap: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const RecurringTransactionsScreen(showAppBar: true),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildManageCard(
-            context,
-            title: 'Credit Cards',
-            icon: Icons.credit_card,
-            color: Colors.blue,
-            onTap: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const CreditCardsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+        body: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            _buildManageCard(
+              context,
+              title: 'Recurring Transactions',
+              icon: Icons.event_repeat,
+              color: Colors.purple,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) =>
+                        const RecurringTransactionsScreen(showAppBar: true),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildManageCard(
+              context,
+              title: 'Credit Cards',
+              icon: Icons.credit_card,
+              color: Colors.blue,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const CreditCardsScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

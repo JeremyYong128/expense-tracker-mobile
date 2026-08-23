@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class CustomDropdownField<T> extends StatelessWidget {
   final String label;
@@ -38,9 +38,14 @@ class CustomDropdownField<T> extends StatelessWidget {
               children: [
                 // Header with Done button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade200),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -56,7 +61,10 @@ class CustomDropdownField<T> extends StatelessWidget {
                       ),
                       CupertinoButton(
                         padding: EdgeInsets.zero,
-                        child: Text('Done'.cased(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Done'.cased(context),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -65,7 +73,9 @@ class CustomDropdownField<T> extends StatelessWidget {
                 Expanded(
                   child: CupertinoPicker(
                     itemExtent: 40.0,
-                    scrollController: FixedExtentScrollController(initialItem: selectedIndex),
+                    scrollController: FixedExtentScrollController(
+                      initialItem: selectedIndex,
+                    ),
                     onSelectedItemChanged: (int index) {
                       onChanged(items[index]);
                     },
@@ -116,23 +126,26 @@ class CustomDropdownField<T> extends StatelessWidget {
           const SizedBox(height: 8.0),
         ],
         InkWell(
-            onTap: () => _showPicker(context),
-            borderRadius: BorderRadius.circular(12.0),
-            child: InputDecorator(
-              decoration: _getInputDecoration(),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      displayText(selectedItem),
-                      style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+          onTap: () => _showPicker(context),
+          borderRadius: BorderRadius.circular(12.0),
+          child: InputDecorator(
+            decoration: _getInputDecoration(),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayText(selectedItem),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  const Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                ],
-              ),
+                ),
+                const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+              ],
             ),
           ),
+        ),
       ],
     );
   }

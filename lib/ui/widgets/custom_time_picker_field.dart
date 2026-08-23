@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
-import '../theme/app_theme.dart';
-import '../utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class CustomTimePickerField extends StatelessWidget {
   final String label;
@@ -31,9 +31,14 @@ class CustomTimePickerField extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade200),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -49,7 +54,10 @@ class CustomTimePickerField extends StatelessWidget {
                       ),
                       CupertinoButton(
                         padding: EdgeInsets.zero,
-                        child: Text('Done'.cased(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Done'.cased(context),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -102,25 +110,28 @@ class CustomTimePickerField extends StatelessWidget {
         ),
         const SizedBox(height: 8.0),
         InkWell(
-            onTap: () => _showPicker(context),
-            borderRadius: BorderRadius.circular(12.0),
-            child: InputDecorator(
-              decoration: _getInputDecoration(),
-              child: Row(
-                children: [
-                  const Icon(Icons.access_time, color: AppColors.primary),
-                  const SizedBox(width: 8.0),
-                  Expanded(
-                    child: Text(
-                      DateFormat.jm().format(selectedTime).cased(context),
-                      style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                      overflow: TextOverflow.ellipsis,
+          onTap: () => _showPicker(context),
+          borderRadius: BorderRadius.circular(12.0),
+          child: InputDecorator(
+            decoration: _getInputDecoration(),
+            child: Row(
+              children: [
+                const Icon(Icons.access_time, color: AppColors.primary),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    DateFormat.jm().format(selectedTime).cased(context),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
       ],
     );
   }

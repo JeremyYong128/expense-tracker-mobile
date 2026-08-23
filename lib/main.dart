@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'theme/app_theme.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/history_screen.dart';
-import 'screens/add_transaction_screen.dart';
-import 'screens/manage_screen.dart';
-import 'screens/settings_screen.dart';
-import 'providers/user_preferences_provider.dart';
-import 'utils/string_extensions.dart';
-import 'services/recurring_processing_service.dart';
-import 'widgets/pending_approvals_dialog.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/screens/dashboard_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/history_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/add_transaction_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/manage_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/settings_screen.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -47,8 +47,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardScreen(),
     HistoryScreen(),
@@ -77,8 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {

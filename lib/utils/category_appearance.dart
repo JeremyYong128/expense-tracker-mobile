@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/category.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
 
 class CategoryAppearance {
   static const List<String> iconNames = [
