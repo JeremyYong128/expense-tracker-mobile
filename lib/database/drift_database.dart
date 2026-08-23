@@ -48,6 +48,7 @@ class RecurringTransactions extends Table {
   BoolColumn get isIncome => boolean().named('isIncome').withDefault(const Constant(false))();
   IntColumn get interval => integer()();
   TextColumn get period => text()();
+  TextColumn get startDate => text().named('startDate').withDefault(const Constant(''))();
   TextColumn get nextDueDate => text().named('nextDueDate')();
   IntColumn get creditCardId => integer().named('creditCardId').nullable().customConstraint('REFERENCES credit_cards(id) ON DELETE SET NULL')();
 }
@@ -71,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -93,6 +94,10 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 3) {
           await m.addColumn(recurringTransactions, recurringTransactions.creditCardId);
+        }
+        if (from < 4) {
+          await m.addColumn(recurringTransactions, recurringTransactions.startDate);
+          await customStatement('UPDATE recurring_transactions SET startDate = nextDueDate');
         }
       },
       beforeOpen: (details) async {

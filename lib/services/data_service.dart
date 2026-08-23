@@ -55,7 +55,9 @@ class DataService {
       isIncome: data.isIncome,
       interval: data.interval,
       period: data.period,
+      startDate: DateTime.parse(data.startDate),
       nextDueDate: DateTime.parse(data.nextDueDate),
+      creditCardId: data.creditCardId,
     );
   }
 
@@ -225,8 +227,6 @@ class DataService {
         throw Exception('Please enter a valid recurring interval.');
       }
 
-      final nextDueDate = calculateNextDueDate(date, recurringInterval, recurringPeriod);
-
       await _db.into(_db.recurringTransactions).insert(
         RecurringTransactionsCompanion.insert(
           amount: amount,
@@ -235,7 +235,8 @@ class DataService {
           isIncome: drift.Value(isIncome),
           interval: recurringInterval,
           period: recurringPeriod,
-          nextDueDate: nextDueDate.toIso8601String(),
+          startDate: drift.Value(date.toIso8601String()),
+          nextDueDate: date.toIso8601String(),
           note: drift.Value(note.trim().isEmpty ? null : note.trim()),
           creditCardId: drift.Value(creditCardId),
         ),
@@ -287,6 +288,21 @@ class DataService {
   }
   
   static Future<void> updateRecurringTransaction(RecurringTransaction transaction) async {
+    // Implement Suggestion B: Shift and Keep History
+    DateTime newNextDueDate = transaction.startDate;
+    
+    // Fetch all existing child transactions
+    final children = await (_db.select(_db.transactions)..where((t) => t.recurringId.equals(transaction.id!))).get();
+    
+    if (children.isNotEmpty) {
+      children.sort((a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
+      final latestChildDate = DateTime.parse(children.last.date);
+      
+      while (newNextDueDate.isBefore(latestChildDate) || newNextDueDate.isAtSameMomentAs(latestChildDate)) {
+        newNextDueDate = calculateNextDueDate(newNextDueDate, transaction.interval, transaction.period);
+      }
+    }
+
     await (_db.update(_db.recurringTransactions)..where((t) => t.id.equals(transaction.id!))).write(
       RecurringTransactionsCompanion(
         amount: drift.Value(transaction.amount),
@@ -295,7 +311,8 @@ class DataService {
         isIncome: drift.Value(transaction.isIncome),
         interval: drift.Value(transaction.interval),
         period: drift.Value(transaction.period),
-        nextDueDate: drift.Value(transaction.nextDueDate.toIso8601String()),
+        startDate: drift.Value(transaction.startDate.toIso8601String()),
+        nextDueDate: drift.Value(newNextDueDate.toIso8601String()),
         note: drift.Value(transaction.note),
         creditCardId: drift.Value(transaction.creditCardId),
       ),

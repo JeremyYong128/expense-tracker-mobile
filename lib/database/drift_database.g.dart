@@ -755,6 +755,18 @@ class $RecurringTransactionsTable extends RecurringTransactions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
+    'startDate',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _nextDueDateMeta = const VerificationMeta(
     'nextDueDate',
   );
@@ -788,6 +800,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     isIncome,
     interval,
     period,
+    startDate,
     nextDueDate,
     creditCardId,
   ];
@@ -858,6 +871,12 @@ class $RecurringTransactionsTable extends RecurringTransactions
     } else if (isInserting) {
       context.missing(_periodMeta);
     }
+    if (data.containsKey('startDate')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['startDate']!, _startDateMeta),
+      );
+    }
     if (data.containsKey('nextDueDate')) {
       context.handle(
         _nextDueDateMeta,
@@ -922,6 +941,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.string,
         data['${effectivePrefix}period'],
       )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}startDate'],
+      )!,
       nextDueDate: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nextDueDate'],
@@ -949,6 +972,7 @@ class RecurringTransactionTableData extends DataClass
   final bool isIncome;
   final int interval;
   final String period;
+  final String startDate;
   final String nextDueDate;
   final int? creditCardId;
   const RecurringTransactionTableData({
@@ -960,6 +984,7 @@ class RecurringTransactionTableData extends DataClass
     required this.isIncome,
     required this.interval,
     required this.period,
+    required this.startDate,
     required this.nextDueDate,
     this.creditCardId,
   });
@@ -976,6 +1001,7 @@ class RecurringTransactionTableData extends DataClass
     map['isIncome'] = Variable<bool>(isIncome);
     map['interval'] = Variable<int>(interval);
     map['period'] = Variable<String>(period);
+    map['startDate'] = Variable<String>(startDate);
     map['nextDueDate'] = Variable<String>(nextDueDate);
     if (!nullToAbsent || creditCardId != null) {
       map['creditCardId'] = Variable<int>(creditCardId);
@@ -993,6 +1019,7 @@ class RecurringTransactionTableData extends DataClass
       isIncome: Value(isIncome),
       interval: Value(interval),
       period: Value(period),
+      startDate: Value(startDate),
       nextDueDate: Value(nextDueDate),
       creditCardId: creditCardId == null && nullToAbsent
           ? const Value.absent()
@@ -1014,6 +1041,7 @@ class RecurringTransactionTableData extends DataClass
       isIncome: serializer.fromJson<bool>(json['isIncome']),
       interval: serializer.fromJson<int>(json['interval']),
       period: serializer.fromJson<String>(json['period']),
+      startDate: serializer.fromJson<String>(json['startDate']),
       nextDueDate: serializer.fromJson<String>(json['nextDueDate']),
       creditCardId: serializer.fromJson<int?>(json['creditCardId']),
     );
@@ -1030,6 +1058,7 @@ class RecurringTransactionTableData extends DataClass
       'isIncome': serializer.toJson<bool>(isIncome),
       'interval': serializer.toJson<int>(interval),
       'period': serializer.toJson<String>(period),
+      'startDate': serializer.toJson<String>(startDate),
       'nextDueDate': serializer.toJson<String>(nextDueDate),
       'creditCardId': serializer.toJson<int?>(creditCardId),
     };
@@ -1044,6 +1073,7 @@ class RecurringTransactionTableData extends DataClass
     bool? isIncome,
     int? interval,
     String? period,
+    String? startDate,
     String? nextDueDate,
     Value<int?> creditCardId = const Value.absent(),
   }) => RecurringTransactionTableData(
@@ -1055,6 +1085,7 @@ class RecurringTransactionTableData extends DataClass
     isIncome: isIncome ?? this.isIncome,
     interval: interval ?? this.interval,
     period: period ?? this.period,
+    startDate: startDate ?? this.startDate,
     nextDueDate: nextDueDate ?? this.nextDueDate,
     creditCardId: creditCardId.present ? creditCardId.value : this.creditCardId,
   );
@@ -1072,6 +1103,7 @@ class RecurringTransactionTableData extends DataClass
       isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
       interval: data.interval.present ? data.interval.value : this.interval,
       period: data.period.present ? data.period.value : this.period,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
       nextDueDate: data.nextDueDate.present
           ? data.nextDueDate.value
           : this.nextDueDate,
@@ -1092,6 +1124,7 @@ class RecurringTransactionTableData extends DataClass
           ..write('isIncome: $isIncome, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
+          ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
           ..write('creditCardId: $creditCardId')
           ..write(')'))
@@ -1108,6 +1141,7 @@ class RecurringTransactionTableData extends DataClass
     isIncome,
     interval,
     period,
+    startDate,
     nextDueDate,
     creditCardId,
   );
@@ -1123,6 +1157,7 @@ class RecurringTransactionTableData extends DataClass
           other.isIncome == this.isIncome &&
           other.interval == this.interval &&
           other.period == this.period &&
+          other.startDate == this.startDate &&
           other.nextDueDate == this.nextDueDate &&
           other.creditCardId == this.creditCardId);
 }
@@ -1137,6 +1172,7 @@ class RecurringTransactionsCompanion
   final Value<bool> isIncome;
   final Value<int> interval;
   final Value<String> period;
+  final Value<String> startDate;
   final Value<String> nextDueDate;
   final Value<int?> creditCardId;
   const RecurringTransactionsCompanion({
@@ -1148,6 +1184,7 @@ class RecurringTransactionsCompanion
     this.isIncome = const Value.absent(),
     this.interval = const Value.absent(),
     this.period = const Value.absent(),
+    this.startDate = const Value.absent(),
     this.nextDueDate = const Value.absent(),
     this.creditCardId = const Value.absent(),
   });
@@ -1160,6 +1197,7 @@ class RecurringTransactionsCompanion
     this.isIncome = const Value.absent(),
     required int interval,
     required String period,
+    this.startDate = const Value.absent(),
     required String nextDueDate,
     this.creditCardId = const Value.absent(),
   }) : amount = Value(amount),
@@ -1177,6 +1215,7 @@ class RecurringTransactionsCompanion
     Expression<bool>? isIncome,
     Expression<int>? interval,
     Expression<String>? period,
+    Expression<String>? startDate,
     Expression<String>? nextDueDate,
     Expression<int>? creditCardId,
   }) {
@@ -1189,6 +1228,7 @@ class RecurringTransactionsCompanion
       if (isIncome != null) 'isIncome': isIncome,
       if (interval != null) 'interval': interval,
       if (period != null) 'period': period,
+      if (startDate != null) 'startDate': startDate,
       if (nextDueDate != null) 'nextDueDate': nextDueDate,
       if (creditCardId != null) 'creditCardId': creditCardId,
     });
@@ -1203,6 +1243,7 @@ class RecurringTransactionsCompanion
     Value<bool>? isIncome,
     Value<int>? interval,
     Value<String>? period,
+    Value<String>? startDate,
     Value<String>? nextDueDate,
     Value<int?>? creditCardId,
   }) {
@@ -1215,6 +1256,7 @@ class RecurringTransactionsCompanion
       isIncome: isIncome ?? this.isIncome,
       interval: interval ?? this.interval,
       period: period ?? this.period,
+      startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       creditCardId: creditCardId ?? this.creditCardId,
     );
@@ -1247,6 +1289,9 @@ class RecurringTransactionsCompanion
     if (period.present) {
       map['period'] = Variable<String>(period.value);
     }
+    if (startDate.present) {
+      map['startDate'] = Variable<String>(startDate.value);
+    }
     if (nextDueDate.present) {
       map['nextDueDate'] = Variable<String>(nextDueDate.value);
     }
@@ -1267,6 +1312,7 @@ class RecurringTransactionsCompanion
           ..write('isIncome: $isIncome, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
+          ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
           ..write('creditCardId: $creditCardId')
           ..write(')'))
@@ -2687,6 +2733,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       Value<bool> isIncome,
       required int interval,
       required String period,
+      Value<String> startDate,
       required String nextDueDate,
       Value<int?> creditCardId,
     });
@@ -2700,6 +2747,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<bool> isIncome,
       Value<int> interval,
       Value<String> period,
+      Value<String> startDate,
       Value<String> nextDueDate,
       Value<int?> creditCardId,
     });
@@ -2812,6 +2860,11 @@ class $$RecurringTransactionsTableFilterComposer
 
   ColumnFilters<String> get period => $composableBuilder(
     column: $table.period,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startDate => $composableBuilder(
+    column: $table.startDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2936,6 +2989,11 @@ class $$RecurringTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
     builder: (column) => ColumnOrderings(column),
@@ -3017,6 +3075,9 @@ class $$RecurringTransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get period =>
       $composableBuilder(column: $table.period, builder: (column) => column);
+
+  GeneratedColumn<String> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
 
   GeneratedColumn<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
@@ -3149,6 +3210,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<bool> isIncome = const Value.absent(),
                 Value<int> interval = const Value.absent(),
                 Value<String> period = const Value.absent(),
+                Value<String> startDate = const Value.absent(),
                 Value<String> nextDueDate = const Value.absent(),
                 Value<int?> creditCardId = const Value.absent(),
               }) => RecurringTransactionsCompanion(
@@ -3160,6 +3222,7 @@ class $$RecurringTransactionsTableTableManager
                 isIncome: isIncome,
                 interval: interval,
                 period: period,
+                startDate: startDate,
                 nextDueDate: nextDueDate,
                 creditCardId: creditCardId,
               ),
@@ -3173,6 +3236,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<bool> isIncome = const Value.absent(),
                 required int interval,
                 required String period,
+                Value<String> startDate = const Value.absent(),
                 required String nextDueDate,
                 Value<int?> creditCardId = const Value.absent(),
               }) => RecurringTransactionsCompanion.insert(
@@ -3184,6 +3248,7 @@ class $$RecurringTransactionsTableTableManager
                 isIncome: isIncome,
                 interval: interval,
                 period: period,
+                startDate: startDate,
                 nextDueDate: nextDueDate,
                 creditCardId: creditCardId,
               ),

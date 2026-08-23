@@ -9,17 +9,28 @@ class CustomDatePickerField extends StatelessWidget {
   final String label;
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateSelected;
+  final DateTime? minimumDate;
+  final DateTime? maximumDate;
 
   const CustomDatePickerField({
     super.key,
     required this.label,
     required this.selectedDate,
     required this.onDateSelected,
+    this.minimumDate,
+    this.maximumDate,
   });
 
   void _showPicker(BuildContext context) {
-    final now = DateTime.now();
-    final firstDate = DateTime(now.year - 1, now.month, now.day);
+    DateTime? minDate = minimumDate;
+    DateTime? maxDate = maximumDate;
+
+    if (minDate != null && selectedDate.isBefore(minDate)) {
+      minDate = selectedDate;
+    }
+    if (maxDate != null && selectedDate.isAfter(maxDate)) {
+      maxDate = selectedDate;
+    }
 
     showCupertinoModalPopup(
       context: context,
@@ -77,8 +88,8 @@ class CustomDatePickerField extends StatelessWidget {
                     child: CupertinoDatePicker(
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: selectedDate,
-                      minimumDate: firstDate,
-                      maximumDate: now,
+                      minimumDate: minDate,
+                      maximumDate: maxDate,
                       onDateTimeChanged: (DateTime newDateTime) {
                         final updatedDate = DateTime(
                           newDateTime.year,

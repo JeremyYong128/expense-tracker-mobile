@@ -99,7 +99,7 @@ class TransactionFormState extends State<TransactionForm> {
         : (isEditNor ? widget.transaction!.isIncome : false);
 
     _selectedDate = isEditRec
-        ? widget.recurringTransaction!.nextDueDate
+        ? widget.recurringTransaction!.startDate
         : (isEditNor ? widget.transaction!.date : DateTime.now());
 
     _amountController = TextEditingController(
@@ -136,16 +136,19 @@ class TransactionFormState extends State<TransactionForm> {
     final categories = await DataService.getCategories();
     final creditCards = await DataService.getCreditCards();
     setState(() {
-      _categories = categories.where((c) => c.isActive).toList();
-      _creditCards = creditCards;
-      _isLoadingCategories = false;
-
       int? catId;
       if (widget.recurringTransaction != null) {
         catId = widget.recurringTransaction!.categoryId;
       } else if (widget.transaction != null) {
         catId = widget.transaction!.categoryId;
       }
+
+      _categories = categories.where((c) {
+        return c.isActive || c.id == catId;
+      }).toList();
+      
+      _creditCards = creditCards;
+      _isLoadingCategories = false;
 
       if (catId != null) {
         try {
@@ -255,10 +258,7 @@ class TransactionFormState extends State<TransactionForm> {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Text(
                 _formError!,
-                style: const TextStyle(
-                  color: AppColors.expense,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: AppColors.expense, fontSize: 14),
               ),
             ),
           // Income / Expense Toggle
@@ -318,24 +318,18 @@ class TransactionFormState extends State<TransactionForm> {
                           initialCategories: _categories,
                           onCategoriesUpdated: (newCategories) {
                             setState(() {
-                              _categories = List.from(newCategories);
-                              if (_selectedCategory != null) {
-                                try {
-                                  _selectedCategory = _categories.firstWhere(
-                                      (c) => c.id == _selectedCategory!.id);
-                                } catch (_) {
-                                  _selectedCategory = null;
-                                }
+                              _categories = newCategories;
+                              if (_selectedCategory != null &&
+                                  !_categories.any(
+                                    (c) => c.id == _selectedCategory!.id,
+                                  )) {
+                                _selectedCategory = null;
                               }
                             });
                           },
                           onCategorySelected: (category) {
                             setState(() => _selectedCategory = category);
-                            Navigator.of(context).pop(); // Close EditCategoriesModal
-                            // Optional: also close CategoryPickerModal? The user didn't ask to auto-close the picker, but typically picking a category should close everything.
-                            // If they pick a category in EditCategoriesModal, they probably want to go back to the form.
-                            // To close the picker as well, we'd need another pop. Let's just pop EditCategoriesModal for now, they can see the picker update and select it.
-                            Navigator.of(context).pop(); // Close Picker Modal
+                            Navigator.of(context).pop();
                           },
                         ),
                       );
@@ -349,7 +343,7 @@ class TransactionFormState extends State<TransactionForm> {
               children: [
                 Expanded(
                   child: CustomDatePickerField(
-                    label: _isRecurring && isEditMode
+                    label: _isRecurring
                         ? 'Start Date'.cased(context)
                         : 'Date'.cased(context),
                     selectedDate: _selectedDate,

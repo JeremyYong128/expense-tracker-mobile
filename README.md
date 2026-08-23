@@ -105,6 +105,7 @@ flutter run
 - Bugs:
     - User gets stuck in notes when filling up the form. Keyboard can't close.
     - Pressing on the manage tab, when already on the manage tab, should bring the user back to the main manage screen if not already there.
+    - When editing a recurring transaction, the start date is set to the next due date. Is this normal?
 - Credit cards
     - Improve design of credit card reward section on dashboard and credit card screen
     - Need some indication in the history and recurring cards when an expense is tagged with a credit card

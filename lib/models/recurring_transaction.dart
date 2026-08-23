@@ -7,6 +7,7 @@ class RecurringTransaction {
   final bool isIncome;
   final int interval;
   final String period;
+  final DateTime startDate;
   final DateTime nextDueDate;
   final int? creditCardId;
 
@@ -19,6 +20,7 @@ class RecurringTransaction {
     this.isIncome = false,
     required this.interval,
     required this.period,
+    required this.startDate,
     required this.nextDueDate,
     this.creditCardId,
   });
@@ -33,6 +35,7 @@ class RecurringTransaction {
       'isIncome': isIncome ? 1 : 0,
       'interval': interval,
       'period': period,
+      'startDate': startDate.toIso8601String(),
       'nextDueDate': nextDueDate.toIso8601String(),
       'creditCardId': creditCardId,
     };
@@ -47,6 +50,7 @@ class RecurringTransaction {
     bool? isIncome,
     int? interval,
     String? period,
+    DateTime? startDate,
     DateTime? nextDueDate,
     int? creditCardId,
   }) {
@@ -59,6 +63,7 @@ class RecurringTransaction {
       isIncome: isIncome ?? this.isIncome,
       interval: interval ?? this.interval,
       period: period ?? this.period,
+      startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       creditCardId: creditCardId ?? this.creditCardId,
     );
@@ -74,7 +79,9 @@ class RecurringTransaction {
       isIncome: map['isIncome'] == 1,
       interval: map['interval'],
       period: map['period'],
+      startDate: DateTime.parse(map['startDate']),
       nextDueDate: DateTime.parse(map['nextDueDate']),
+      creditCardId: map['creditCardId'],
     );
   }
 }

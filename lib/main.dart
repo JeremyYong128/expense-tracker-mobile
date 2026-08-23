@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart'
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/pending_approvals_dialog.dart';
+import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -55,25 +56,41 @@ class _HomeScreenState extends State<HomeScreen> {
     SettingsScreen(),
   ];
 
+  bool _isCheckingPending = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingRecurringTransactions();
     });
+    DataService.onDataChanged.addListener(_checkPendingRecurringTransactions);
+  }
+
+  @override
+  void dispose() {
+    DataService.onDataChanged.removeListener(_checkPendingRecurringTransactions);
+    super.dispose();
   }
 
   Future<void> _checkPendingRecurringTransactions() async {
-    final pending = await RecurringProcessingService.getPendingApprovals();
-    if (pending.isEmpty || !mounted) return;
+    if (_isCheckingPending) return;
+    _isCheckingPending = true;
 
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return PendingApprovalsDialog(initialPending: pending);
-      },
-    );
+    try {
+      final pending = await RecurringProcessingService.getPendingApprovals();
+      if (pending.isEmpty || !mounted) return;
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return PendingApprovalsDialog(initialPending: pending);
+        },
+      );
+    } finally {
+      _isCheckingPending = false;
+    }
   }
 
   @override

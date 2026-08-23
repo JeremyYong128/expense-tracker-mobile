@@ -43,12 +43,6 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
     final isRec = widget.recurringTransaction != null;
 
     if (isRec) {
-      final nextDueDate = DataService.calculateNextDueDate(
-        data.date,
-        data.recurringInterval,
-        data.recurringPeriod,
-      );
-
       final updated = widget.recurringTransaction!.copyWith(
         amount: data.amount,
         title: data.title,
@@ -56,7 +50,8 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         isIncome: data.isIncome,
         interval: data.recurringInterval,
         period: data.recurringPeriod,
-        nextDueDate: nextDueDate,
+        startDate: data.date,
+        nextDueDate: widget.recurringTransaction!.nextDueDate,
         note: data.note,
         creditCardId: data.creditCardId,
       );
