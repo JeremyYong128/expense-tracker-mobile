@@ -5,7 +5,7 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 
-class CategoryDropdown extends StatelessWidget {
+class CategoryDropdown extends StatefulWidget {
   final String label;
   final List<Category> items;
   final Category? selectedItem;
@@ -23,6 +23,35 @@ class CategoryDropdown extends StatelessWidget {
     required this.onEditPressed,
   });
 
+  @override
+  State<CategoryDropdown> createState() => _CategoryDropdownState();
+}
+
+class _CategoryDropdownState extends State<CategoryDropdown> {
+  late ValueNotifier<List<Category>> _itemsNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemsNotifier = ValueNotifier(widget.items);
+  }
+
+  @override
+  void didUpdateWidget(CategoryDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    Future.microtask(() {
+      if (mounted) {
+        _itemsNotifier.value = List.from(widget.items);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _itemsNotifier.dispose();
+    super.dispose();
+  }
+
   void _showPicker(BuildContext context) {
     SlideUpModal.show(
       context: context,
@@ -32,13 +61,15 @@ class CategoryDropdown extends StatelessWidget {
       },
       rightButtonTitle: 'Edit',
       onRightButtonPressed: () {
-        Navigator.of(context).pop();
-        onEditPressed();
+        widget.onEditPressed();
       },
-      heightFraction: 0.6,
+
       child: SafeArea(
         top: false,
-        child: items.isEmpty
+        child: ValueListenableBuilder<List<Category>>(
+          valueListenable: _itemsNotifier,
+          builder: (context, items, child) {
+            return items.isEmpty
             ? Center(
                 child: Text(
                   'No categories'.cased(context),
@@ -49,18 +80,18 @@ class CategoryDropdown extends StatelessWidget {
                   ),
                 ),
               )
-            : ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final category = items[index];
-                  final isSelected = selectedItem?.id == category.id;
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final category = items[index];
+                    final isSelected = widget.selectedItem?.id == category.id;
 
-                  return InkWell(
-                    onTap: () {
-                      onChanged(category);
-                      Navigator.of(context).pop();
-                    },
+                    return InkWell(
+                      onTap: () {
+                        widget.onChanged(category);
+                        Navigator.of(context).pop();
+                      },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16.0,
@@ -107,7 +138,9 @@ class CategoryDropdown extends StatelessWidget {
                     ),
                   );
                 },
-              ),
+              );
+          },
+        ),
       ),
     );
   }
@@ -129,9 +162,9 @@ class CategoryDropdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label.isNotEmpty) ...[
+        if (widget.label.isNotEmpty) ...[
           Text(
-            label,
+            widget.label,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 8.0),
@@ -143,20 +176,20 @@ class CategoryDropdown extends StatelessWidget {
             decoration: _getInputDecoration(),
             child: Row(
               children: [
-                if (selectedItem != null) ...[
+                if (widget.selectedItem != null) ...[
                   Icon(
-                    selectedItem!.iconData,
-                    color: selectedItem!.color,
+                    widget.selectedItem!.iconData,
+                    color: widget.selectedItem!.color,
                     size: 20,
                   ),
                   const SizedBox(width: 8.0),
                 ],
                 Expanded(
                   child: Text(
-                    selectedItem?.name ?? hintText ?? '',
+                    widget.selectedItem?.name ?? widget.hintText ?? '',
                     style: TextStyle(
                       fontSize: 16,
-                      color: selectedItem != null
+                      color: widget.selectedItem != null
                           ? AppColors.textPrimary
                           : AppColors.grey,
                     ),

@@ -277,7 +277,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
   Widget build(BuildContext context) {
     return SlideUpModal(
       title: 'Edit categories',
-      heightFraction: 0.7,
+
       child: Column(
         children: [
           if (_formError != null)

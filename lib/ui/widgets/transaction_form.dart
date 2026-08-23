@@ -318,18 +318,24 @@ class TransactionFormState extends State<TransactionForm> {
                           initialCategories: _categories,
                           onCategoriesUpdated: (newCategories) {
                             setState(() {
-                              _categories = newCategories;
-                              if (_selectedCategory != null &&
-                                  !_categories.any(
-                                    (c) => c.id == _selectedCategory!.id,
-                                  )) {
-                                _selectedCategory = null;
+                              _categories = List.from(newCategories);
+                              if (_selectedCategory != null) {
+                                try {
+                                  _selectedCategory = _categories.firstWhere(
+                                      (c) => c.id == _selectedCategory!.id);
+                                } catch (_) {
+                                  _selectedCategory = null;
+                                }
                               }
                             });
                           },
                           onCategorySelected: (category) {
                             setState(() => _selectedCategory = category);
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(); // Close EditCategoriesModal
+                            // Optional: also close CategoryPickerModal? The user didn't ask to auto-close the picker, but typically picking a category should close everything.
+                            // If they pick a category in EditCategoriesModal, they probably want to go back to the form.
+                            // To close the picker as well, we'd need another pop. Let's just pop EditCategoriesModal for now, they can see the picker update and select it.
+                            Navigator.of(context).pop(); // Close Picker Modal
                           },
                         ),
                       );

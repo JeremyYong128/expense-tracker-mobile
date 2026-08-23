@@ -86,7 +86,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
       rightButtonTitle: 'Save'.cased(context),
-      heightFraction: 0.8,
+
       onRightButtonPressed: _saveCreditCard,
       child: SingleChildScrollView(
         child: Form(

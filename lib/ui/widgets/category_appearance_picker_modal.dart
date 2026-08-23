@@ -42,7 +42,7 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
         widget.onSave(_selectedIcon, _selectedColorHex);
         Navigator.of(context).pop();
       },
-      heightFraction: 0.75,
+
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
