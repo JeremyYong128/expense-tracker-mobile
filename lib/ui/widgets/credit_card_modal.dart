@@ -8,6 +8,7 @@ import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 
 class CreditCardModal extends StatefulWidget {
   final CreditCard? card;
@@ -35,9 +36,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
       text: isEditing ? widget.card!.name : '',
     );
     _rateController = TextEditingController(
-      text: isEditing ? widget.card!.rewardRate.toString() : '',
+      text: isEditing ? widget.card!.rewardRate.toString() : '0.0',
     );
-    _rewardType = isEditing ? widget.card!.rewardType : 'Cashback';
+    _rewardType = isEditing ? widget.card!.rewardType : 'None';
   }
 
   @override
@@ -162,6 +163,8 @@ class _CreditCardModalState extends State<CreditCardModal> {
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
+                    hintText: 'e.g. Chase Sapphire'.cased(context),
+                    hintStyle: const TextStyle(color: AppColors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
                       vertical: 16.0,
@@ -176,50 +179,39 @@ class _CreditCardModalState extends State<CreditCardModal> {
                   onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
-              CustomValidatedField(
+              CustomDropdownField<String>(
                 label: 'Reward Type'.cased(context),
-                validator: () => null,
-                child: DropdownButtonFormField<String>(
-                  initialValue: _rewardType,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  items: ['Cashback', 'Miles', 'Points']
-                      .map(
-                        (type) => DropdownMenuItem(
-                          value: type,
-                          child: Text(type.cased(context)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _rewardType = value);
+                items: const ['None', 'Cashback', 'Miles', 'Points'],
+                selectedItem: _rewardType,
+                displayText: (type) => type.cased(context),
+                onChanged: (value) {
+                  setState(() {
+                    _rewardType = value;
+                    if (_rewardType == 'None') {
+                      _rateController.text = '0.0';
+                    } else if (_rateController.text == '0.0') {
+                      _rateController.text = '';
                     }
-                  },
-                ),
+                  });
+                },
               ),
+              const SizedBox(height: 24.0),
               CustomValidatedField(
                 label: _rewardType == 'Cashback'
                     ? 'Reward Rate (%)'.cased(context)
                     : 'Reward Rate (per \$)'.cased(context),
-                validator: () =>
-                    Validators.greaterThanZero(_rateController.text),
+                validator: () => _rewardType == 'None'
+                    ? null
+                    : Validators.greaterThanZero(_rateController.text),
                 child: TextField(
                   controller: _rateController,
+                  enabled: _rewardType != 'None',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: InputDecoration(
+                    hintText: '0.0',
+                    hintStyle: const TextStyle(color: AppColors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
                       vertical: 16.0,
@@ -229,7 +221,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: _rewardType == 'None'
+                        ? Colors.grey.shade200
+                        : Colors.white,
                   ),
                   onSubmitted: (_) => _saveCreditCard(),
                 ),

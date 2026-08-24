@@ -327,11 +327,11 @@ class TransactionFormState extends State<TransactionForm> {
               children: [
                 _isLoadingCategories
                     ? const Center(child: CircularProgressIndicator())
-                    : CategoryDropdown(
+                    : CustomDropdownField<Category?>(
                         label: 'Category'.cased(context),
-                        hintText: 'Select a category...'.cased(context),
                         items: _categories,
                         selectedItem: _selectedCategory,
+                        displayText: (cat) => cat?.name ?? '',
                         onChanged: (val) =>
                             setState(() => _selectedCategory = val),
                       ),

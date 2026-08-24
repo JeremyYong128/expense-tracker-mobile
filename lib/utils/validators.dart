@@ -11,10 +11,7 @@ class Validators {
   }
 
   /// Checks if a field is a valid number.
-  static String? number(
-    String? value, [
-    String message = 'Enter a valid number.',
-  ]) {
+  static String? number(String? value, [String message = 'Invalid number.']) {
     final reqError = required(value, message);
     if (reqError != null) return reqError;
 
@@ -27,7 +24,7 @@ class Validators {
   /// Checks if a field is a number greater than zero.
   static String? greaterThanZero(
     String? value, [
-    String message = 'Enter an amount greater than 0.',
+    String message = 'Amount must be greater than 0.',
   ]) {
     final numError = number(value, message);
     if (numError != null) return numError;

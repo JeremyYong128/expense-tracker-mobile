@@ -20,6 +20,8 @@ class CustomDropdownField<T> extends StatelessWidget {
   });
 
   void _showPicker(BuildContext context) {
+    if (items.isEmpty) return;
+
     int selectedIndex = items.indexOf(selectedItem);
     if (selectedIndex == -1) selectedIndex = 0;
 
@@ -103,9 +105,12 @@ class CustomDropdownField<T> extends StatelessWidget {
 
   InputDecoration _getInputDecoration() {
     return InputDecoration(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 16.0,
+      ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -127,7 +132,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         ],
         InkWell(
           onTap: () => _showPicker(context),
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(16.0),
           child: InputDecorator(
             decoration: _getInputDecoration(),
             child: Row(
