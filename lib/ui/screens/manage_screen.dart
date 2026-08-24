@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/credit_cards_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/categories_screen.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
@@ -29,6 +30,21 @@ class ManageScreen extends StatelessWidget {
                   CupertinoPageRoute(
                     builder: (context) =>
                         const RecurringTransactionsScreen(showAppBar: true),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildManageCard(
+              context,
+              title: 'Transaction Categories',
+              icon: Icons.category,
+              color: Colors.orange,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const CategoriesScreen(),
                   ),
                 );
               },

@@ -4,6 +4,7 @@ import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart'
 
 const Map<String, String> _ukToUsDictionary = {
   'colour': 'color',
+  'colours': 'colors',
   'categorise': 'categorize',
   'categorised': 'categorized',
   'categorising': 'categorizing',
@@ -44,7 +45,9 @@ extension StringCasing on String {
 extension StringLocalization on String {
   String localized(BuildContext context) {
     try {
-      final useUsEnglish = Provider.of<UserPreferencesProvider>(context).useUsEnglish;
+      final useUsEnglish = Provider.of<UserPreferencesProvider>(
+        context,
+      ).useUsEnglish;
       if (!useUsEnglish) return this;
 
       var result = this;
@@ -52,7 +55,8 @@ extension StringLocalization on String {
         final regex = RegExp('\\b$ukWord\\b', caseSensitive: false);
         result = result.replaceAllMapped(regex, (match) {
           final matchedStr = match.group(0)!;
-          if (matchedStr.isNotEmpty && matchedStr[0] == matchedStr[0].toUpperCase()) {
+          if (matchedStr.isNotEmpty &&
+              matchedStr[0] == matchedStr[0].toUpperCase()) {
             return usWord[0].toUpperCase() + usWord.substring(1);
           }
           return usWord;

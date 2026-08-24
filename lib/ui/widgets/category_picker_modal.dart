@@ -5,13 +5,12 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 
-class CategoryDropdown extends StatefulWidget {
+class CategoryDropdown extends StatelessWidget {
   final String label;
   final List<Category> items;
   final Category? selectedItem;
   final String? hintText;
   final ValueChanged<Category> onChanged;
-  final VoidCallback onEditPressed;
 
   const CategoryDropdown({
     super.key,
@@ -20,56 +19,16 @@ class CategoryDropdown extends StatefulWidget {
     required this.selectedItem,
     this.hintText,
     required this.onChanged,
-    required this.onEditPressed,
   });
-
-  @override
-  State<CategoryDropdown> createState() => _CategoryDropdownState();
-}
-
-class _CategoryDropdownState extends State<CategoryDropdown> {
-  late ValueNotifier<List<Category>> _itemsNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    _itemsNotifier = ValueNotifier(widget.items);
-  }
-
-  @override
-  void didUpdateWidget(CategoryDropdown oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    Future.microtask(() {
-      if (mounted) {
-        _itemsNotifier.value = List.from(widget.items);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _itemsNotifier.dispose();
-    super.dispose();
-  }
 
   void _showPicker(BuildContext context) {
     SlideUpModal.show(
       context: context,
-      leftButtonTitle: 'Cancel',
-      onLeftButtonPressed: () {
-        Navigator.of(context).pop();
-      },
-      rightButtonTitle: 'Edit',
-      onRightButtonPressed: () {
-        widget.onEditPressed();
-      },
-
+      title: 'Categories',
+      heightFraction: 280 / MediaQuery.of(context).size.height,
       child: SafeArea(
         top: false,
-        child: ValueListenableBuilder<List<Category>>(
-          valueListenable: _itemsNotifier,
-          builder: (context, items, child) {
-            return items.isEmpty
+        child: items.isEmpty
             ? Center(
                 child: Text(
                   'No categories'.cased(context),
@@ -80,18 +39,18 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                   ),
                 ),
               )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final category = items[index];
-                    final isSelected = widget.selectedItem?.id == category.id;
+            : ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final category = items[index];
+                  final isSelected = selectedItem?.id == category.id;
 
-                    return InkWell(
-                      onTap: () {
-                        widget.onChanged(category);
-                        Navigator.of(context).pop();
-                      },
+                  return InkWell(
+                    onTap: () {
+                      onChanged(category);
+                      Navigator.of(context).pop();
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16.0,
@@ -138,9 +97,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                     ),
                   );
                 },
-              );
-          },
-        ),
+              ),
       ),
     );
   }
@@ -162,9 +119,9 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.label.isNotEmpty) ...[
+        if (label.isNotEmpty) ...[
           Text(
-            widget.label,
+            label,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
           const SizedBox(height: 8.0),
@@ -176,20 +133,20 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
             decoration: _getInputDecoration(),
             child: Row(
               children: [
-                if (widget.selectedItem != null) ...[
+                if (selectedItem != null) ...[
                   Icon(
-                    widget.selectedItem!.iconData,
-                    color: widget.selectedItem!.color,
+                    selectedItem!.iconData,
+                    color: selectedItem!.color,
                     size: 20,
                   ),
                   const SizedBox(width: 8.0),
                 ],
                 Expanded(
                   child: Text(
-                    widget.selectedItem?.name ?? widget.hintText ?? '',
+                    selectedItem?.name ?? hintText ?? '',
                     style: TextStyle(
                       fontSize: 16,
-                      color: widget.selectedItem != null
+                      color: selectedItem != null
                           ? AppColors.textPrimary
                           : AppColors.grey,
                     ),

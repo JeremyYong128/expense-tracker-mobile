@@ -7,14 +7,12 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart'
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_picker_modal.dart';
-import 'package:expense_tracker_mobile/ui/widgets/category_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_type_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
-import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
@@ -151,7 +149,7 @@ class TransactionFormState extends State<TransactionForm> {
       _categories = categories.where((c) {
         return c.isActive || c.id == catId;
       }).toList();
-      
+
       _creditCards = creditCards;
       _isLoadingCategories = false;
 
@@ -322,40 +320,31 @@ class TransactionFormState extends State<TransactionForm> {
           CustomValidatedField(
             validator: () => Validators.required(
               _selectedCategory?.name,
-              'Please select a valid category.',
+              'Select a valid category.',
             ),
-            child: _isLoadingCategories
-                ? const Center(child: CircularProgressIndicator())
-                : CategoryDropdown(
-                    label: 'Category'.cased(context),
-                    hintText: 'Select a category...'.cased(context),
-                    items: _categories,
-                    selectedItem: _selectedCategory,
-                    onChanged: (val) => setState(() => _selectedCategory = val),
-                    onEditPressed: () {
-                      SlideUpModal.showCustom(
-                        context: context,
-                        builder: (context) => EditCategoriesModal(
-                          initialCategories: _categories,
-                          onCategoriesUpdated: (newCategories) {
-                            setState(() {
-                              _categories = newCategories;
-                              if (_selectedCategory != null &&
-                                  !_categories.any(
-                                    (c) => c.id == _selectedCategory!.id,
-                                  )) {
-                                _selectedCategory = null;
-                              }
-                            });
-                          },
-                          onCategorySelected: (category) {
-                            setState(() => _selectedCategory = category);
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      );
-                    },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _isLoadingCategories
+                    ? const Center(child: CircularProgressIndicator())
+                    : CategoryDropdown(
+                        label: 'Category'.cased(context),
+                        hintText: 'Select a category...'.cased(context),
+                        items: _categories,
+                        selectedItem: _selectedCategory,
+                        onChanged: (val) =>
+                            setState(() => _selectedCategory = val),
+                      ),
+                const SizedBox(height: 8),
+                Text(
+                  'Add or edit categories under \'Manage\'.'.cased(context),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
+                ),
+              ],
+            ),
           ),
 
           Padding(
@@ -388,13 +377,27 @@ class TransactionFormState extends State<TransactionForm> {
           if (!_isIncome)
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
-              child: CustomDropdownField<CreditCard?>(
-                label: 'Credit Card'.cased(context),
-                selectedItem: _selectedCreditCard,
-                items: [null, ..._creditCards],
-                displayText: (card) =>
-                    card == null ? 'None'.cased(context) : card.name,
-                onChanged: (val) => setState(() => _selectedCreditCard = val),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomDropdownField<CreditCard?>(
+                    label: 'Credit Card'.cased(context),
+                    selectedItem: _selectedCreditCard,
+                    items: [null, ..._creditCards],
+                    displayText: (card) =>
+                        card == null ? 'None'.cased(context) : card.name,
+                    onChanged: (val) =>
+                        setState(() => _selectedCreditCard = val),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add or edit credit cards under \'Manage\'.'.cased(context),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
 

@@ -1,6 +1,9 @@
 class Validators {
   /// Checks if a field is empty.
-  static String? required(String? value, [String message = 'This field is required.']) {
+  static String? required(
+    String? value, [
+    String message = 'This field is required.',
+  ]) {
     if (value == null || value.trim().isEmpty) {
       return message;
     }
@@ -8,7 +11,10 @@ class Validators {
   }
 
   /// Checks if a field is a valid number.
-  static String? number(String? value, [String message = 'Please enter a valid number.']) {
+  static String? number(
+    String? value, [
+    String message = 'Enter a valid number.',
+  ]) {
     final reqError = required(value, message);
     if (reqError != null) return reqError;
 
@@ -19,7 +25,10 @@ class Validators {
   }
 
   /// Checks if a field is a number greater than zero.
-  static String? greaterThanZero(String? value, [String message = 'Please enter an amount greater than 0.']) {
+  static String? greaterThanZero(
+    String? value, [
+    String message = 'Enter an amount greater than 0.',
+  ]) {
     final numError = number(value, message);
     if (numError != null) return numError;
 

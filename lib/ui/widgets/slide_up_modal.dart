@@ -55,6 +55,7 @@ class SlideUpModal extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      useRootNavigator: true,
       builder: builder,
     );
   }
