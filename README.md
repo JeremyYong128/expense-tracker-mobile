@@ -113,6 +113,8 @@ flutter run
     - Need support for credit cards with no rewards
 - Swipe left then click to delete a transaction
 - What happens when a user closes the pending approvals modal?
+- Different categories for expenses and income
+- Adding recurring transaction: should it be from the add transaction screen or from the recurring transaction screen? Looks out of place if there are plus buttons for credit cards and categories but not recurring.
 - Possible changes to consider:
     - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
     - Currently when editing the recurring transaction intervals, if the start date/time or the interval is changed, it calculates the next due date starting from the latest recorded individual transaction, or the new start date, whichever is later. Is this too confusing?

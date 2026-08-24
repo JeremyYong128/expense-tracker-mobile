@@ -180,7 +180,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
 
               // 2. Name Text Field
               CustomValidatedField(
-                padding: EdgeInsets.zero,
+                label: 'Category Name'.cased(context),
                 validator: () {
                   final text = _nameController.text.trim();
                   return Validators.required(text);
@@ -188,8 +188,6 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    hintText: 'Category Name'.cased(context),
-                    hintStyle: const TextStyle(color: AppColors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
                       vertical: 16.0,
@@ -204,7 +202,6 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                   onSubmitted: (_) => _saveCategory(),
                 ),
               ),
-              const SizedBox(height: 24.0),
 
               // 3. Colors Picker
               Text(

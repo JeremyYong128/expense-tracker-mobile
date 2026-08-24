@@ -100,13 +100,36 @@ class _CreditCardModalState extends State<CreditCardModal> {
     }
   }
 
+  Future<void> _deleteCreditCard() async {
+    if (widget.card == null) return;
+
+    try {
+      final provider = context.read<CreditCardProvider>();
+      await provider.deleteCreditCard(widget.card!.id!);
+
+      if (mounted) {
+        widget.onSaved?.call();
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete credit card'.cased(context)),
+            backgroundColor: AppColors.expense,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.card != null;
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
       rightButtonTitle: 'Save'.cased(context),
-
       onRightButtonPressed: _saveCreditCard,
       child: SingleChildScrollView(
         controller: _scrollController,
@@ -114,6 +137,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_formError != null)
                 Padding(
@@ -138,29 +162,51 @@ class _CreditCardModalState extends State<CreditCardModal> {
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: 'Card Name'.cased(context),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
+                  onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _rewardType,
-                decoration: InputDecoration(
-                  labelText: 'Reward Type'.cased(context),
+              CustomValidatedField(
+                label: 'Reward Type'.cased(context),
+                validator: () => null,
+                child: DropdownButtonFormField<String>(
+                  initialValue: _rewardType,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  items: ['Cashback', 'Miles', 'Points']
+                      .map(
+                        (type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(type.cased(context)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _rewardType = value);
+                    }
+                  },
                 ),
-                items: ['Cashback', 'Miles', 'Points']
-                    .map(
-                      (type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(type.cased(context)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _rewardType = value);
-                  }
-                },
               ),
               CustomValidatedField(
                 label: _rewardType == 'Cashback'
@@ -174,14 +220,47 @@ class _CreditCardModalState extends State<CreditCardModal> {
                     decimal: true,
                   ),
                   decoration: InputDecoration(
-                    labelText: _rewardType == 'Cashback'
-                        ? 'Reward Rate (%)'.cased(context)
-                        : 'Reward Rate (per \$)'.cased(context),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
+                  onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
-              // Add bottom padding to account for keyboard
-              SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 24),
+              if (isEditing) ...[
+                const SizedBox(height: 24.0),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.0,
+                  child: ElevatedButton(
+                    onPressed: _deleteCreditCard,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      foregroundColor: Colors.red,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                    ),
+                    child: Text(
+                      'Delete Credit Card'.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 32),
+              SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],
           ),
         ),
