@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
-import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
@@ -19,61 +20,48 @@ class CreditCardDetailsScreen extends StatefulWidget {
 }
 
 class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
-  List<Transaction> _transactions = [];
-  List<Category> _categories = [];
-  bool _isLoading = true;
-  double _totalRewards = 0;
-
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
+  Widget build(BuildContext context) {
+    final transactionProvider = context.watch<TransactionProvider>();
+    final categoryProvider = context.watch<CategoryProvider>();
 
-  Future<void> _loadData() async {
-    final transactions = await DataService.getTransactionsForCard(
-      widget.creditCard.id!,
-    );
-    final categories = await DataService.getCategories();
+    if (transactionProvider.isLoading || categoryProvider.isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.creditCard.name)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final transactionsList = transactionProvider.transactions
+        .where((t) => t.creditCardId == widget.creditCard.id)
+        .toList();
+    transactionsList.sort((a, b) => b.date.compareTo(a.date));
+    
+    final categoriesList = categoryProvider.categories;
 
     // Calculate total rewards
     double totalSpent = 0;
-    for (var tx in transactions) {
+    for (var tx in transactionsList) {
       if (!tx.isIncome) {
         totalSpent += tx.amount;
       }
     }
 
-    double rewards = 0;
+    double totalRewardsAmount = 0;
     if (widget.creditCard.rewardType == 'Cashback') {
-      rewards = totalSpent * (widget.creditCard.rewardRate / 100);
+      totalRewardsAmount = totalSpent * (widget.creditCard.rewardRate / 100);
     } else {
-      rewards = totalSpent * widget.creditCard.rewardRate;
+      totalRewardsAmount = totalSpent * widget.creditCard.rewardRate;
     }
 
-    // Sort transactions by date descending
-    transactions.sort((a, b) => b.date.compareTo(a.date));
-
-    setState(() {
-      _transactions = transactions;
-      _categories = categories;
-      _totalRewards = rewards;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.creditCard.name)),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+      body: Column(
               children: [
-                _buildRewardsSummary(),
+                _buildRewardsSummary(totalRewardsAmount),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: _transactions.isEmpty
+                  child: transactionsList.isEmpty
                       ? Center(
                           child: Text(
                             'No expenses tagged to this card.'.cased(context),
@@ -85,10 +73,10 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.only(bottom: 24),
-                          itemCount: _transactions.length,
+                          itemCount: transactionsList.length,
                           itemBuilder: (context, index) {
-                            final transaction = _transactions[index];
-                            final category = _categories.firstWhere(
+                            final transaction = transactionsList[index];
+                            final category = categoriesList.firstWhere(
                               (c) => c.id == transaction.categoryId,
                               orElse: () => Category(
                                 id: 0,
@@ -221,11 +209,11 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     );
   }
 
-  Widget _buildRewardsSummary() {
+  Widget _buildRewardsSummary(double totalRewardsAmount) {
     final isCashback = widget.creditCard.rewardType == 'Cashback';
     final rewardText = isCashback
-        ? '\$${_totalRewards.toStringAsFixed(2)}'
-        : NumberFormat.decimalPattern().format(_totalRewards.toInt());
+        ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
+        : NumberFormat.decimalPattern().format(totalRewardsAmount.toInt());
 
     return Container(
       width: double.infinity,

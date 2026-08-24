@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 
@@ -12,6 +14,8 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -19,11 +23,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _saveTransaction(TransactionFormData data) async {
-    await DataService.addTransaction(
+    await context.read<TransactionProvider>().addTransaction(
       amountText: data.amount.toString(),
       title: data.title,
       date: data.date,
@@ -43,6 +48,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           content: Text('Transaction added successfully!'.cased(context)),
         ),
       );
+      context.read<TransactionProvider>().fetchTransactions();
+      if (data.isRecurring) {
+        context
+            .read<RecurringTransactionProvider>()
+            .fetchRecurringTransactions();
+      }
       setState(() {});
     }
   }
@@ -56,8 +67,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       child: Scaffold(
         appBar: AppBar(title: Text('Add Transaction'.cased(context))),
         body: SingleChildScrollView(
+          controller: _scrollController,
           padding: AppStyles.screenPadding,
-          child: TransactionForm(key: UniqueKey(), onSave: _saveTransaction),
+          child: TransactionForm(
+            key: UniqueKey(),
+            scrollController: _scrollController,
+            onSave: _saveTransaction,
+          ),
         ),
       ),
     );

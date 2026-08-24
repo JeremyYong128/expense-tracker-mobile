@@ -29,11 +29,17 @@ class CustomValidatedField extends StatelessWidget {
               if (label != null) ...[
                 Text(
                   label!,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 8.0),
               ],
-              if (height != null) SizedBox(height: height, child: child) else child,
+              if (height != null)
+                SizedBox(height: height, child: child)
+              else
+                child,
               if (state.hasError)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, left: 16.0),

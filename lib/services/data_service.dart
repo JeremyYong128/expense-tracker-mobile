@@ -4,14 +4,13 @@ import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
 import 'package:expense_tracker_mobile/database/drift_database.dart';
-import 'package:expense_tracker_mobile/services/data_change_notifier.dart';
+import 'package:expense_tracker_mobile/core/exceptions.dart';
 
 class DataService {
   static final AppDatabase _db = AppDatabase();
-  static final DataChangeNotifier onDataChanged = DataChangeNotifier();
 
   // --- Mappers ---
-  
+
   static Category _mapCategory(CategoryTableData data) {
     return Category(
       id: data.id,
@@ -45,7 +44,9 @@ class DataService {
     );
   }
 
-  static RecurringTransaction _mapRecurringTransaction(RecurringTransactionTableData data) {
+  static RecurringTransaction _mapRecurringTransaction(
+    RecurringTransactionTableData data,
+  ) {
     return RecurringTransaction(
       id: data.id,
       amount: data.amount,
@@ -63,81 +64,87 @@ class DataService {
 
   // --- Category Methods ---
 
+  // Get all categories
   static Future<List<Category>> getCategories() async {
     final list = await _db.select(_db.categories).get();
     return list.map(_mapCategory).toList();
   }
 
+  // Add a category
+  // Handles duplicate category names by merging them
   static Future<int> addCategory(Category category) async {
-    final existing = await (_db.select(_db.categories)
-          ..where((c) => c.name.lower().equals(category.name.toLowerCase())))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(
+              _db.categories,
+            )..where((c) => c.name.lower().equals(category.name.toLowerCase())))
+            .getSingleOrNull();
 
     if (existing != null) {
-      await (_db.update(_db.categories)..where((c) => c.id.equals(existing.id))).write(
+      await (_db.update(
+        _db.categories,
+      )..where((c) => c.id.equals(existing.id))).write(
         CategoriesCompanion(
-          isActive: const drift.Value(true),
+          isActive: drift.Value(category.isActive),
           colorHex: drift.Value(category.colorHex),
           iconString: drift.Value(category.iconString),
         ),
       );
-      onDataChanged.notify();
       return existing.id;
     }
 
-    final newId = await _db.into(_db.categories).insert(
-      CategoriesCompanion.insert(
-        name: category.name,
-        colorHex: drift.Value(category.colorHex),
-        iconString: drift.Value(category.iconString),
-        isActive: drift.Value(category.isActive),
-      ),
-    );
-    onDataChanged.notify();
+    final newId = await _db
+        .into(_db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            name: category.name,
+            colorHex: drift.Value(category.colorHex),
+            iconString: drift.Value(category.iconString),
+            isActive: drift.Value(category.isActive),
+          ),
+        );
     return newId;
   }
 
+  // Update a category
+  // Handles collisions with existing categories by merging and using the existing category's id
   static Future<int> updateCategory(Category category) async {
-    // Check for a collision with an existing (likely soft-deleted) category
-    final existing = await (_db.select(_db.categories)
-          ..where((c) => c.name.lower().equals(category.name.toLowerCase()))
-          ..where((c) => c.id.equals(category.id!).not()))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.categories)
+              ..where((c) => c.name.lower().equals(category.name.toLowerCase()))
+              ..where((c) => c.id.equals(category.id!).not()))
+            .getSingleOrNull();
 
     if (existing != null) {
-      // Merge: Update the existing soft-deleted category
-      await (_db.update(_db.categories)..where((c) => c.id.equals(existing.id))).write(
+      await (_db.update(
+        _db.categories,
+      )..where((c) => c.id.equals(existing.id))).write(
         CategoriesCompanion(
           name: drift.Value(category.name),
           colorHex: drift.Value(category.colorHex),
           iconString: drift.Value(category.iconString),
-          isActive: const drift.Value(true), // Reactivate
+          isActive: drift.Value(category.isActive),
         ),
       );
 
-      // Migrate transactions to the existing category
-      await (_db.update(_db.transactions)..where((t) => t.categoryId.equals(category.id!))).write(
-        TransactionsCompanion(
-          categoryId: drift.Value(existing.id),
-        ),
+      await (_db.update(_db.transactions)
+            ..where((t) => t.categoryId.equals(category.id!)))
+          .write(TransactionsCompanion(categoryId: drift.Value(existing.id)));
+      await (_db.update(
+        _db.recurringTransactions,
+      )..where((r) => r.categoryId.equals(category.id!))).write(
+        RecurringTransactionsCompanion(categoryId: drift.Value(existing.id)),
       );
 
-      // Migrate recurring transactions
-      await (_db.update(_db.recurringTransactions)..where((r) => r.categoryId.equals(category.id!))).write(
-        RecurringTransactionsCompanion(
-          categoryId: drift.Value(existing.id),
-        ),
-      );
+      await (_db.delete(
+        _db.categories,
+      )..where((c) => c.id.equals(category.id!))).go();
 
-      // Delete the old category
-      await (_db.delete(_db.categories)..where((c) => c.id.equals(category.id!))).go();
-
-      onDataChanged.notify();
       return existing.id;
     }
 
-    // Normal update
-    await (_db.update(_db.categories)..where((c) => c.id.equals(category.id!))).write(
+    await (_db.update(
+      _db.categories,
+    )..where((c) => c.id.equals(category.id!))).write(
       CategoriesCompanion(
         name: drift.Value(category.name),
         colorHex: drift.Value(category.colorHex),
@@ -145,13 +152,18 @@ class DataService {
         isActive: drift.Value(category.isActive),
       ),
     );
-    onDataChanged.notify();
     return category.id!;
   }
 
+  // Delete a category
+  // If the category has associated transactions or recurring transactions, it will be deactivated instead of deleted
   static Future<void> deleteCategory(int id) async {
-    final txCount = await (_db.select(_db.transactions)..where((t) => t.categoryId.equals(id))).get();
-    final recCount = await (_db.select(_db.recurringTransactions)..where((r) => r.categoryId.equals(id))).get();
+    final txCount = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.categoryId.equals(id))).get();
+    final recCount = await (_db.select(
+      _db.recurringTransactions,
+    )..where((r) => r.categoryId.equals(id))).get();
 
     if (txCount.isNotEmpty || recCount.isNotEmpty) {
       await (_db.update(_db.categories)..where((c) => c.id.equals(id))).write(
@@ -160,42 +172,71 @@ class DataService {
     } else {
       await (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
     }
-    onDataChanged.notify();
   }
 
   // --- Credit Card Methods ---
 
+  // Get all credit cards
   static Future<List<CreditCard>> getCreditCards() async {
     final list = await _db.select(_db.creditCards).get();
     return list.map(_mapCreditCard).toList();
   }
 
+  // Add credit card
+  // Throws an exception if a credit card with the same name already exists
   static Future<int> addCreditCard(CreditCard card) async {
-    final id = await _db.into(_db.creditCards).insert(
-      CreditCardsCompanion.insert(
-        name: card.name,
-        rewardType: card.rewardType,
-        rewardRate: card.rewardRate,
-      ),
-    );
-    onDataChanged.notify();
+    final existing =
+        await (_db.select(_db.creditCards)
+              ..where((c) => c.name.lower().equals(card.name.toLowerCase())))
+            .getSingleOrNull();
+
+    if (existing != null) {
+      throw DatabaseValidationException(
+        'A credit card with this name already exists.',
+      );
+    }
+
+    final id = await _db
+        .into(_db.creditCards)
+        .insert(
+          CreditCardsCompanion.insert(
+            name: card.name,
+            rewardType: card.rewardType,
+            rewardRate: card.rewardRate,
+          ),
+        );
     return id;
   }
 
+  // Update credit card
+  // Throws an exception if a credit card with the same name already exists
   static Future<void> updateCreditCard(CreditCard card) async {
-    await (_db.update(_db.creditCards)..where((c) => c.id.equals(card.id!))).write(
+    final existing =
+        await (_db.select(_db.creditCards)
+              ..where((c) => c.name.lower().equals(card.name.toLowerCase()))
+              ..where((c) => c.id.equals(card.id!).not()))
+            .getSingleOrNull();
+
+    if (existing != null) {
+      throw DatabaseValidationException(
+        'A credit card with this name already exists.',
+      );
+    }
+
+    await (_db.update(
+      _db.creditCards,
+    )..where((c) => c.id.equals(card.id!))).write(
       CreditCardsCompanion(
         name: drift.Value(card.name),
         rewardType: drift.Value(card.rewardType),
         rewardRate: drift.Value(card.rewardRate),
       ),
     );
-    onDataChanged.notify();
   }
 
+  // Delete credit card.
   static Future<void> deleteCreditCard(int id) async {
     await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
-    onDataChanged.notify();
   }
 
   // --- Transaction Methods ---
@@ -212,52 +253,47 @@ class DataService {
     required String note,
     int? creditCardId,
   }) async {
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) {
-      throw Exception('Please enter a valid amount greater than 0.');
-    }
-
-    if (title.trim().isEmpty) {
-      throw Exception('Please enter a title.');
-    }
+    final amount = double.parse(amountText);
+    final recurringInterval = int.tryParse(recurringIntervalText) ?? 1;
 
     if (isRecurring) {
-      final recurringInterval = int.tryParse(recurringIntervalText);
-      if (recurringInterval == null || recurringInterval <= 0) {
-        throw Exception('Please enter a valid recurring interval.');
-      }
-
-      await _db.into(_db.recurringTransactions).insert(
-        RecurringTransactionsCompanion.insert(
-          amount: amount,
-          title: title.trim(),
-          categoryId: categoryId,
-          isIncome: drift.Value(isIncome),
-          interval: recurringInterval,
-          period: recurringPeriod,
-          startDate: drift.Value(date.toIso8601String()),
-          nextDueDate: date.toIso8601String(),
-          note: drift.Value(note.trim().isEmpty ? null : note.trim()),
-          creditCardId: drift.Value(creditCardId),
-        ),
-      );
+      await _db
+          .into(_db.recurringTransactions)
+          .insert(
+            RecurringTransactionsCompanion.insert(
+              amount: amount,
+              title: title.trim(),
+              categoryId: categoryId,
+              isIncome: drift.Value(isIncome),
+              interval: recurringInterval,
+              period: recurringPeriod,
+              startDate: drift.Value(date.toIso8601String()),
+              nextDueDate: date.toIso8601String(),
+              note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+              creditCardId: drift.Value(creditCardId),
+            ),
+          );
     } else {
-      await _db.into(_db.transactions).insert(
-        TransactionsCompanion.insert(
-          amount: amount,
-          title: title.trim(),
-          date: date.toIso8601String(),
-          categoryId: categoryId,
-          isIncome: drift.Value(isIncome),
-          note: drift.Value(note.trim().isEmpty ? null : note.trim()),
-          creditCardId: drift.Value(creditCardId),
-        ),
-      );
+      await _db
+          .into(_db.transactions)
+          .insert(
+            TransactionsCompanion.insert(
+              amount: amount,
+              title: title.trim(),
+              date: date.toIso8601String(),
+              categoryId: categoryId,
+              isIncome: drift.Value(isIncome),
+              note: drift.Value(note.trim().isEmpty ? null : note.trim()),
+              creditCardId: drift.Value(creditCardId),
+            ),
+          );
     }
   }
 
   static Future<void> updateTransaction(Transaction transaction) async {
-    await (_db.update(_db.transactions)..where((t) => t.id.equals(transaction.id!))).write(
+    await (_db.update(
+      _db.transactions,
+    )..where((t) => t.id.equals(transaction.id!))).write(
       TransactionsCompanion(
         amount: drift.Value(transaction.amount),
         title: drift.Value(transaction.title),
@@ -268,7 +304,6 @@ class DataService {
         creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
-    onDataChanged.notify();
   }
 
   static Future<List<Transaction>> getTransactions() async {
@@ -280,30 +315,47 @@ class DataService {
     final list = await _db.select(_db.recurringTransactions).get();
     return list.map(_mapRecurringTransaction).toList();
   }
-  
-  static Future<RecurringTransaction?> getRecurringTransactionById(int id) async {
-    final data = await (_db.select(_db.recurringTransactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  static Future<RecurringTransaction?> getRecurringTransactionById(
+    int id,
+  ) async {
+    final data = await (_db.select(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (data == null) return null;
     return _mapRecurringTransaction(data);
   }
-  
-  static Future<void> updateRecurringTransaction(RecurringTransaction transaction) async {
-    // Implement Suggestion B: Shift and Keep History
+
+  static Future<void> updateRecurringTransaction(
+    RecurringTransaction transaction,
+  ) async {
+    // Shift and Keep History
     DateTime newNextDueDate = transaction.startDate;
-    
+
     // Fetch all existing child transactions
-    final children = await (_db.select(_db.transactions)..where((t) => t.recurringId.equals(transaction.id!))).get();
-    
+    final children = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.recurringId.equals(transaction.id!))).get();
+
     if (children.isNotEmpty) {
-      children.sort((a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
+      children.sort(
+        (a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)),
+      );
       final latestChildDate = DateTime.parse(children.last.date);
-      
-      while (newNextDueDate.isBefore(latestChildDate) || newNextDueDate.isAtSameMomentAs(latestChildDate)) {
-        newNextDueDate = calculateNextDueDate(newNextDueDate, transaction.interval, transaction.period);
+
+      while (newNextDueDate.isBefore(latestChildDate) ||
+          newNextDueDate.isAtSameMomentAs(latestChildDate)) {
+        newNextDueDate = calculateNextDueDate(
+          newNextDueDate,
+          transaction.interval,
+          transaction.period,
+        );
       }
     }
 
-    await (_db.update(_db.recurringTransactions)..where((t) => t.id.equals(transaction.id!))).write(
+    await (_db.update(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(transaction.id!))).write(
       RecurringTransactionsCompanion(
         amount: drift.Value(transaction.amount),
         title: drift.Value(transaction.title),
@@ -317,35 +369,41 @@ class DataService {
         creditCardId: drift.Value(transaction.creditCardId),
       ),
     );
-    onDataChanged.notify();
   }
+
   static Future<void> deleteTransaction(int id) async {
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
-    onDataChanged.notify();
   }
 
   static Future<void> deleteRecurringTransaction(int id) async {
-    await (_db.delete(_db.recurringTransactions)..where((t) => t.id.equals(id))).go();
-    onDataChanged.notify();
-  }
-  
-  static Future<void> insertTransaction(Transaction transaction) async {
-    await _db.into(_db.transactions).insert(
-      TransactionsCompanion.insert(
-        amount: transaction.amount,
-        title: transaction.title,
-        date: transaction.date.toIso8601String(),
-        categoryId: transaction.categoryId,
-        isIncome: drift.Value(transaction.isIncome),
-        note: drift.Value(transaction.note),
-        recurringId: drift.Value(transaction.recurringId),
-        creditCardId: drift.Value(transaction.creditCardId),
-      ),
-    );
+    await (_db.delete(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(id))).go();
   }
 
-  static Future<List<Transaction>> getTransactionsForCard(int creditCardId) async {
-    final list = await (_db.select(_db.transactions)..where((t) => t.creditCardId.equals(creditCardId))).get();
+  static Future<void> insertTransaction(Transaction transaction) async {
+    await _db
+        .into(_db.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            amount: transaction.amount,
+            title: transaction.title,
+            date: transaction.date.toIso8601String(),
+            categoryId: transaction.categoryId,
+            isIncome: drift.Value(transaction.isIncome),
+            note: drift.Value(transaction.note),
+            recurringId: drift.Value(transaction.recurringId),
+            creditCardId: drift.Value(transaction.creditCardId),
+          ),
+        );
+  }
+
+  static Future<List<Transaction>> getTransactionsForCard(
+    int creditCardId,
+  ) async {
+    final list = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.creditCardId.equals(creditCardId))).get();
     return list.map(_mapTransaction).toList();
   }
 
@@ -385,10 +443,12 @@ class DataService {
     }
   }
 
-  static Future<DashboardStats> getDashboardStats(DateTime currentMonth) async {
-    final allTransactions = await getTransactions();
-    final categories = await getCategories();
-
+  static DashboardStats computeDashboardStats(
+    List<Transaction> allTransactions,
+    List<Category> categories,
+    List<CreditCard> creditCards,
+    DateTime currentMonth,
+  ) {
     // Filter to current month
     final currentMonthTransactions = allTransactions
         .where(
@@ -459,7 +519,6 @@ class DataService {
       topCatMap[category] = entry.value;
     }
 
-    final creditCards = await getCreditCards();
     Map<CreditCard, double> rewardsMap = {};
 
     // Group spending by credit card ID for current month
@@ -494,14 +553,16 @@ class DataService {
     );
   }
 
-  static Future<HistoryStats> getHistoryStats() async {
-    final transactions = await getTransactions();
-    final categories = await getCategories();
-
-    transactions.sort((a, b) => b.date.compareTo(a.date));
+  static HistoryStats computeHistoryStats(
+    List<Transaction> transactions,
+    List<Category> categories,
+  ) {
+    // create a copy to sort
+    final sortedTransactions = List<Transaction>.from(transactions);
+    sortedTransactions.sort((a, b) => b.date.compareTo(a.date));
 
     final Map<DateTime, List<Transaction>> grouped = {};
-    for (var tx in transactions) {
+    for (var tx in sortedTransactions) {
       final date = DateTime(tx.date.year, tx.date.month, tx.date.day);
       if (!grouped.containsKey(date)) {
         grouped[date] = [];
@@ -509,10 +570,7 @@ class DataService {
       grouped[date]!.add(tx);
     }
 
-    return HistoryStats(
-      groupedTransactions: grouped,
-      categories: categories,
-    );
+    return HistoryStats(groupedTransactions: grouped, categories: categories);
   }
 }
 
@@ -538,8 +596,5 @@ class HistoryStats {
   final Map<DateTime, List<Transaction>> groupedTransactions;
   final List<Category> categories;
 
-  HistoryStats({
-    required this.groupedTransactions,
-    required this.categories,
-  });
+  HistoryStats({required this.groupedTransactions, required this.categories});
 }

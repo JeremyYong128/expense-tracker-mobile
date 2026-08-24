@@ -3,7 +3,6 @@ import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
@@ -16,6 +15,10 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/core/exceptions.dart';
 
 class TransactionFormData {
   final double amount;
@@ -47,6 +50,7 @@ class TransactionForm extends StatefulWidget {
   final t.Transaction? transaction;
   final RecurringTransaction? recurringTransaction;
   final bool showSaveButton;
+  final ScrollController? scrollController;
   final Future<void> Function(TransactionFormData data) onSave;
 
   const TransactionForm({
@@ -54,6 +58,7 @@ class TransactionForm extends StatefulWidget {
     this.transaction,
     this.recurringTransaction,
     this.showSaveButton = true,
+    this.scrollController,
     required this.onSave,
   });
 
@@ -132,9 +137,9 @@ class TransactionFormState extends State<TransactionForm> {
     _loadCategories();
   }
 
-  Future<void> _loadCategories() async {
-    final categories = await DataService.getCategories();
-    final creditCards = await DataService.getCreditCards();
+  void _loadCategories() {
+    final categories = context.read<CategoryProvider>().categories;
+    final creditCards = context.read<CreditCardProvider>().creditCards;
     setState(() {
       int? catId;
       if (widget.recurringTransaction != null) {
@@ -218,11 +223,27 @@ class TransactionFormState extends State<TransactionForm> {
 
     try {
       await widget.onSave(data);
+    } on DatabaseValidationException catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.message;
+        });
+        widget.scrollController?.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = e.toString().replaceAll('Exception: ', '');
+          _formError = 'An unexpected error occurred.';
         });
+        widget.scrollController?.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     }
   }

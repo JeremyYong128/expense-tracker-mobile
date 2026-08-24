@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/edit_transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
 
 class RecurringTransactionsScreen extends StatefulWidget {
   final bool showAppBar;
@@ -21,41 +22,30 @@ class RecurringTransactionsScreen extends StatefulWidget {
 
 class _RecurringTransactionsScreenState
     extends State<RecurringTransactionsScreen> {
-  List<RecurringTransaction> _recurringTransactions = [];
-  List<Category> _categories = [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadData();
-    DataService.onDataChanged.addListener(_onDataChanged);
-  }
-
-  void _onDataChanged() {
-    if (mounted) {
-      _loadData();
-    }
-  }
-
-  @override
-  void dispose() {
-    DataService.onDataChanged.removeListener(_onDataChanged);
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    final transactions = await DataService.getRecurringTransactions();
-    final categories = await DataService.getCategories();
-    setState(() {
-      _recurringTransactions = transactions;
-      _categories = categories;
-      _isLoading = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final recurringProvider = context.watch<RecurringTransactionProvider>();
+    final categoryProvider = context.watch<CategoryProvider>();
+
+    if (recurringProvider.isLoading || categoryProvider.isLoading) {
+      return widget.showAppBar
+          ? Scaffold(
+              appBar: AppBar(
+                title: Text('Recurring Transactions'.cased(context)),
+              ),
+              body: const Center(child: CircularProgressIndicator()),
+            )
+          : const Center(child: CircularProgressIndicator());
+    }
+
+    final recurringTransactions = recurringProvider.transactions;
+    final categories = categoryProvider.categories;
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -63,9 +53,7 @@ class _RecurringTransactionsScreenState
         appBar: widget.showAppBar
             ? AppBar(title: Text('Recurring Transactions'.cased(context)))
             : null,
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _recurringTransactions.isEmpty
+        body: recurringTransactions.isEmpty
             ? Center(
                 child: Text(
                   'No recurring transactions found.'.cased(context),
@@ -74,10 +62,10 @@ class _RecurringTransactionsScreenState
               )
             : ListView.builder(
                 padding: AppStyles.screenPadding,
-                itemCount: _recurringTransactions.length,
+                itemCount: recurringTransactions.length,
                 itemBuilder: (context, index) {
-                  final tx = _recurringTransactions[index];
-                  final category = _categories.firstWhere(
+                  final tx = recurringTransactions[index];
+                  final category = categories.firstWhere(
                     (c) => c.id == tx.categoryId,
                     orElse: () => Category(
                       name: 'Unknown',
@@ -113,7 +101,6 @@ class _RecurringTransactionsScreenState
                             builder: (context) =>
                                 EditTransactionModal(recurringTransaction: tx),
                           );
-                          _loadData();
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),

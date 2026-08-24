@@ -4,6 +4,10 @@ import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -14,32 +18,11 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
-  late Future<DashboardStats> _dashboardStatsFuture;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
-    DataService.onDataChanged.addListener(_onDataChanged);
-  }
-
-  void _onDataChanged() {
-    if (mounted) {
-      setState(() {
-        _loadDashboardData();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    DataService.onDataChanged.removeListener(_onDataChanged);
-    super.dispose();
-  }
-
-  void _loadDashboardData() {
-    _dashboardStatsFuture = DataService.getDashboardStats(_currentMonth);
   }
 
   void _navigateMonth(int monthOffset) {
@@ -48,35 +31,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _currentMonth.year,
         _currentMonth.month + monthOffset,
       );
-      _loadDashboardData();
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final transactionProvider = context.watch<TransactionProvider>();
+    final categoryProvider = context.watch<CategoryProvider>();
+
+    final creditCardProvider = context.watch<CreditCardProvider>();
+
+    if (transactionProvider.isLoading || categoryProvider.isLoading || creditCardProvider.isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Home'.cased(context))),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final stats = DataService.computeDashboardStats(
+      transactionProvider.transactions,
+      categoryProvider.categories,
+      creditCardProvider.creditCards,
+      _currentMonth,
+    );
+
     return SafeArea(
       top: false,
       bottom: true,
       child: Scaffold(
         appBar: AppBar(title: Text('Home'.cased(context))),
-        body: FutureBuilder<DashboardStats>(
-          future: _dashboardStatsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: const TextStyle(color: AppColors.expense),
-                ),
-              );
-            }
-
-            final stats = snapshot.data!;
-
-            return SingleChildScrollView(
+        body: SingleChildScrollView(
               padding: AppStyles.screenPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,9 +280,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ],
               ),
-            );
-          },
-        ),
+            ),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
@@ -9,9 +11,9 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class CreditCardModal extends StatefulWidget {
   final CreditCard? card;
-  final VoidCallback onSaved;
+  final VoidCallback? onSaved;
 
-  const CreditCardModal({super.key, this.card, required this.onSaved});
+  const CreditCardModal({super.key, this.card, this.onSaved});
 
   @override
   State<CreditCardModal> createState() => _CreditCardModalState();
@@ -23,6 +25,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
   late String _rewardType;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _nameController.dispose();
     _rateController.dispose();
     super.dispose();
@@ -62,20 +66,36 @@ class _CreditCardModalState extends State<CreditCardModal> {
       );
 
       if (widget.card != null) {
-        await DataService.updateCreditCard(newCard);
+        await context.read<CreditCardProvider>().updateCreditCard(newCard);
       } else {
-        await DataService.addCreditCard(newCard);
+        await context.read<CreditCardProvider>().addCreditCard(newCard);
       }
 
       if (mounted) {
-        widget.onSaved();
+        widget.onSaved?.call();
         Navigator.pop(context);
+      }
+    } on DatabaseValidationException catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.message;
+        });
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = e.toString().replaceAll('Exception: ', '');
+          _formError = 'An unexpected error occurred.';
         });
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     }
   }
@@ -89,6 +109,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
 
       onRightButtonPressed: _saveCreditCard,
       child: SingleChildScrollView(
+        controller: _scrollController,
         child: Form(
           key: _formKey,
           child: Column(

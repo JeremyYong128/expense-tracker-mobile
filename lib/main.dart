@@ -8,10 +8,13 @@ import 'package:expense_tracker_mobile/ui/screens/add_transaction_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/manage_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/settings_screen.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/pending_approvals_dialog.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -19,8 +22,14 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => UserPreferencesProvider(prefs),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserPreferencesProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
+        ChangeNotifierProvider(create: (_) => CreditCardProvider()),
+      ],
       child: const MainApp(),
     ),
   );
@@ -63,13 +72,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingRecurringTransactions();
+      Provider.of<RecurringTransactionProvider>(context, listen: false)
+          .addListener(_checkPendingRecurringTransactions);
     });
-    DataService.onDataChanged.addListener(_checkPendingRecurringTransactions);
   }
 
   @override
   void dispose() {
-    DataService.onDataChanged.removeListener(_checkPendingRecurringTransactions);
+    Provider.of<RecurringTransactionProvider>(context, listen: false)
+        .removeListener(_checkPendingRecurringTransactions);
     super.dispose();
   }
 
@@ -88,6 +99,11 @@ class _HomeScreenState extends State<HomeScreen> {
           return PendingApprovalsDialog(initialPending: pending);
         },
       );
+      
+      if (mounted) {
+        context.read<TransactionProvider>().fetchTransactions();
+        context.read<RecurringTransactionProvider>().fetchRecurringTransactions();
+      }
     } finally {
       _isCheckingPending = false;
     }

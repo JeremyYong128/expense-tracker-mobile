@@ -4,7 +4,9 @@ import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
@@ -28,6 +30,7 @@ class EditTransactionModal extends StatefulWidget {
 class _EditTransactionModalState extends State<EditTransactionModal> {
   final GlobalKey<TransactionFormState> _formKey =
       GlobalKey<TransactionFormState>();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -36,6 +39,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -55,7 +59,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         note: data.note,
         creditCardId: data.creditCardId,
       );
-      await DataService.updateRecurringTransaction(updated);
+      await context.read<RecurringTransactionProvider>().updateRecurringTransaction(updated);
     } else {
       final updated = widget.transaction!.copyWith(
         amount: data.amount,
@@ -66,7 +70,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         note: data.note,
         creditCardId: data.creditCardId,
       );
-      await DataService.updateTransaction(updated);
+      await context.read<TransactionProvider>().updateTransaction(updated);
     }
 
     if (mounted) Navigator.of(context).pop();
@@ -75,11 +79,11 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
   void _deleteTransaction() async {
     try {
       if (widget.recurringTransaction != null) {
-        await DataService.deleteRecurringTransaction(
+        await context.read<RecurringTransactionProvider>().deleteRecurringTransaction(
           widget.recurringTransaction!.id!,
         );
       } else {
-        await DataService.deleteTransaction(widget.transaction!.id!);
+        await context.read<TransactionProvider>().deleteTransaction(widget.transaction!.id!);
       }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
@@ -104,6 +108,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         _formKey.currentState?.submit();
       },
       child: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -113,6 +118,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
               transaction: widget.transaction,
               recurringTransaction: widget.recurringTransaction,
               showSaveButton: false,
+              scrollController: _scrollController,
               onSave: _saveTransaction,
             ),
             const SizedBox(height: 24.0),

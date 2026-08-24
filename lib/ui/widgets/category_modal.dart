@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_appearance_picker_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
@@ -36,7 +38,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
   String _newCategoryIcon = 'category';
 
   String _newCategoryColorHex = '#9E9E9E';
-  
+
   String? _formError;
   final _addFormKey = GlobalKey<FormState>();
 
@@ -73,14 +75,15 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
     if (!_addFormKey.currentState!.validate()) return;
 
     final text = _addController.text.trim();
-    
+
     try {
       final newCategory = Category(
         name: text,
         iconString: _newCategoryIcon,
         colorHex: _newCategoryColorHex,
       );
-      final newId = await DataService.addCategory(newCategory);
+      final provider = context.read<CategoryProvider>();
+      final newId = await provider.addCategory(newCategory);
 
       setState(() {
         _categories.add(
@@ -96,16 +99,23 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
       });
       _addController.clear();
       widget.onCategoriesUpdated(_categories);
+    } on DatabaseValidationException catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.message;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = e.toString().replaceAll('Exception: ', '');
+          _formError = 'An unexpected error occurred.';
         });
       }
     }
   }
 
   Future<void> _deleteCategory(int index) async {
+    final provider = context.read<CategoryProvider>();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -135,12 +145,14 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
     if (confirm != true) return;
 
     setState(() => _formError = null);
-    
+
     try {
       final category = _categories[index];
       if (category.id != null) {
-        await DataService.deleteCategory(category.id!);
+        await provider.deleteCategory(category.id!);
       }
+
+      if (!mounted) return;
 
       setState(() {
         _categories.removeAt(index);
@@ -149,10 +161,16 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
         }
       });
       widget.onCategoriesUpdated(_categories);
+    } on DatabaseValidationException catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.message;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = e.toString().replaceAll('Exception: ', '');
+          _formError = 'An unexpected error occurred.';
         });
       }
     }
@@ -166,6 +184,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
   }
 
   Future<void> _saveEdit(int index) async {
+    final provider = context.read<CategoryProvider>();
     final text = _editController.text.trim();
     final existing = _categories[index];
 
@@ -223,7 +242,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
     }
 
     setState(() => _formError = null);
-    
+
     try {
       if (option == 1) {
         final updatedCategory = Category(
@@ -232,7 +251,8 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
           colorHex: existing.colorHex,
           iconString: existing.iconString,
         );
-        final newId = await DataService.updateCategory(updatedCategory);
+        final newId = await provider.updateCategory(updatedCategory);
+        if (!mounted) return;
         setState(() {
           _categories[index] = Category(
             id: newId,
@@ -245,14 +265,15 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
         });
       } else if (option == 2) {
         if (existing.id != null) {
-          await DataService.deleteCategory(existing.id!);
+          await provider.deleteCategory(existing.id!);
         }
         final newCategory = Category(
           name: text,
           colorHex: existing.colorHex,
           iconString: existing.iconString,
         );
-        final newId = await DataService.addCategory(newCategory);
+        final newId = await provider.addCategory(newCategory);
+        if (!mounted) return;
         setState(() {
           _categories[index] = Category(
             id: newId,
@@ -264,10 +285,16 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
         });
       }
       widget.onCategoriesUpdated(_categories);
+    } on DatabaseValidationException catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = e.message;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = e.toString().replaceAll('Exception: ', '');
+          _formError = 'An unexpected error occurred.';
         });
       }
     }
@@ -285,10 +312,7 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Text(
                 _formError!,
-                style: const TextStyle(
-                  color: AppColors.expense,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: AppColors.expense, fontSize: 14),
               ),
             ),
           // Add New Category Row
@@ -297,85 +321,88 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
             child: Form(
               key: _addFormKey,
               child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    _showAppearancePicker(
-                      initialIcon: _newCategoryIcon,
-                      initialColorHex: _newCategoryColorHex,
-                      onSave: (icon, color) {
-                        setState(() {
-                          _newCategoryIcon = icon;
-                          _newCategoryColorHex = color;
-                        });
-                      },
-                    );
-                  },
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: CategoryAppearance.getColorFromHex(
-                        _newCategoryColorHex,
-                      ).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      CategoryAppearance.getIconData(_newCategoryIcon),
-                      color: CategoryAppearance.getColorFromHex(
-                        _newCategoryColorHex,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12.0),
-                Expanded(
-                  child: CustomValidatedField(
-                    padding: EdgeInsets.zero,
-                    validator: () {
-                      final text = _addController.text.trim();
-                      if (text.isEmpty) {
-                        return 'Category name is required';
-                      }
-                      if (_categories.any((c) => c.name.toLowerCase() == text.toLowerCase())) {
-                        return 'Category already exists';
-                      }
-                      return null;
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      _showAppearancePicker(
+                        initialIcon: _newCategoryIcon,
+                        initialColorHex: _newCategoryColorHex,
+                        onSave: (icon, color) {
+                          setState(() {
+                            _newCategoryIcon = icon;
+                            _newCategoryColorHex = color;
+                          });
+                        },
+                      );
                     },
-                    child: TextField(
-                      controller: _addController,
-                      decoration: InputDecoration(
-                        hintText: 'Add new category...'.cased(context),
-                        hintStyle: const TextStyle(color: AppColors.grey),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: CategoryAppearance.getColorFromHex(
+                          _newCategoryColorHex,
+                        ).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onSubmitted: (_) => _addCategory(),
+                      child: Icon(
+                        CategoryAppearance.getIconData(_newCategoryIcon),
+                        color: CategoryAppearance.getColorFromHex(
+                          _newCategoryColorHex,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12.0),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _addCategory,
-                  child: Container(
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12.0),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: CustomValidatedField(
+                      padding: EdgeInsets.zero,
+                      validator: () {
+                        final text = _addController.text.trim();
+                        if (text.isEmpty) {
+                          return 'Category name is required';
+                        }
+                        if (_categories.any(
+                          (c) => c.name.toLowerCase() == text.toLowerCase(),
+                        )) {
+                          return 'Category already exists';
+                        }
+                        return null;
+                      },
+                      child: TextField(
+                        controller: _addController,
+                        decoration: InputDecoration(
+                          hintText: 'Add new category...'.cased(context),
+                          hintStyle: const TextStyle(color: AppColors.grey),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        onSubmitted: (_) => _addCategory(),
+                      ),
                     ),
-                    child: const Icon(Icons.add, color: Colors.white),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 12.0),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _addCategory,
+                    child: Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -424,6 +451,8 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                                           _categories[index].colorHex ??
                                           '#9E9E9E',
                                       onSave: (icon, color) async {
+                                        final provider = context
+                                            .read<CategoryProvider>();
                                         final updatedCategory = Category(
                                           id: _categories[index].id,
                                           name: _categories[index].name,
@@ -431,10 +460,9 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                                           colorHex: color,
                                           isActive: _categories[index].isActive,
                                         );
-                                        final newId =
-                                            await DataService.updateCategory(
-                                              updatedCategory,
-                                            );
+                                        final newId = await provider
+                                            .updateCategory(updatedCategory);
+                                        if (!mounted) return;
                                         setState(() {
                                           _categories[index] = Category(
                                             id: newId,
@@ -470,11 +498,18 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                                       ? CustomValidatedField(
                                           padding: EdgeInsets.zero,
                                           validator: () {
-                                            final text = _editController.text.trim();
+                                            final text = _editController.text
+                                                .trim();
                                             if (text.isEmpty) {
                                               return 'Name is required';
                                             }
-                                            if (_categories.any((c) => c.name.toLowerCase() == text.toLowerCase() && _categories.indexOf(c) != index)) {
+                                            if (_categories.any(
+                                              (c) =>
+                                                  c.name.toLowerCase() ==
+                                                      text.toLowerCase() &&
+                                                  _categories.indexOf(c) !=
+                                                      index,
+                                            )) {
                                               return 'Category already exists';
                                             }
                                             return null;
@@ -486,7 +521,8 @@ class _EditCategoriesModalState extends State<EditCategoriesModal> {
                                               isDense: true,
                                               border: InputBorder.none,
                                             ),
-                                            onSubmitted: (_) => _saveEdit(index),
+                                            onSubmitted: (_) =>
+                                                _saveEdit(index),
                                           ),
                                         )
                                       : GestureDetector(
