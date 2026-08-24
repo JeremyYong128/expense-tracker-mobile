@@ -65,6 +65,13 @@ class _HomeScreenState extends State<HomeScreen> {
     SettingsScreen(),
   ];
 
+  final CupertinoTabController _tabController = CupertinoTabController();
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
+    5,
+    (_) => GlobalKey<NavigatorState>(),
+  );
+
+  int _lastTappedIndex = 0;
   bool _isCheckingPending = false;
 
   @override
@@ -72,15 +79,20 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingRecurringTransactions();
-      Provider.of<RecurringTransactionProvider>(context, listen: false)
-          .addListener(_checkPendingRecurringTransactions);
+      Provider.of<RecurringTransactionProvider>(
+        context,
+        listen: false,
+      ).addListener(_checkPendingRecurringTransactions);
     });
   }
 
   @override
   void dispose() {
-    Provider.of<RecurringTransactionProvider>(context, listen: false)
-        .removeListener(_checkPendingRecurringTransactions);
+    Provider.of<RecurringTransactionProvider>(
+      context,
+      listen: false,
+    ).removeListener(_checkPendingRecurringTransactions);
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -99,10 +111,12 @@ class _HomeScreenState extends State<HomeScreen> {
           return PendingApprovalsDialog(initialPending: pending);
         },
       );
-      
+
       if (mounted) {
         context.read<TransactionProvider>().fetchTransactions();
-        context.read<RecurringTransactionProvider>().fetchRecurringTransactions();
+        context
+            .read<RecurringTransactionProvider>()
+            .fetchRecurringTransactions();
       }
     } finally {
       _isCheckingPending = false;
@@ -112,7 +126,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
+      controller: _tabController,
       tabBar: CupertinoTabBar(
+        onTap: (index) {
+          if (_lastTappedIndex == index) {
+            _navigatorKeys[index].currentState?.popUntil(
+              (route) => route.isFirst,
+            );
+          }
+          _lastTappedIndex = index;
+        },
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
@@ -162,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       tabBuilder: (BuildContext context, int index) {
         return CupertinoTabView(
+          navigatorKey: _navigatorKeys[index],
           builder: (BuildContext context) {
             return _widgetOptions[index];
           },
