@@ -400,13 +400,29 @@ class DataService {
   }
 
   static Future<void> deleteTransaction(int id) async {
+    final tx = await (_db.select(_db.transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+
+    if (tx != null) {
+      final category = await (_db.select(_db.categories)..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
+      if (category != null && !category.isActive) {
+        await deleteCategory(category.id);
+      }
+    }
   }
 
   static Future<void> deleteRecurringTransaction(int id) async {
+    final tx = await (_db.select(_db.recurringTransactions)..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(
       _db.recurringTransactions,
     )..where((t) => t.id.equals(id))).go();
+
+    if (tx != null) {
+      final category = await (_db.select(_db.categories)..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
+      if (category != null && !category.isActive) {
+        await deleteCategory(category.id);
+      }
+    }
   }
 
   static Future<void> insertTransaction(Transaction transaction) async {

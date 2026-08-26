@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/credit_card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
@@ -66,57 +67,29 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
   }
 
   void _showRestoreDialog(CreditCard card) {
-    showDialog(
+    ConfirmationDialog.show(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: Text('Restore Credit Card'.cased(context)),
-          content: Text(
-            'Would you like to restore ${card.name} to your active wallet?'
-                .cased(context),
-            style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel'.cased(context),
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  await context.read<CreditCardProvider>().updateCreditCard(
-                    card.copyWith(isActive: true),
-                  );
-                  if (context.mounted) Navigator.pop(context);
-                } on DatabaseValidationException catch (e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(e.message)));
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('An unexpected error occurred.'),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Text(
-                'Restore'.cased(context),
-                style: const TextStyle(color: AppColors.primary),
-              ),
-            ),
-          ],
-        );
+      title: 'Restore Credit Card',
+      content: '${card.name} will be moved to your active cards.',
+      confirmText: 'Restore',
+      onConfirm: () async {
+        try {
+          await context.read<CreditCardProvider>().updateCreditCard(
+            card.copyWith(isActive: true),
+          );
+        } on DatabaseValidationException catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(e.message)));
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('An unexpected error occurred.')),
+            );
+          }
+        }
       },
     );
   }

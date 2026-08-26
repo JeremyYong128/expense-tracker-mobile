@@ -14,7 +14,7 @@ import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
-import 'package:expense_tracker_mobile/ui/widgets/pending_approvals_dialog.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 

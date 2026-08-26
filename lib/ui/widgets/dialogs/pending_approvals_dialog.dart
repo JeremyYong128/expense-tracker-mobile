@@ -69,6 +69,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
     final groupedKeys = groupedPending.keys.toList();
 
     return AlertDialog(
+      backgroundColor: AppColors.surface,
       insetPadding: const EdgeInsets.symmetric(
         horizontal: 16.0,
         vertical: 24.0,

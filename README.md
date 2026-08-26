@@ -108,13 +108,11 @@ flutter run
 
 - What happens when a user closes the pending approvals modal?
 - Different categories for expenses and income
-- Add button on recurring transaction screen should bring user to form with recurring pre-toggled
-- Saving a transaction should bring the user to history/recurring pages
-- When deleting expenses, check for associarted soft deleted categories and cards, to see if they can be hard deleted.
 - User alerts
     - Ensure they are implemented (in code) in the same way
     - Button order
     - User flow
+- Red colour standardisation
 
 ### Future
 

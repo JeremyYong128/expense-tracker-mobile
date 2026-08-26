@@ -8,6 +8,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
@@ -42,171 +43,80 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     );
 
     if (!hasTransactions && !hasRecurring) {
-      showDialog(
+      ConfirmationDialog.show(
         context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            backgroundColor: AppColors.surface,
-            title: Text('Delete Credit Card'.cased(context)),
-            content: Text(
-              'Are you sure you want to permanently delete ${card.name}?'.cased(
-                context,
-              ),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(
-                  'Cancel'.cased(context),
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final navigator = Navigator.of(context);
-                  final provider = context.read<CreditCardProvider>();
-                  final txProvider = context.read<TransactionProvider>();
-                  final recProvider = context
-                      .read<RecurringTransactionProvider>();
+        title: 'Delete Credit Card',
+        content: '${card.name} will be permanently deleted. Continue?',
+        confirmText: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          final navigator = Navigator.of(context);
+          final provider = context.read<CreditCardProvider>();
+          final txProvider = context.read<TransactionProvider>();
+          final recProvider = context.read<RecurringTransactionProvider>();
 
-                  final affected = await provider.deleteCreditCard(
-                    card.id!,
-                    forceHardDelete: true,
-                  );
-                  if (affected) {
-                    await txProvider.fetchTransactions();
-                    await recProvider.fetchRecurringTransactions();
-                  }
-
-                  if (mounted && dialogContext.mounted) {
-                    Navigator.pop(dialogContext); // Close dialog
-                    navigator.pop(); // Close details screen
-                  }
-                },
-                child: Text(
-                  'Delete'.cased(context),
-                  style: const TextStyle(color: AppColors.expense),
-                ),
-              ),
-            ],
+          final affected = await provider.deleteCreditCard(
+            card.id!,
+            forceHardDelete: true,
           );
+          if (affected) {
+            await txProvider.fetchTransactions();
+            await recProvider.fetchRecurringTransactions();
+          }
+
+          if (mounted) {
+            navigator.pop(); // Close details screen
+          }
         },
       );
       return;
     }
 
-    showDialog(
+    ConfirmationDialog.show(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: Text('Delete Credit Card'.cased(context)),
-          content: Text(
-            'There are associated transactions with this card. Deleting this card removes the card association from these transactions. Would you like to archive it instead?'
-                .cased(context),
-            style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel'.cased(context),
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext); // Close first dialog
-                showDialog(
-                  context: context,
-                  builder: (secondDialogContext) {
-                    return AlertDialog(
-                      backgroundColor: AppColors.surface,
-                      title: Text('Permanently Delete?'.cased(context)),
-                      content: Text(
-                        'Are you sure you want to permanently delete this card? All associated transactions will lose their card tag.'
-                            .cased(context),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(secondDialogContext),
-                          child: Text(
-                            'Cancel'.cased(context),
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final innerNavigator = Navigator.of(context);
-                            final provider = context.read<CreditCardProvider>();
-                            final txProvider = context
-                                .read<TransactionProvider>();
-                            final recProvider = context
-                                .read<RecurringTransactionProvider>();
+      title: 'Delete Credit Card',
+      content: 'You have transactions that use this card. Archive instead?',
+      confirmText: 'Delete',
+      isDestructive: true,
+      onConfirm: () {
+        ConfirmationDialog.show(
+          context: context,
+          title: 'Permanently Delete?',
+          content:
+              'Deleting this card removes the card association from these transactions.',
+          confirmText: 'Delete',
+          isDestructive: true,
+          onConfirm: () async {
+            final innerNavigator = Navigator.of(context);
+            final provider = context.read<CreditCardProvider>();
+            final txProvider = context.read<TransactionProvider>();
+            final recProvider = context.read<RecurringTransactionProvider>();
 
-                            final affected = await provider.deleteCreditCard(
-                              card.id!,
-                              forceHardDelete: true,
-                            );
-                            if (affected) {
-                              await txProvider.fetchTransactions();
-                              await recProvider.fetchRecurringTransactions();
-                            }
+            final affected = await provider.deleteCreditCard(
+              card.id!,
+              forceHardDelete: true,
+            );
+            if (affected) {
+              await txProvider.fetchTransactions();
+              await recProvider.fetchRecurringTransactions();
+            }
 
-                            if (mounted && secondDialogContext.mounted) {
-                              Navigator.pop(
-                                secondDialogContext,
-                              ); // Close second dialog
-                              innerNavigator.pop(); // Close details screen
-                            }
-                          },
-                          child: Text(
-                            'Delete'.cased(context),
-                            style: const TextStyle(color: AppColors.expense),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Text(
-                'Delete'.cased(context),
-                style: const TextStyle(color: AppColors.expense),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                final navigator = Navigator.of(context);
-                final provider = context.read<CreditCardProvider>();
-
-                await provider.deleteCreditCard(
-                  card.id!,
-                  forceHardDelete: false,
-                );
-
-                if (mounted && dialogContext.mounted) {
-                  Navigator.pop(dialogContext); // Close dialog
-                  navigator.pop(); // Close details screen
-                }
-              },
-              child: Text(
-                'Archive'.cased(context),
-                style: const TextStyle(color: AppColors.primary),
-              ),
-            ),
-          ],
+            if (mounted) {
+              innerNavigator.pop(); // Close details screen
+            }
+          },
         );
+      },
+      secondaryActionText: 'Archive',
+      onSecondaryAction: () async {
+        final navigator = Navigator.of(context);
+        final provider = context.read<CreditCardProvider>();
+
+        await provider.deleteCreditCard(card.id!, forceHardDelete: false);
+
+        if (mounted) {
+          navigator.pop(); // Close details screen
+        }
       },
     );
   }
