@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
