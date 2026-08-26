@@ -16,6 +16,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,32 @@ class MainApp extends StatelessWidget {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  static void navigateToHistory(BuildContext context) {
+    final state = context.findAncestorStateOfType<_HomeScreenState>();
+    state?._tabController.index = 1; // History Tab
+  }
+
+  static void navigateToRecurring(BuildContext context) {
+    final state = context.findAncestorStateOfType<_HomeScreenState>();
+    if (state != null) {
+      state._tabController.index = 3; // Manage Tab
+      state._navigatorKeys[3].currentState?.popUntil((route) => route.isFirst);
+      state._navigatorKeys[3].currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => const RecurringTransactionsScreen(showAppBar: true),
+        ),
+      );
+    }
+  }
+
+  static void navigateToAddTransaction(
+    BuildContext context, {
+    bool isRecurring = false,
+  }) {
+    final state = context.findAncestorStateOfType<_HomeScreenState>();
+    state?._tabController.index = 2; // Add tab
+  }
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

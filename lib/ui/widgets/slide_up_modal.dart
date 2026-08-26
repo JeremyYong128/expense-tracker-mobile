@@ -62,8 +62,10 @@ class SlideUpModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * heightFraction,
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * heightFraction,
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
@@ -132,6 +134,7 @@ class SlideUpModal extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

@@ -106,10 +106,6 @@ flutter run
 
 ### Priority Changes
 
-- Bugs
-    - Keyboard needs to close when form is submitted
-    - User gets stuck in notes when filling up the form. Keyboard can't close.
-
 - What happens when a user closes the pending approvals modal?
 - Different categories for expenses and income
 - Add button on recurring transaction screen should bring user to form with recurring pre-toggled

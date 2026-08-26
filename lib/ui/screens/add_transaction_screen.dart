@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
+import 'package:expense_tracker_mobile/main.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -53,6 +54,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         context
             .read<RecurringTransactionProvider>()
             .fetchRecurringTransactions();
+        HomeScreen.navigateToRecurring(context);
+      } else {
+        HomeScreen.navigateToHistory(context);
       }
       setState(() {});
     }
@@ -64,15 +68,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return SafeArea(
       top: false,
       bottom: true,
-      child: Scaffold(
-        appBar: AppBar(title: Text('Add Transaction'.cased(context))),
-        body: SingleChildScrollView(
-          controller: _scrollController,
-          padding: AppStyles.screenPadding,
-          child: TransactionForm(
-            key: UniqueKey(),
-            scrollController: _scrollController,
-            onSave: _saveTransaction,
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          appBar: AppBar(title: Text('Add Transaction'.cased(context))),
+          body: SingleChildScrollView(
+            controller: _scrollController,
+            padding: AppStyles.screenPadding,
+            child: TransactionForm(
+              key: UniqueKey(),
+              scrollController: _scrollController,
+              onSave: _saveTransaction,
+            ),
           ),
         ),
       ),

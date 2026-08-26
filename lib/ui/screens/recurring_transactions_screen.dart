@@ -9,6 +9,7 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/main.dart';
 
 class RecurringTransactionsScreen extends StatefulWidget {
   final bool showAppBar;
@@ -37,6 +38,14 @@ class _RecurringTransactionsScreenState
           ? Scaffold(
               appBar: AppBar(
                 title: Text('Recurring Transactions'.cased(context)),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      HomeScreen.navigateToAddTransaction(context);
+                    },
+                  ),
+                ],
               ),
               body: const Center(child: CircularProgressIndicator()),
             )
