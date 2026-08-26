@@ -76,7 +76,12 @@ class HomeScreen extends StatefulWidget {
     bool isRecurring = false,
   }) {
     final state = context.findAncestorStateOfType<_HomeScreenState>();
-    state?._tabController.index = 2; // Add tab
+    if (state != null) {
+      state._isProgrammaticTabChange = true;
+      addTransactionFormState.value = AddTransactionFormConfig(initialIsRecurring: isRecurring);
+      state._tabController.index = 2; // Add tab
+      state._isProgrammaticTabChange = false;
+    }
   }
 
   @override
@@ -100,12 +105,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _lastTappedIndex = 0;
   bool _isCheckingPending = false;
+  bool _isProgrammaticTabChange = false;
 
   late RecurringTransactionProvider _recurringProvider;
 
   @override
   void initState() {
     super.initState();
+    _tabController.addListener(() {
+      if (!_isProgrammaticTabChange && _tabController.index == 2 && _lastTappedIndex != 2) {
+        addTransactionFormState.value = AddTransactionFormConfig();
+      }
+      _lastTappedIndex = _tabController.index;
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _recurringProvider = Provider.of<RecurringTransactionProvider>(
         context,

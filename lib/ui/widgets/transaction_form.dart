@@ -49,6 +49,7 @@ class TransactionForm extends StatefulWidget {
   final bool showSaveButton;
   final ScrollController? scrollController;
   final Future<void> Function(TransactionFormData data) onSave;
+  final bool initialIsRecurring;
 
   const TransactionForm({
     super.key,
@@ -57,6 +58,7 @@ class TransactionForm extends StatefulWidget {
     this.showSaveButton = true,
     this.scrollController,
     required this.onSave,
+    this.initialIsRecurring = false,
   });
 
   @override
@@ -122,7 +124,7 @@ class TransactionFormState extends State<TransactionForm> {
           : (isEditNor ? widget.transaction!.note ?? '' : ''),
     );
 
-    _isRecurring = isEditRec;
+    _isRecurring = isEditRec || widget.initialIsRecurring;
     _recurringIntervalController = TextEditingController(
       text: isEditRec ? widget.recurringTransaction!.interval.toString() : '1',
     );

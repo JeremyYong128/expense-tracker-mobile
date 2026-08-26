@@ -42,7 +42,7 @@ class _RecurringTransactionsScreenState
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                      HomeScreen.navigateToAddTransaction(context);
+                      HomeScreen.navigateToAddTransaction(context, isRecurring: true);
                     },
                   ),
                 ],
@@ -60,7 +60,17 @@ class _RecurringTransactionsScreenState
       bottom: true,
       child: Scaffold(
         appBar: widget.showAppBar
-            ? AppBar(title: Text('Recurring Transactions'.cased(context)))
+            ? AppBar(
+                title: Text('Recurring Transactions'.cased(context)),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      HomeScreen.navigateToAddTransaction(context, isRecurring: true);
+                    },
+                  ),
+                ],
+              )
             : null,
         body: recurringTransactions.isEmpty
             ? Center(

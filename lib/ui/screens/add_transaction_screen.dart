@@ -7,6 +7,16 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/main.dart';
 
+class AddTransactionFormConfig {
+  final bool initialIsRecurring;
+  final Key formKey;
+
+  AddTransactionFormConfig({this.initialIsRecurring = false}) : formKey = UniqueKey();
+}
+
+final ValueNotifier<AddTransactionFormConfig> addTransactionFormState =
+    ValueNotifier(AddTransactionFormConfig());
+
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -75,10 +85,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           body: SingleChildScrollView(
             controller: _scrollController,
             padding: AppStyles.screenPadding,
-            child: TransactionForm(
-              key: UniqueKey(),
-              scrollController: _scrollController,
-              onSave: _saveTransaction,
+            child: ValueListenableBuilder<AddTransactionFormConfig>(
+              valueListenable: addTransactionFormState,
+              builder: (context, config, child) {
+                return TransactionForm(
+                  key: config.formKey,
+                  scrollController: _scrollController,
+                  onSave: _saveTransaction,
+                  initialIsRecurring: config.initialIsRecurring,
+                );
+              },
             ),
           ),
         ),
