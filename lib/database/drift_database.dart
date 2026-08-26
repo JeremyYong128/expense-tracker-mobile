@@ -36,6 +36,7 @@ class CreditCards extends Table {
   TextColumn get name => text()();
   TextColumn get rewardType => text().named('rewardType')();
   RealColumn get rewardRate => real().named('rewardRate')();
+  BoolColumn get isActive => boolean().named('isActive').withDefault(const Constant(true))();
 }
 
 @DataClassName('RecurringTransactionTableData')
@@ -72,7 +73,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -98,6 +99,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           await m.addColumn(recurringTransactions, recurringTransactions.startDate);
           await customStatement('UPDATE recurring_transactions SET startDate = nextDueDate');
+        }
+        if (from < 5) {
+          await m.addColumn(creditCards, creditCards.isActive);
         }
       },
       beforeOpen: (details) async {

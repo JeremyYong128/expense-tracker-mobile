@@ -6,7 +6,6 @@ import 'package:expense_tracker_mobile/models/credit_card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
-import 'package:expense_tracker_mobile/ui/widgets/category_picker_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_type_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
@@ -146,11 +145,20 @@ class TransactionFormState extends State<TransactionForm> {
         catId = widget.transaction!.categoryId;
       }
 
+      int? ccId;
+      if (widget.recurringTransaction != null) {
+        ccId = widget.recurringTransaction!.creditCardId;
+      } else if (widget.transaction != null) {
+        ccId = widget.transaction!.creditCardId;
+      }
+
       _categories = categories.where((c) {
         return c.isActive || c.id == catId;
       }).toList();
 
-      _creditCards = creditCards;
+      _creditCards = creditCards.where((c) {
+        return c.isActive || c.id == ccId;
+      }).toList();
       _isLoadingCategories = false;
 
       if (catId != null) {
@@ -235,7 +243,7 @@ class TransactionFormState extends State<TransactionForm> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _formError = 'An unexpected error occurred.';
+          _formError = 'An unexpected error occurred: $e';
         });
         widget.scrollController?.animateTo(
           0.0,

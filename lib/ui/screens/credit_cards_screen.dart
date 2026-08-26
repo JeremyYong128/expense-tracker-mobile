@@ -7,6 +7,7 @@ import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/core/exceptions.dart';
 
 class CreditCardsScreen extends StatefulWidget {
   const CreditCardsScreen({super.key});
@@ -21,6 +22,42 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     super.initState();
   }
 
+  IconData _getIconForRewardType(String rewardType) {
+    switch (rewardType.toLowerCase()) {
+      case 'cashback':
+        return Icons.attach_money;
+      case 'miles':
+        return Icons.flight_takeoff;
+      case 'points':
+        return Icons.stars;
+      case 'none':
+      default:
+        return Icons.credit_card;
+    }
+  }
+
+  String _getRewardSubtitle(BuildContext context, CreditCard card) {
+    final type = card.rewardType.toLowerCase();
+
+    if (type == 'none') {
+      return 'No rewards'.cased(context);
+    }
+
+    final rateStr = card.rewardRate == card.rewardRate.toInt()
+        ? card.rewardRate.toInt().toString()
+        : card.rewardRate.toStringAsFixed(1);
+
+    if (type == 'cashback') {
+      return '$rateStr% Cashback'.cased(context);
+    } else if (type == 'miles') {
+      return '$rateStr Miles per \$'.cased(context);
+    } else if (type == 'points') {
+      return '$rateStr Points per \$'.cased(context);
+    }
+
+    return '$rateStr ${card.rewardType.cased(context)}';
+  }
+
   void _showAddEditDialog([CreditCard? card]) {
     SlideUpModal.showCustom(
       context: context,
@@ -28,15 +65,15 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     );
   }
 
-  void _confirmDelete(CreditCard card) {
+  void _showRestoreDialog(CreditCard card) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
-          title: Text('Delete Credit Card'.cased(context)),
+          title: Text('Restore Credit Card'.cased(context)),
           content: Text(
-            'Are you sure you want to delete ${card.name}? Expenses tagged with this card will not be deleted, but they will lose their card association.'
+            'Would you like to restore ${card.name} to your active wallet?'
                 .cased(context),
             style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
           ),
@@ -50,19 +87,129 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
             ),
             TextButton(
               onPressed: () async {
-                await context.read<CreditCardProvider>().deleteCreditCard(card.id!);
-                if (context.mounted) {
-                  Navigator.pop(context);
+                try {
+                  await context.read<CreditCardProvider>().updateCreditCard(
+                    card.copyWith(isActive: true),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                } on DatabaseValidationException catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(e.message)));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('An unexpected error occurred.'),
+                      ),
+                    );
+                  }
                 }
               },
               child: Text(
-                'Delete'.cased(context),
-                style: const TextStyle(color: AppColors.expense),
+                'Restore'.cased(context),
+                style: const TextStyle(color: AppColors.primary),
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildCardItem(CreditCard card, bool isArchived) {
+    return Opacity(
+      opacity: isArchived ? 0.6 : 1.0,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24.0),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24.0),
+            onTap: () {
+              if (isArchived) {
+                _showRestoreDialog(card);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CreditCardDetailsScreen(creditCard: card),
+                  ),
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Icon(
+                            _getIconForRewardType(card.rewardType),
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            card.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2.0),
+                          Text(
+                            _getRewardSubtitle(context, card),
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -78,6 +225,8 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     }
 
     final creditCards = creditCardProvider.creditCards;
+    final activeCards = creditCards.where((c) => c.isActive).toList();
+    final archivedCards = creditCards.where((c) => !c.isActive).toList();
 
     return SafeArea(
       top: false,
@@ -99,93 +248,41 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                   style: const TextStyle(color: AppColors.grey, fontSize: 16),
                 ),
               )
-            : ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: creditCards.length,
-                itemBuilder: (context, index) {
-                  final card = creditCards[index];
-                  return Card(
-                    color: AppColors.surface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                          color: Colors.grey.withValues(alpha: 0.1)),
-                    ),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CreditCardDetailsScreen(creditCard: card),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.credit_card,
-                                color: AppColors.primary,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    card.name,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${card.rewardRate.toStringAsFixed(1)}${card.rewardType == 'Cashback' ? '%' : ''} ${card.rewardType.cased(context)}',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: AppColors.textSecondary,
-                                size: 20,
-                              ),
-                              onPressed: () => _showAddEditDialog(card),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                color: AppColors.expense,
-                                size: 20,
-                              ),
-                              onPressed: () => _confirmDelete(card),
-                            ),
-                          ],
+            : ListView(
+                padding: AppStyles.screenPadding,
+                children: [
+                  if (activeCards.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                      child: Text(
+                        'Active'.cased(context),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 1.2,
                         ),
                       ),
                     ),
-                  );
-                },
+                    ...activeCards.map((c) => _buildCardItem(c, false)),
+                    const SizedBox(height: 16),
+                  ],
+                  if (archivedCards.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                      child: Text(
+                        'Archived'.cased(context),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    ...archivedCards.map((c) => _buildCardItem(c, true)),
+                  ],
+                ],
               ),
       ),
     );

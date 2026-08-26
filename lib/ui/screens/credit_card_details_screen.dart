@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/credit_card.dart';
-import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 
 class CreditCardDetailsScreen extends StatefulWidget {
   final CreditCard creditCard;
@@ -20,6 +23,194 @@ class CreditCardDetailsScreen extends StatefulWidget {
 }
 
 class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
+  void _showAddEditDialog(CreditCard card) {
+    SlideUpModal.showCustom(
+      context: context,
+      builder: (context) => CreditCardModal(card: card),
+    );
+  }
+
+  void _confirmDelete(CreditCard card) {
+    final transactionProvider = context.read<TransactionProvider>();
+    final recurringProvider = context.read<RecurringTransactionProvider>();
+
+    final hasTransactions = transactionProvider.transactions.any(
+      (t) => t.creditCardId == card.id,
+    );
+    final hasRecurring = recurringProvider.transactions.any(
+      (r) => r.creditCardId == card.id,
+    );
+
+    if (!hasTransactions && !hasRecurring) {
+      showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            title: Text('Delete Credit Card'.cased(context)),
+            content: Text(
+              'Are you sure you want to permanently delete ${card.name}?'.cased(
+                context,
+              ),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(
+                  'Cancel'.cased(context),
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final navigator = Navigator.of(context);
+                  final provider = context.read<CreditCardProvider>();
+                  final txProvider = context.read<TransactionProvider>();
+                  final recProvider = context
+                      .read<RecurringTransactionProvider>();
+
+                  final affected = await provider.deleteCreditCard(
+                    card.id!,
+                    forceHardDelete: true,
+                  );
+                  if (affected) {
+                    await txProvider.fetchTransactions();
+                    await recProvider.fetchRecurringTransactions();
+                  }
+
+                  if (mounted && dialogContext.mounted) {
+                    Navigator.pop(dialogContext); // Close dialog
+                    navigator.pop(); // Close details screen
+                  }
+                },
+                child: Text(
+                  'Delete'.cased(context),
+                  style: const TextStyle(color: AppColors.expense),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: Text('Delete Credit Card'.cased(context)),
+          content: Text(
+            'There are associated transactions with this card. Deleting this card removes the card association from these transactions. Would you like to archive it instead?'
+                .cased(context),
+            style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Cancel'.cased(context),
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext); // Close first dialog
+                showDialog(
+                  context: context,
+                  builder: (secondDialogContext) {
+                    return AlertDialog(
+                      backgroundColor: AppColors.surface,
+                      title: Text('Permanently Delete?'.cased(context)),
+                      content: Text(
+                        'Are you sure you want to permanently delete this card? All associated transactions will lose their card tag.'
+                            .cased(context),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(secondDialogContext),
+                          child: Text(
+                            'Cancel'.cased(context),
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final innerNavigator = Navigator.of(context);
+                            final provider = context.read<CreditCardProvider>();
+                            final txProvider = context
+                                .read<TransactionProvider>();
+                            final recProvider = context
+                                .read<RecurringTransactionProvider>();
+
+                            final affected = await provider.deleteCreditCard(
+                              card.id!,
+                              forceHardDelete: true,
+                            );
+                            if (affected) {
+                              await txProvider.fetchTransactions();
+                              await recProvider.fetchRecurringTransactions();
+                            }
+
+                            if (mounted && secondDialogContext.mounted) {
+                              Navigator.pop(
+                                secondDialogContext,
+                              ); // Close second dialog
+                              innerNavigator.pop(); // Close details screen
+                            }
+                          },
+                          child: Text(
+                            'Delete'.cased(context),
+                            style: const TextStyle(color: AppColors.expense),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(
+                'Delete'.cased(context),
+                style: const TextStyle(color: AppColors.expense),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                final provider = context.read<CreditCardProvider>();
+
+                await provider.deleteCreditCard(
+                  card.id!,
+                  forceHardDelete: false,
+                );
+
+                if (mounted && dialogContext.mounted) {
+                  Navigator.pop(dialogContext); // Close dialog
+                  navigator.pop(); // Close details screen
+                }
+              },
+              child: Text(
+                'Archive'.cased(context),
+                style: const TextStyle(color: AppColors.primary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
@@ -36,8 +227,6 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
         .where((t) => t.creditCardId == widget.creditCard.id)
         .toList();
     transactionsList.sort((a, b) => b.date.compareTo(a.date));
-    
-    final categoriesList = categoryProvider.categories;
 
     // Calculate total rewards
     double totalSpent = 0;
@@ -55,180 +244,130 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.creditCard.name)),
-      body: Column(
-              children: [
-                _buildRewardsSummary(totalRewardsAmount),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: transactionsList.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No expenses tagged to this card.'.cased(context),
-                            style: const TextStyle(
-                              color: AppColors.grey,
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          itemCount: transactionsList.length,
-                          itemBuilder: (context, index) {
-                            final transaction = transactionsList[index];
-                            final category = categoriesList.firstWhere(
-                              (c) => c.id == transaction.categoryId,
-                              orElse: () => Category(
-                                id: 0,
-                                name: 'Unknown',
-                                colorHex: '#9E9E9E',
-                                iconString: 'help_outline',
-                              ),
-                            );
-
-                            final color = CategoryAppearance.getColorFromHex(
-                              category.colorHex,
-                            );
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 4.0,
-                              ),
-                              child: Card(
-                                color: AppColors.surface,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  side: BorderSide(
-                                    color: Colors.grey.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(
-                                                10.0,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: color.withValues(
-                                                  alpha: 0.15,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12.0),
-                                              ),
-                                              child: Icon(
-                                                CategoryAppearance.getIconData(
-                                                  category.iconString,
-                                                ),
-                                                color: color,
-                                                size: 24,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 16.0),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                transaction.title,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 2.0),
-                                              Text(
-                                                '${DateFormat.yMMMd().format(transaction.date).cased(context)} • ${category.name}',
-                                                style: const TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 13,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              if (transaction.note != null &&
-                                                  transaction.note!
-                                                      .trim()
-                                                      .isNotEmpty) ...[
-                                                const SizedBox(height: 4.0),
-                                                Text(
-                                                  transaction.note!,
-                                                  style: const TextStyle(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                    fontSize: 13,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16.0),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              '-\$${transaction.amount.toStringAsFixed(2)}',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 16,
-                                                color: AppColors.expense,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+      appBar: AppBar(
+        title: Text(widget.creditCard.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () => _showAddEditDialog(widget.creditCard),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.white),
+            onPressed: () => _confirmDelete(widget.creditCard),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildDigitalCard(totalRewardsAmount),
+            const SizedBox(height: 16),
+            if (transactionsList.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Past Expenses'.cased(context),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            transactionsList.isEmpty
+                ? Center(
+                    child: Text(
+                      'No expenses tagged to this card.'.cased(context),
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
+                  )
+                : TransactionList(
+                    transactions: transactionsList,
+                    padding: const EdgeInsets.only(
+                      bottom: 24,
+                      left: 16,
+                      right: 16,
+                    ),
+                  ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildRewardsSummary(double totalRewardsAmount) {
+  LinearGradient _getGradientForName(String name) {
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+    final double baseHue = (hash.abs() % 360).toDouble();
+    final Color color1 = HSLColor.fromAHSL(1.0, baseHue, 0.7, 0.5).toColor();
+    final Color color2 = HSLColor.fromAHSL(
+      1.0,
+      (baseHue + 40) % 360,
+      0.8,
+      0.6,
+    ).toColor();
+    return LinearGradient(
+      colors: [color1, color2],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  IconData _getIconForRewardType(String rewardType) {
+    switch (rewardType.toLowerCase()) {
+      case 'cashback':
+        return Icons.attach_money;
+      case 'miles':
+        return Icons.flight_takeoff;
+      case 'points':
+        return Icons.stars;
+      case 'none':
+      default:
+        return Icons.credit_card;
+    }
+  }
+
+  String _getRewardSubtitle(BuildContext context, CreditCard card) {
+    final type = card.rewardType.toLowerCase();
+    if (type == 'none') return 'No rewards'.cased(context);
+    final rateStr = card.rewardRate == card.rewardRate.toInt()
+        ? card.rewardRate.toInt().toString()
+        : card.rewardRate.toStringAsFixed(1);
+    if (type == 'cashback') return '$rateStr% Cashback'.cased(context);
+    if (type == 'miles') return '$rateStr Miles per \$'.cased(context);
+    if (type == 'points') return '$rateStr Points per \$'.cased(context);
+    return '$rateStr ${card.rewardType.cased(context)}';
+  }
+
+  Widget _buildDigitalCard(double totalRewardsAmount) {
     final isCashback = widget.creditCard.rewardType == 'Cashback';
     final rewardText = isCashback
         ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
         : NumberFormat.decimalPattern().format(totalRewardsAmount.toInt());
+
+    final gradient = _getGradientForName(widget.creditCard.name);
+    final iconData = _getIconForRewardType(widget.creditCard.rewardType);
+    final subtitle = _getRewardSubtitle(context, widget.creditCard);
 
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, Color(0xFF6C63FF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: gradient,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: gradient.colors.first.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -238,36 +377,48 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.stars, color: Colors.white70, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Lifetime Rewards'.cased(context).toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+              Expanded(
+                child: Text(
+                  widget.creditCard.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
+              Icon(iconData, color: Colors.white, size: 32),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            rewardText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 40,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Total ${widget.creditCard.rewardType} earned'.cased(context),
+            subtitle,
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
               fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Lifetime Rewards'.cased(context).toUpperCase(),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            rewardText,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

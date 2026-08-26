@@ -74,24 +74,24 @@ class _HomeScreenState extends State<HomeScreen> {
   int _lastTappedIndex = 0;
   bool _isCheckingPending = false;
 
+  late RecurringTransactionProvider _recurringProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkPendingRecurringTransactions();
-      Provider.of<RecurringTransactionProvider>(
+      _recurringProvider = Provider.of<RecurringTransactionProvider>(
         context,
         listen: false,
-      ).addListener(_checkPendingRecurringTransactions);
+      );
+      _checkPendingRecurringTransactions();
+      _recurringProvider.addListener(_checkPendingRecurringTransactions);
     });
   }
 
   @override
   void dispose() {
-    Provider.of<RecurringTransactionProvider>(
-      context,
-      listen: false,
-    ).removeListener(_checkPendingRecurringTransactions);
+    _recurringProvider.removeListener(_checkPendingRecurringTransactions);
     _tabController.dispose();
     super.dispose();
   }

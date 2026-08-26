@@ -409,8 +409,29 @@ class $CreditCardsTable extends CreditCards
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, rewardType, rewardRate];
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'isActive',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("isActive" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    rewardType,
+    rewardRate,
+    isActive,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -450,6 +471,12 @@ class $CreditCardsTable extends CreditCards
     } else if (isInserting) {
       context.missing(_rewardRateMeta);
     }
+    if (data.containsKey('isActive')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['isActive']!, _isActiveMeta),
+      );
+    }
     return context;
   }
 
@@ -475,6 +502,10 @@ class $CreditCardsTable extends CreditCards
         DriftSqlType.double,
         data['${effectivePrefix}rewardRate'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}isActive'],
+      )!,
     );
   }
 
@@ -490,11 +521,13 @@ class CreditCardTableData extends DataClass
   final String name;
   final String rewardType;
   final double rewardRate;
+  final bool isActive;
   const CreditCardTableData({
     required this.id,
     required this.name,
     required this.rewardType,
     required this.rewardRate,
+    required this.isActive,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -503,6 +536,7 @@ class CreditCardTableData extends DataClass
     map['name'] = Variable<String>(name);
     map['rewardType'] = Variable<String>(rewardType);
     map['rewardRate'] = Variable<double>(rewardRate);
+    map['isActive'] = Variable<bool>(isActive);
     return map;
   }
 
@@ -512,6 +546,7 @@ class CreditCardTableData extends DataClass
       name: Value(name),
       rewardType: Value(rewardType),
       rewardRate: Value(rewardRate),
+      isActive: Value(isActive),
     );
   }
 
@@ -525,6 +560,7 @@ class CreditCardTableData extends DataClass
       name: serializer.fromJson<String>(json['name']),
       rewardType: serializer.fromJson<String>(json['rewardType']),
       rewardRate: serializer.fromJson<double>(json['rewardRate']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
     );
   }
   @override
@@ -535,6 +571,7 @@ class CreditCardTableData extends DataClass
       'name': serializer.toJson<String>(name),
       'rewardType': serializer.toJson<String>(rewardType),
       'rewardRate': serializer.toJson<double>(rewardRate),
+      'isActive': serializer.toJson<bool>(isActive),
     };
   }
 
@@ -543,11 +580,13 @@ class CreditCardTableData extends DataClass
     String? name,
     String? rewardType,
     double? rewardRate,
+    bool? isActive,
   }) => CreditCardTableData(
     id: id ?? this.id,
     name: name ?? this.name,
     rewardType: rewardType ?? this.rewardType,
     rewardRate: rewardRate ?? this.rewardRate,
+    isActive: isActive ?? this.isActive,
   );
   CreditCardTableData copyWithCompanion(CreditCardsCompanion data) {
     return CreditCardTableData(
@@ -559,6 +598,7 @@ class CreditCardTableData extends DataClass
       rewardRate: data.rewardRate.present
           ? data.rewardRate.value
           : this.rewardRate,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
     );
   }
 
@@ -568,13 +608,14 @@ class CreditCardTableData extends DataClass
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('rewardType: $rewardType, ')
-          ..write('rewardRate: $rewardRate')
+          ..write('rewardRate: $rewardRate, ')
+          ..write('isActive: $isActive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, rewardType, rewardRate);
+  int get hashCode => Object.hash(id, name, rewardType, rewardRate, isActive);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -582,7 +623,8 @@ class CreditCardTableData extends DataClass
           other.id == this.id &&
           other.name == this.name &&
           other.rewardType == this.rewardType &&
-          other.rewardRate == this.rewardRate);
+          other.rewardRate == this.rewardRate &&
+          other.isActive == this.isActive);
 }
 
 class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
@@ -590,17 +632,20 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
   final Value<String> name;
   final Value<String> rewardType;
   final Value<double> rewardRate;
+  final Value<bool> isActive;
   const CreditCardsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.rewardType = const Value.absent(),
     this.rewardRate = const Value.absent(),
+    this.isActive = const Value.absent(),
   });
   CreditCardsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required String rewardType,
     required double rewardRate,
+    this.isActive = const Value.absent(),
   }) : name = Value(name),
        rewardType = Value(rewardType),
        rewardRate = Value(rewardRate);
@@ -609,12 +654,14 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     Expression<String>? name,
     Expression<String>? rewardType,
     Expression<double>? rewardRate,
+    Expression<bool>? isActive,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (rewardType != null) 'rewardType': rewardType,
       if (rewardRate != null) 'rewardRate': rewardRate,
+      if (isActive != null) 'isActive': isActive,
     });
   }
 
@@ -623,12 +670,14 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     Value<String>? name,
     Value<String>? rewardType,
     Value<double>? rewardRate,
+    Value<bool>? isActive,
   }) {
     return CreditCardsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       rewardType: rewardType ?? this.rewardType,
       rewardRate: rewardRate ?? this.rewardRate,
+      isActive: isActive ?? this.isActive,
     );
   }
 
@@ -647,6 +696,9 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     if (rewardRate.present) {
       map['rewardRate'] = Variable<double>(rewardRate.value);
     }
+    if (isActive.present) {
+      map['isActive'] = Variable<bool>(isActive.value);
+    }
     return map;
   }
 
@@ -656,7 +708,8 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('rewardType: $rewardType, ')
-          ..write('rewardRate: $rewardRate')
+          ..write('rewardRate: $rewardRate, ')
+          ..write('isActive: $isActive')
           ..write(')'))
         .toString();
   }
@@ -2338,6 +2391,7 @@ typedef $$CreditCardsTableCreateCompanionBuilder =
       required String name,
       required String rewardType,
       required double rewardRate,
+      Value<bool> isActive,
     });
 typedef $$CreditCardsTableUpdateCompanionBuilder =
     CreditCardsCompanion Function({
@@ -2345,6 +2399,7 @@ typedef $$CreditCardsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> rewardType,
       Value<double> rewardRate,
+      Value<bool> isActive,
     });
 
 final class $$CreditCardsTableReferences
@@ -2422,6 +2477,11 @@ class $$CreditCardsTableFilterComposer
 
   ColumnFilters<double> get rewardRate => $composableBuilder(
     column: $table.rewardRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2505,6 +2565,11 @@ class $$CreditCardsTableOrderingComposer
     column: $table.rewardRate,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CreditCardsTableAnnotationComposer
@@ -2531,6 +2596,9 @@ class $$CreditCardsTableAnnotationComposer
     column: $table.rewardRate,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   Expression<T> recurringTransactionsRefs<T extends Object>(
     Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
@@ -2619,11 +2687,13 @@ class $$CreditCardsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> rewardType = const Value.absent(),
                 Value<double> rewardRate = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
               }) => CreditCardsCompanion(
                 id: id,
                 name: name,
                 rewardType: rewardType,
                 rewardRate: rewardRate,
+                isActive: isActive,
               ),
           createCompanionCallback:
               ({
@@ -2631,11 +2701,13 @@ class $$CreditCardsTableTableManager
                 required String name,
                 required String rewardType,
                 required double rewardRate,
+                Value<bool> isActive = const Value.absent(),
               }) => CreditCardsCompanion.insert(
                 id: id,
                 name: name,
                 rewardType: rewardType,
                 rewardRate: rewardRate,
+                isActive: isActive,
               ),
           withReferenceMapper: (p0) => p0
               .map(

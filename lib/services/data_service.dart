@@ -41,6 +41,7 @@ class DataService {
       name: data.name,
       rewardType: data.rewardType,
       rewardRate: data.rewardRate,
+      isActive: data.isActive,
     );
   }
 
@@ -187,7 +188,8 @@ class DataService {
   static Future<int> addCreditCard(CreditCard card) async {
     final existing =
         await (_db.select(_db.creditCards)
-              ..where((c) => c.name.lower().equals(card.name.toLowerCase())))
+              ..where((c) => c.name.lower().equals(card.name.toLowerCase()))
+              ..where((c) => c.isActive.equals(true)))
             .getSingleOrNull();
 
     if (existing != null) {
@@ -203,6 +205,7 @@ class DataService {
             name: card.name,
             rewardType: card.rewardType,
             rewardRate: card.rewardRate,
+            isActive: drift.Value(card.isActive),
           ),
         );
     return id;
@@ -214,6 +217,7 @@ class DataService {
     final existing =
         await (_db.select(_db.creditCards)
               ..where((c) => c.name.lower().equals(card.name.toLowerCase()))
+              ..where((c) => c.isActive.equals(true))
               ..where((c) => c.id.equals(card.id!).not()))
             .getSingleOrNull();
 
@@ -230,13 +234,37 @@ class DataService {
         name: drift.Value(card.name),
         rewardType: drift.Value(card.rewardType),
         rewardRate: drift.Value(card.rewardRate),
+        isActive: drift.Value(card.isActive),
       ),
     );
   }
 
-  // Delete credit card.
-  static Future<void> deleteCreditCard(int id) async {
-    await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+  // Delete credit card
+  // Soft delete if there are transactions associated with it, unless forceHardDelete is true
+  static Future<bool> deleteCreditCard(int id, {bool forceHardDelete = false}) async {
+    final txCount = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.creditCardId.equals(id))).get();
+    final recCount = await (_db.select(
+      _db.recurringTransactions,
+    )..where((r) => r.creditCardId.equals(id))).get();
+    
+    final hasTransactions = txCount.isNotEmpty || recCount.isNotEmpty;
+
+    if (forceHardDelete) {
+      await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+      return hasTransactions;
+    }
+
+    if (hasTransactions) {
+      await (_db.update(_db.creditCards)..where((c) => c.id.equals(id))).write(
+        const CreditCardsCompanion(isActive: drift.Value(false)),
+      );
+      return false;
+    } else {
+      await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+      return false;
+    }
   }
 
   // --- Transaction Methods ---

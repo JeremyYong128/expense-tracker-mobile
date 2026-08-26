@@ -95,26 +95,41 @@ flutter run
 ## Decisions
 
 ## Dev tracking
-- For pending approvals, redesign modal.
-- Custom date and time pickers and credit card drop down to match other modals
-- Tag expenses to cards, with tracking for benefits (cashback, miles)
+
+### Notes
+
+- Credit cards
     - Out of scope: Category-specific multipliers (only flat rate supported).
     - Out of scope: Sign-up bonuses or caps.
     - Out of scope: Custom statement periods (tracking is by calendar month).
     - Out of scope: Historical rate changes (rewards use current rate).
-- Bugs:
+
+### Priority Changes
+
+- Bugs
+    - Keyboard needs to close when form is submitted
     - User gets stuck in notes when filling up the form. Keyboard can't close.
-    - Pressing on the manage tab, when already on the manage tab, should bring the user back to the main manage screen if not already there.
-    - When editing a recurring transaction, the start date is set to the next due date. Is this normal?
-- Credit cards
-    - Improve design of credit card reward section on dashboard and credit card screen
-    - Need some indication in the history and recurring cards when an expense is tagged with a credit card
-    - Should a user add a credit card from just the cc screen or from the drop down too?
-    - Need support for credit cards with no rewards
-- Swipe left then click to delete a transaction
+
 - What happens when a user closes the pending approvals modal?
 - Different categories for expenses and income
-- Adding recurring transaction: should it be from the add transaction screen or from the recurring transaction screen? Looks out of place if there are plus buttons for credit cards and categories but not recurring.
+- Add button on recurring transaction screen should bring user to form with recurring pre-toggled
+- Saving a transaction should bring the user to history/recurring pages
+- When deleting expenses, check for associarted soft deleted categories and cards, to see if they can be hard deleted.
+- User alerts
+    - Ensure they are implemented (in code) in the same way
+    - Button order
+    - User flow
+
+### Future
+
+- Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
+- Credit cards
+    - Need some indication in the history and recurring cards when an expense is tagged with a credit card
+- Custom dropdowns (including date and time pickers)
+- Redesign modal for pending approvals
+- Need a way for users to reorder things in the "Manage" tab
+- Transaction list should have more info, show associated recurring expense/credit card
+    - Will need to implement UI info update mechanism, or else the card will bug out when the recurring transaction related to a transaction is deleted, and then a user tries to edit it.
 - Possible changes to consider:
     - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
     - Currently when editing the recurring transaction intervals, if the start date/time or the interval is changed, it calculates the next due date starting from the latest recorded individual transaction, or the new start date, whichever is later. Is this too confusing?

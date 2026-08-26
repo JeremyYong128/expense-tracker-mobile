@@ -59,7 +59,9 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         note: data.note,
         creditCardId: data.creditCardId,
       );
-      await context.read<RecurringTransactionProvider>().updateRecurringTransaction(updated);
+      await context
+          .read<RecurringTransactionProvider>()
+          .updateRecurringTransaction(updated);
     } else {
       final updated = widget.transaction!.copyWith(
         amount: data.amount,
@@ -79,11 +81,13 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
   void _deleteTransaction() async {
     try {
       if (widget.recurringTransaction != null) {
-        await context.read<RecurringTransactionProvider>().deleteRecurringTransaction(
-          widget.recurringTransaction!.id!,
-        );
+        await context
+            .read<RecurringTransactionProvider>()
+            .deleteRecurringTransaction(widget.recurringTransaction!.id!);
       } else {
-        await context.read<TransactionProvider>().deleteTransaction(widget.transaction!.id!);
+        await context.read<TransactionProvider>().deleteTransaction(
+          widget.transaction!.id!,
+        );
       }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {

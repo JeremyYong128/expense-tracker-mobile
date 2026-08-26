@@ -101,28 +101,6 @@ class _CreditCardModalState extends State<CreditCardModal> {
     }
   }
 
-  Future<void> _deleteCreditCard() async {
-    if (widget.card == null) return;
-
-    try {
-      final provider = context.read<CreditCardProvider>();
-      await provider.deleteCreditCard(widget.card!.id!);
-
-      if (mounted) {
-        widget.onSaved?.call();
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete credit card'.cased(context)),
-            backgroundColor: AppColors.expense,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -228,31 +206,6 @@ class _CreditCardModalState extends State<CreditCardModal> {
                   onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
-              if (isEditing) ...[
-                const SizedBox(height: 24.0),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56.0,
-                  child: ElevatedButton(
-                    onPressed: _deleteCreditCard,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withValues(alpha: 0.1),
-                      foregroundColor: Colors.red,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                    ),
-                    child: Text(
-                      'Delete Credit Card'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
               const SizedBox(height: 32),
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],

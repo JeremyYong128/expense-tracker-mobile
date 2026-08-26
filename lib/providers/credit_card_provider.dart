@@ -30,8 +30,9 @@ class CreditCardProvider extends ChangeNotifier {
     await fetchCreditCards();
   }
 
-  Future<void> deleteCreditCard(int id) async {
-    await DataService.deleteCreditCard(id);
+  Future<bool> deleteCreditCard(int id, {bool forceHardDelete = false}) async {
+    final affected = await DataService.deleteCreditCard(id, forceHardDelete: forceHardDelete);
     await fetchCreditCards();
+    return affected;
   }
 }

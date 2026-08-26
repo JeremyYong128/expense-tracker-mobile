@@ -3,12 +3,14 @@ class CreditCard {
   final String name;
   final String rewardType;
   final double rewardRate;
+  final bool isActive;
 
   CreditCard({
     this.id,
     required this.name,
     required this.rewardType,
     required this.rewardRate,
+    this.isActive = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class CreditCard {
       'name': name,
       'rewardType': rewardType,
       'rewardRate': rewardRate,
+      'isActive': isActive,
     };
   }
 
@@ -25,12 +28,14 @@ class CreditCard {
     String? name,
     String? rewardType,
     double? rewardRate,
+    bool? isActive,
   }) {
     return CreditCard(
       id: id ?? this.id,
       name: name ?? this.name,
       rewardType: rewardType ?? this.rewardType,
       rewardRate: rewardRate ?? this.rewardRate,
+      isActive: isActive ?? this.isActive,
     );
   }
 
@@ -40,6 +45,7 @@ class CreditCard {
       name: map['name'],
       rewardType: map['rewardType'],
       rewardRate: map['rewardRate'],
+      isActive: map['isActive'] ?? true,
     );
   }
 }
