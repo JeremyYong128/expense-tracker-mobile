@@ -19,14 +19,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.initState();
   }
 
-  Category _getCategory(List<Category> categories, int id) {
-    return categories.firstWhere(
-      (cat) => cat.id == id,
-      orElse: () =>
-          categories.isNotEmpty ? categories[0] : Category(name: 'unknown'),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
