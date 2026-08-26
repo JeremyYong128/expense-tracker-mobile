@@ -101,10 +101,8 @@ class _CreditCardModalState extends State<CreditCardModal> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.card != null;
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
