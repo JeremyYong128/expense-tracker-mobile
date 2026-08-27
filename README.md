@@ -105,7 +105,7 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 
 ### Priority Changes
-- Default categories
+- 
 
 ### Future
 
