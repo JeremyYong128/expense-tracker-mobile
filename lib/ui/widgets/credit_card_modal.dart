@@ -122,7 +122,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
                   child: Text(
                     _formError!,
                     style: const TextStyle(
-                      color: AppColors.expense,
+                      color: AppColors.error,
                       fontSize: 14,
                     ),
                   ),

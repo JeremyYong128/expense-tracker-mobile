@@ -17,6 +17,17 @@ class AppColors {
   static const Color income = Color(0xFF2E7D32); // Deep green
   static const Color expense = Color(0xFFD32F2F); // Deep red
 
+  // Standardized semantic UI colors
+  static const Color error = Color(0xFFD32F2F); // Semantic error
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color transparent = Color(0x00000000);
+  
+  // Grey-scale variables
+  static const Color surfaceLight = Color(0xFFFAFAFA); // Replaces grey.shade50
+  static const Color divider = Color(0xFFEEEEEE); // Replaces grey.shade200
+  static const Color border = Color(0xFFE0E0E0); // Replaces grey.shade300
+  static const Color textMuted = Color(0xFF424242); // Replaces grey.shade800
+
   // Text colours
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF616161);
@@ -49,7 +60,7 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.primary,
         surface: AppColors.surface,
-        error: AppColors.expense,
+        error: AppColors.error,
       ),
 
       appBarTheme: const AppBarTheme(

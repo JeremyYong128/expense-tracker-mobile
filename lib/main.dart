@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 24),
+                child: const Icon(Icons.add, color: AppColors.white, size: 24),
               ),
             ),
             activeIcon: Transform.translate(
@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.primary.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 24),
+                child: const Icon(Icons.add, color: AppColors.white, size: 24),
               ),
             ),
             label: '',

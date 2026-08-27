@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class CategoryAppearance {
   static const List<String> iconNames = [
@@ -114,7 +115,7 @@ class CategoryAppearance {
   }
 
   static Color getColorFromHex(String? hexString) {
-    if (hexString == null || hexString.isEmpty) return Colors.grey;
+    if (hexString == null || hexString.isEmpty) return AppColors.grey;
     final buffer = StringBuffer();
     if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
     buffer.write(hexString.replaceFirst('#', ''));

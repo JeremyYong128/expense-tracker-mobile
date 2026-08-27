@@ -124,7 +124,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete category'.cased(context)),
-            backgroundColor: AppColors.expense,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -151,7 +151,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                 Text(
                   _formError!,
                   style: const TextStyle(
-                    color: AppColors.expense,
+                    color: AppColors.error,
                     fontSize: 14,
                   ),
                 ),
@@ -197,7 +197,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.white,
                   ),
                   onSubmitted: (_) => _saveCategory(),
                 ),
@@ -238,7 +238,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                       child: isSelected
                           ? const Icon(
                               Icons.check,
-                              color: Colors.white,
+                              color: AppColors.white,
                               size: 20,
                             )
                           : null,
@@ -276,11 +276,11 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.primary.withValues(alpha: 0.15)
-                            : Colors.white,
+                            : AppColors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: isSelected
                             ? Border.all(color: AppColors.primary, width: 2)
-                            : Border.all(color: Colors.grey.shade300),
+                            : Border.all(color: AppColors.border),
                       ),
                       child: Icon(
                         iconData,
@@ -299,8 +299,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                   child: ElevatedButton(
                     onPressed: _deleteCategory,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withValues(alpha: 0.1),
-                      foregroundColor: Colors.red,
+                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                      foregroundColor: AppColors.error,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.0),

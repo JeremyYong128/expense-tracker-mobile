@@ -158,11 +158,11 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
         title: Text(widget.creditCard.name),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
+            icon: const Icon(Icons.edit, color: AppColors.white),
             onPressed: () => _showAddEditDialog(widget.creditCard),
           ),
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
+            icon: const Icon(Icons.delete, color: AppColors.white),
             onPressed: () => _confirmDelete(widget.creditCard),
           ),
         ],
@@ -294,20 +294,20 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
                 child: Text(
                   widget.creditCard.name,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              Icon(iconData, color: Colors.white, size: 32),
+              Icon(iconData, color: AppColors.white, size: 32),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: AppColors.white.withValues(alpha: 0.7),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -315,8 +315,8 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
           const SizedBox(height: 32),
           Text(
             'Lifetime Rewards'.cased(context).toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: AppColors.white.withValues(alpha: 0.7),
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
@@ -326,7 +326,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
           Text(
             rewardText,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 32,
               fontWeight: FontWeight.w800,
             ),

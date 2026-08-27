@@ -99,7 +99,7 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 20)
+                        ? const Icon(Icons.check, color: AppColors.white, size: 20)
                         : null,
                   ),
                 );
@@ -136,11 +136,11 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.15)
-                          : Colors.white,
+                          : AppColors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: isSelected
                           ? Border.all(color: AppColors.primary, width: 2)
-                          : Border.all(color: Colors.grey.shade300),
+                          : Border.all(color: AppColors.border),
                     ),
                     child: Icon(
                       iconData,

@@ -287,7 +287,7 @@ class TransactionFormState extends State<TransactionForm> {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Text(
                 _formError!,
-                style: const TextStyle(color: AppColors.expense, fontSize: 14),
+                style: const TextStyle(color: AppColors.error, fontSize: 14),
               ),
             ),
           // Income / Expense Toggle

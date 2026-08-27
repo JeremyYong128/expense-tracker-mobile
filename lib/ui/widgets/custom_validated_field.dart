@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class CustomValidatedField extends StatelessWidget {
   final String? label;
@@ -46,7 +47,7 @@ class CustomValidatedField extends StatelessWidget {
                   child: Text(
                     state.errorText!,
                     style: const TextStyle(
-                      color: Colors.red,
+                      color: AppColors.error,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),

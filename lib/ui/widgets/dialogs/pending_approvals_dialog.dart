@@ -69,7 +69,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: AppColors.expense,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -110,10 +110,10 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                       horizontal: 4.0,
                     ),
                     elevation: 0,
-                    color: Colors.white,
+                    color: AppColors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade200),
+                      side: BorderSide(color: AppColors.divider),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -152,7 +152,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                   vertical: 4.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
+                                  color: AppColors.surfaceLight,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +166,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                             'MMM dd, yyyy',
                                           ).format(tx.date).cased(context),
                                           style: TextStyle(
-                                            color: Colors.grey.shade800,
+                                            color: AppColors.textMuted,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -190,8 +190,8 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                                     .primaryColor
                                                     .withValues(alpha: 0.1),
                                                 disabledForegroundColor:
-                                                    Colors.grey,
-                                                disabledBackgroundColor: Colors
+                                                    AppColors.grey,
+                                                disabledBackgroundColor: AppColors
                                                     .grey
                                                     .withValues(alpha: 0.1),
                                                 shape: RoundedRectangleBorder(
@@ -229,8 +229,8 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                                     .primaryColor
                                                     .withValues(alpha: 0.1),
                                                 disabledForegroundColor:
-                                                    Colors.grey,
-                                                disabledBackgroundColor: Colors
+                                                    AppColors.grey,
+                                                disabledBackgroundColor: AppColors
                                                     .grey
                                                     .withValues(alpha: 0.1),
                                                 shape: RoundedRectangleBorder(

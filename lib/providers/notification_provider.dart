@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class AppNotification {
   final String id;
@@ -14,7 +15,7 @@ class AppNotification {
     required this.title,
     required this.message,
     required this.icon,
-    this.color = Colors.blue,
+    this.color = AppColors.primary,
     this.showAsBanner = false,
     this.onTap,
   });

@@ -97,17 +97,6 @@ class CategoriesScreen extends StatelessWidget {
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
-                                if (!category.isActive) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Archived',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.red.shade400,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
                               ],
                             ),
                           ),

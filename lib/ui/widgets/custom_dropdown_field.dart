@@ -31,7 +31,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         return Container(
           height: 280,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
           ),
           child: SafeArea(
@@ -46,7 +46,7 @@ class CustomDropdownField<T> extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade200),
+                      bottom: BorderSide(color: AppColors.divider),
                     ),
                   ),
                   child: Row(
@@ -114,7 +114,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         borderSide: BorderSide.none,
       ),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.white,
     );
   }
 

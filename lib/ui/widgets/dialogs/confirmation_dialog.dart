@@ -89,7 +89,7 @@ class ConfirmationDialog extends StatelessWidget {
             child: Text(
               confirmText!.cased(context),
               style: TextStyle(
-                color: isDestructive ? AppColors.expense : AppColors.primary,
+                color: isDestructive ? AppColors.error : AppColors.primary,
               ),
             ),
           ),

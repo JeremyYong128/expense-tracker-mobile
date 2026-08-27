@@ -95,7 +95,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete transaction'.cased(context)),
-            backgroundColor: AppColors.expense,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -132,8 +132,8 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
               child: ElevatedButton(
                 onPressed: _deleteTransaction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.withValues(alpha: 0.1),
-                  foregroundColor: Colors.red,
+                  backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                  foregroundColor: AppColors.error,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),

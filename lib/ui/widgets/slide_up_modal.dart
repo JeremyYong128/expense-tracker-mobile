@@ -54,7 +54,7 @@ class SlideUpModal extends StatelessWidget {
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       useRootNavigator: true,
       builder: builder,
     );
@@ -79,11 +79,11 @@ class SlideUpModal extends StatelessWidget {
               vertical: 8.0,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24.0),
               ),
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
