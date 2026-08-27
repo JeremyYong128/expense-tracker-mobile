@@ -10,18 +10,21 @@ class RecurringProcessingService {
 
     for (var tx in allRecurring) {
       var currentDueDate = tx.nextDueDate;
-      while (currentDueDate.isBefore(now) || currentDueDate.isAtSameMomentAs(now)) {
-        pendingInstances.add(Transaction(
-          amount: tx.amount,
-          title: tx.title,
-          date: currentDueDate,
-          categoryId: tx.categoryId,
-          note: tx.note,
-          isIncome: tx.isIncome,
-          recurringId: tx.id,
-          creditCardId: tx.creditCardId,
-        ));
-        
+      while (currentDueDate.isBefore(now) ||
+          currentDueDate.isAtSameMomentAs(now)) {
+        pendingInstances.add(
+          Transaction(
+            amount: tx.amount,
+            title: tx.title,
+            date: currentDueDate,
+            categoryId: tx.categoryId,
+            note: tx.note,
+            isIncome: tx.isIncome,
+            recurringId: tx.id,
+            creditCardId: tx.creditCardId,
+          ),
+        );
+
         currentDueDate = DataService.calculateNextDueDate(
           currentDueDate,
           tx.interval,
@@ -29,7 +32,7 @@ class RecurringProcessingService {
         );
       }
     }
-    
+
     // Sort by due date (oldest first)
     pendingInstances.sort((a, b) => a.date.compareTo(b.date));
     return pendingInstances;
@@ -51,8 +54,10 @@ class RecurringProcessingService {
 
   static Future<void> _advanceNextDueDate(Transaction pendingTx) async {
     if (pendingTx.recurringId == null) return;
-    
-    final template = await DataService.getRecurringTransactionById(pendingTx.recurringId!);
+
+    final template = await DataService.getRecurringTransactionById(
+      pendingTx.recurringId!,
+    );
     if (template == null) return;
 
     final newDueDate = DataService.calculateNextDueDate(
@@ -61,10 +66,9 @@ class RecurringProcessingService {
       template.period,
     );
 
-    final updatedTx = template.copyWith(
-      nextDueDate: newDueDate,
+    await DataService.updateRecurringTransactionNextDueDate(
+      template.id!,
+      newDueDate,
     );
-
-    await DataService.updateRecurringTransaction(updatedTx);
   }
 }

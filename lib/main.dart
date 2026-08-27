@@ -17,7 +17,8 @@ import 'package:expense_tracker_mobile/services/recurring_processing_service.dar
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
-
+import 'package:expense_tracker_mobile/providers/notification_provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/global_notification_banner.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
@@ -30,6 +31,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
         ChangeNotifierProvider(create: (_) => CreditCardProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MainApp(),
     ),
@@ -142,21 +144,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final pending = await RecurringProcessingService.getPendingApprovals();
-      if (pending.isEmpty || !mounted) return;
+      final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
 
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return PendingApprovalsDialog(initialPending: pending);
-        },
-      );
-
-      if (mounted) {
-        context.read<TransactionProvider>().fetchTransactions();
-        context
-            .read<RecurringTransactionProvider>()
-            .fetchRecurringTransactions();
+      if (pending.isNotEmpty && mounted) {
+        notifProvider.addNotification(
+          AppNotification(
+            id: 'pending_approvals',
+            title: 'Pending Approvals',
+            message: 'You have ${pending.length} recurring transactions awaiting approval.',
+            icon: Icons.access_time,
+            color: AppColors.expense,
+            showAsBanner: true,
+            onTap: (ctx) => PendingApprovalsDialog.show(ctx, pending),
+          ),
+        );
+      } else {
+        notifProvider.removeNotification('pending_approvals');
       }
     } finally {
       _isCheckingPending = false;
@@ -165,8 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      controller: _tabController,
+    return GlobalNotificationBanner(
+      child: CupertinoTabScaffold(
+        controller: _tabController,
       tabBar: CupertinoTabBar(
         onTap: (index) {
           if (_lastTappedIndex == index) {
@@ -231,6 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
-    );
+    ));
   }
 }

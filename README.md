@@ -106,12 +106,7 @@ flutter run
 
 ### Priority Changes
 
-- What happens when a user closes the pending approvals modal?
 - Different categories for expenses and income
-- User alerts
-    - Ensure they are implemented (in code) in the same way
-    - Button order
-    - User flow
 - Red colour standardisation
 
 ### Future

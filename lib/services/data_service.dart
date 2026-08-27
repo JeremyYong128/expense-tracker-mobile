@@ -399,6 +399,16 @@ class DataService {
     );
   }
 
+  static Future<void> updateRecurringTransactionNextDueDate(int id, DateTime nextDueDate) async {
+    await (_db.update(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(id))).write(
+      RecurringTransactionsCompanion(
+        nextDueDate: drift.Value(nextDueDate.toIso8601String()),
+      ),
+    );
+  }
+
   static Future<void> deleteTransaction(int id) async {
     final tx = await (_db.select(_db.transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();

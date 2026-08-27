@@ -42,7 +42,10 @@ class _RecurringTransactionsScreenState
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                      HomeScreen.navigateToAddTransaction(context, isRecurring: true);
+                      HomeScreen.navigateToAddTransaction(
+                        context,
+                        isRecurring: true,
+                      );
                     },
                   ),
                 ],
@@ -66,7 +69,10 @@ class _RecurringTransactionsScreenState
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                      HomeScreen.navigateToAddTransaction(context, isRecurring: true);
+                      HomeScreen.navigateToAddTransaction(
+                        context,
+                        isRecurring: true,
+                      );
                     },
                   ),
                 ],

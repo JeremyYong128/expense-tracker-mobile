@@ -48,7 +48,7 @@
   - **database/**: Drift database configuration and tables (`drift_database.dart`, `drift_database.g.dart`).
   - `main.dart`: App entry point and root tab navigation scaffold.
 
-# Form Validation Architecture Audit
+# Form Validation
 
 ## Validation
 
@@ -59,3 +59,17 @@ For validation that does not require database queries, we do it through UI-level
 ### 2. Database-Level Validation
 
 Form submission functions have a try/catch block that catch any `DatabaseValidationError` and stores the error message in the `_formError` field. This appears as a message at the top of the form for users.
+
+# Recurring Transactions
+
+## Functionality
+
+Recurring transactions allow users to schedule repeating income or expenses based on a custom frequency (e.g., every 1 month, every 2 weeks). Each time the app is launched, it performs a check to see if any recurring transactions are due. If so, it presents the user with a notification and a list of "pending" transactions. The user manually reviews each one, choosing to either approve it (which adds the transaction to the history) or skip it. Users are always kept aware of each transaction and the app never adds unexpected automatic entries.
+
+## Edge Cases
+1. **Multiple Missed Cycles**: If the user doesn't open the app for a long time (e.g., 3 months), a recurring transaction could be overdue multiple times. The app uses a `while` loop to catch up, generating a distinct, independent pending instance for every single missed interval. To prevent skipping cycles, the user is forced to process the transactions in chronological order.
+2. **Short-Month Date Clamping**: If a 1-month recurring transaction is scheduled on January 31st, the app calculates the next date as February 28th (clamping to the end of the shorter month).
+3. **Mid-Cycle Editing**: If a user edits the start date and/or frequency of an existing template (e.g., changing it from 1 month to 2 weeks), the system performs a recalculation, starting from the template's `startDate` and stepping forward by the new interval until it clears the date of the most recently approved transaction in the ledger. This follows the assumption that a user will rarely update a template to create past transactions, but to set a new schedule going forward.
+
+## Technical Implmentation
+- `RecurringProcessingService` parses the database for overdue transactions, calculates future due dates, and handles the logic of approving/rejecting instances. It uses `DataService` for low-level database operations and ` PendingApprovalsDialog` for the interactive modal UI where users sequentially approve or skip due transactions.

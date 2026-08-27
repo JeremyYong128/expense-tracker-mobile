@@ -4,9 +4,27 @@ import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 
 class PendingApprovalsDialog extends StatefulWidget {
   final List<Transaction> initialPending;
+
+  static Future<void> show(BuildContext context, List<Transaction> pending) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return PendingApprovalsDialog(initialPending: pending);
+      },
+    );
+
+    if (context.mounted) {
+      context.read<TransactionProvider>().fetchTransactions();
+      context.read<RecurringTransactionProvider>().fetchRecurringTransactions();
+    }
+  }
 
   const PendingApprovalsDialog({super.key, required this.initialPending});
 
