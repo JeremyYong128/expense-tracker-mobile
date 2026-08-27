@@ -18,6 +18,8 @@ class DataService {
       colorHex: data.colorHex,
       iconString: data.iconString,
       isActive: data.isActive,
+      isExpense: data.isExpense,
+      isIncome: data.isIncome,
     );
   }
 
@@ -88,6 +90,8 @@ class DataService {
           isActive: drift.Value(category.isActive),
           colorHex: drift.Value(category.colorHex),
           iconString: drift.Value(category.iconString),
+          isExpense: drift.Value(category.isExpense),
+          isIncome: drift.Value(category.isIncome),
         ),
       );
       return existing.id;
@@ -101,6 +105,8 @@ class DataService {
             colorHex: drift.Value(category.colorHex),
             iconString: drift.Value(category.iconString),
             isActive: drift.Value(category.isActive),
+            isExpense: drift.Value(category.isExpense),
+            isIncome: drift.Value(category.isIncome),
           ),
         );
     return newId;
@@ -124,6 +130,8 @@ class DataService {
           colorHex: drift.Value(category.colorHex),
           iconString: drift.Value(category.iconString),
           isActive: drift.Value(category.isActive),
+          isExpense: drift.Value(category.isExpense),
+          isIncome: drift.Value(category.isIncome),
         ),
       );
 
@@ -151,6 +159,8 @@ class DataService {
         colorHex: drift.Value(category.colorHex),
         iconString: drift.Value(category.iconString),
         isActive: drift.Value(category.isActive),
+        isExpense: drift.Value(category.isExpense),
+        isIncome: drift.Value(category.isIncome),
       ),
     );
     return category.id!;

@@ -105,9 +105,7 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 
 ### Priority Changes
-
-- Different categories for expenses and income
-- Red colour standardisation
+- Default categories
 
 ### Future
 

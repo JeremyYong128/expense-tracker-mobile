@@ -15,6 +15,8 @@ class Categories extends Table {
   TextColumn get colorHex => text().named('colorHex').nullable()();
   TextColumn get iconString => text().named('iconString').nullable()();
   BoolColumn get isActive => boolean().named('isActive').withDefault(const Constant(true))();
+  BoolColumn get isExpense => boolean().named('isExpense').withDefault(const Constant(true))();
+  BoolColumn get isIncome => boolean().named('isIncome').withDefault(const Constant(false))();
 }
 
 @DataClassName('TransactionTableData')
@@ -73,7 +75,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -102,6 +104,10 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 5) {
           await m.addColumn(creditCards, creditCards.isActive);
+        }
+        if (from < 6) {
+          await m.addColumn(categories, categories.isExpense);
+          await m.addColumn(categories, categories.isIncome);
         }
       },
       beforeOpen: (details) async {

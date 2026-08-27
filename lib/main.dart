@@ -57,13 +57,17 @@ class HomeScreen extends StatefulWidget {
 
   static void navigateToHistory(BuildContext context) {
     final state = context.findAncestorStateOfType<_HomeScreenState>();
-    state?._tabController.index = 1; // History Tab
+    if (state != null) {
+      state._tabController.index = 1; // History Tab
+      state._lastTappedIndex = 1;
+    }
   }
 
   static void navigateToRecurring(BuildContext context) {
     final state = context.findAncestorStateOfType<_HomeScreenState>();
     if (state != null) {
       state._tabController.index = 3; // Manage Tab
+      state._lastTappedIndex = 3;
       state._navigatorKeys[3].currentState?.popUntil((route) => route.isFirst);
       state._navigatorKeys[3].currentState?.push(
         MaterialPageRoute(
@@ -79,10 +83,9 @@ class HomeScreen extends StatefulWidget {
   }) {
     final state = context.findAncestorStateOfType<_HomeScreenState>();
     if (state != null) {
-      state._isProgrammaticTabChange = true;
       addTransactionFormState.value = AddTransactionFormConfig(initialIsRecurring: isRecurring);
       state._tabController.index = 2; // Add tab
-      state._isProgrammaticTabChange = false;
+      state._lastTappedIndex = 2;
     }
   }
 
@@ -107,19 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _lastTappedIndex = 0;
   bool _isCheckingPending = false;
-  bool _isProgrammaticTabChange = false;
 
   late RecurringTransactionProvider _recurringProvider;
 
   @override
   void initState() {
     super.initState();
-    _tabController.addListener(() {
-      if (!_isProgrammaticTabChange && _tabController.index == 2 && _lastTappedIndex != 2) {
-        addTransactionFormState.value = AddTransactionFormConfig();
-      }
-      _lastTappedIndex = _tabController.index;
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _recurringProvider = Provider.of<RecurringTransactionProvider>(
@@ -144,9 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final pending = await RecurringProcessingService.getPendingApprovals();
+      if (!mounted) return;
+      
       final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
 
-      if (pending.isNotEmpty && mounted) {
+      if (pending.isNotEmpty) {
         notifProvider.addNotification(
           AppNotification(
             id: 'pending_approvals',
@@ -173,6 +171,10 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: _tabController,
       tabBar: CupertinoTabBar(
         onTap: (index) {
+          if (index == 2 && _lastTappedIndex != 2) {
+            addTransactionFormState.value = AddTransactionFormConfig();
+          }
+
           if (_lastTappedIndex == index) {
             _navigatorKeys[index].currentState?.popUntil(
               (route) => route.isFirst,

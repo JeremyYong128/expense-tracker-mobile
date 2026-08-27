@@ -7,8 +7,15 @@ import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  String _filter = 'All'; // 'All', 'Expense', 'Income'
 
   @override
   Widget build(BuildContext context) {
@@ -29,86 +36,197 @@ class CategoriesScreen extends StatelessWidget {
       ),
       body: Consumer<CategoryProvider>(
         builder: (context, provider, child) {
-          final categories = provider.activeCategories;
+          final allCategories = provider.activeCategories;
 
-          if (categories.isEmpty) {
-            return Center(
-              child: Text(
-                'No categories found'.cased(context),
-                style: const TextStyle(color: AppColors.grey, fontSize: 16),
-              ),
-            );
-          }
+          final categories = allCategories.where((c) {
+            if (_filter == 'Expense') return c.isExpense;
+            if (_filter == 'Income') return c.isIncome;
+            return true;
+          }).toList();
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16.0),
-            itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
+          return Column(
+            children: [
+              Padding(
+                padding: AppStyles.screenPadding.copyWith(bottom: 8.0),
+                child: Row(
+                  children: [
+                    _buildFilterChip('All'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Expense'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Income'),
                   ],
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(24.0),
-                    onTap: () {
-                      SlideUpModal.showCustom(
-                        context: context,
-                        builder: (ctx) => CategoryFormModal(category: category),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: category.color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: Icon(
-                              category.iconData,
-                              color: category.color,
-                              size: 24,
-                            ),
+              ),
+              Expanded(
+                child: categories.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No categories found'.cased(context),
+                          style: const TextStyle(
+                            color: AppColors.grey,
+                            fontSize: 16,
                           ),
-                          const SizedBox(width: 16.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  category.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: AppStyles.screenPadding.copyWith(top: 8.0),
+                        itemCount: categories.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(24.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.04,
                                   ),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                            child: Material(
+                              color: AppColors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(24.0),
+                                onTap: () {
+                                  SlideUpModal.showCustom(
+                                    context: context,
+                                    builder: (ctx) =>
+                                        CategoryFormModal(category: category),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        decoration: BoxDecoration(
+                                          color: category.color.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12.0,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          category.iconData,
+                                          color: category.color,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16.0),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              category.name,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                if (category.isExpense)
+                                                  _buildTypeBadge(
+                                                    'Expense',
+                                                    AppColors.expense,
+                                                  ),
+                                                if (category.isExpense &&
+                                                    category.isIncome)
+                                                  const SizedBox(width: 4),
+                                                if (category.isIncome)
+                                                  _buildTypeBadge(
+                                                    'Income',
+                                                    AppColors.income,
+                                                  ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                ),
-              );
-            },
+              ),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _filter == label;
+    return Material(
+      color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : AppColors.surfaceLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : AppColors.divider,
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _filter = label;
+          });
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                const Icon(Icons.check, size: 18, color: AppColors.primary),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

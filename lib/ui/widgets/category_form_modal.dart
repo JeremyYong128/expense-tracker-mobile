@@ -9,6 +9,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
 
 class CategoryFormModal extends StatefulWidget {
   final Category? category;
@@ -24,6 +25,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
   late TextEditingController _nameController;
   late String _iconString;
   late String _colorHex;
+  late CategoryTypeSelection _typeSelection;
 
   String? _formError;
   final _formKey = GlobalKey<FormState>();
@@ -42,6 +44,18 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     _colorHex = isEditing && widget.category!.colorHex != null
         ? widget.category!.colorHex!
         : '#9E9E9E';
+
+    if (isEditing) {
+      if (widget.category!.isExpense && widget.category!.isIncome) {
+        _typeSelection = CategoryTypeSelection.both;
+      } else if (widget.category!.isIncome) {
+        _typeSelection = CategoryTypeSelection.income;
+      } else {
+        _typeSelection = CategoryTypeSelection.expense;
+      }
+    } else {
+      _typeSelection = CategoryTypeSelection.expense; // default
+    }
   }
 
   @override
@@ -60,6 +74,13 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
       final text = _nameController.text.trim();
       final provider = context.read<CategoryProvider>();
 
+      final isExpense =
+          _typeSelection == CategoryTypeSelection.expense ||
+          _typeSelection == CategoryTypeSelection.both;
+      final isIncome =
+          _typeSelection == CategoryTypeSelection.income ||
+          _typeSelection == CategoryTypeSelection.both;
+
       if (widget.category != null) {
         final updatedCategory = Category(
           id: widget.category!.id,
@@ -67,6 +88,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           colorHex: _colorHex,
           iconString: _iconString,
           isActive: widget.category!.isActive,
+          isExpense: isExpense,
+          isIncome: isIncome,
         );
         await provider.updateCategory(updatedCategory);
       } else {
@@ -75,6 +98,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           colorHex: _colorHex,
           iconString: _iconString,
           isActive: true,
+          isExpense: isExpense,
+          isIncome: isIncome,
         );
         await provider.addCategory(newCategory);
       }
@@ -150,13 +175,17 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
               if (_formError != null) ...[
                 Text(
                   _formError!,
-                  style: const TextStyle(
-                    color: AppColors.error,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: AppColors.error, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
               ],
+
+              // 0. Type Selection
+              CategoryTypeToggle(
+                selection: _typeSelection,
+                onChanged: (val) => setState(() => _typeSelection = val),
+              ),
+              const SizedBox(height: 24),
 
               // 1. Icon Preview
               Center(

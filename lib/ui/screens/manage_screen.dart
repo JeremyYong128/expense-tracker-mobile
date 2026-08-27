@@ -17,7 +17,7 @@ class ManageScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(title: Text('Manage'.cased(context))),
         body: ListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppStyles.screenPadding,
           children: [
             _buildManageCard(
               context,

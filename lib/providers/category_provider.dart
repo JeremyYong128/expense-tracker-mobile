@@ -8,6 +8,8 @@ class CategoryProvider extends ChangeNotifier {
 
   List<Category> get categories => _categories;
   List<Category> get activeCategories => _categories.where((c) => c.isActive).toList();
+  List<Category> get activeExpenseCategories => _categories.where((c) => c.isActive && c.isExpense).toList();
+  List<Category> get activeIncomeCategories => _categories.where((c) => c.isActive && c.isIncome).toList();
   bool get isLoading => _isLoading;
 
   CategoryProvider() {

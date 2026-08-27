@@ -68,6 +68,36 @@ class $CategoriesTable extends Categories
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _isExpenseMeta = const VerificationMeta(
+    'isExpense',
+  );
+  @override
+  late final GeneratedColumn<bool> isExpense = GeneratedColumn<bool>(
+    'isExpense',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("isExpense" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _isIncomeMeta = const VerificationMeta(
+    'isIncome',
+  );
+  @override
+  late final GeneratedColumn<bool> isIncome = GeneratedColumn<bool>(
+    'isIncome',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("isIncome" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -75,6 +105,8 @@ class $CategoriesTable extends Categories
     colorHex,
     iconString,
     isActive,
+    isExpense,
+    isIncome,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -117,6 +149,18 @@ class $CategoriesTable extends Categories
         isActive.isAcceptableOrUnknown(data['isActive']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('isExpense')) {
+      context.handle(
+        _isExpenseMeta,
+        isExpense.isAcceptableOrUnknown(data['isExpense']!, _isExpenseMeta),
+      );
+    }
+    if (data.containsKey('isIncome')) {
+      context.handle(
+        _isIncomeMeta,
+        isIncome.isAcceptableOrUnknown(data['isIncome']!, _isIncomeMeta),
+      );
+    }
     return context;
   }
 
@@ -146,6 +190,14 @@ class $CategoriesTable extends Categories
         DriftSqlType.bool,
         data['${effectivePrefix}isActive'],
       )!,
+      isExpense: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}isExpense'],
+      )!,
+      isIncome: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}isIncome'],
+      )!,
     );
   }
 
@@ -162,12 +214,16 @@ class CategoryTableData extends DataClass
   final String? colorHex;
   final String? iconString;
   final bool isActive;
+  final bool isExpense;
+  final bool isIncome;
   const CategoryTableData({
     required this.id,
     required this.name,
     this.colorHex,
     this.iconString,
     required this.isActive,
+    required this.isExpense,
+    required this.isIncome,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -181,6 +237,8 @@ class CategoryTableData extends DataClass
       map['iconString'] = Variable<String>(iconString);
     }
     map['isActive'] = Variable<bool>(isActive);
+    map['isExpense'] = Variable<bool>(isExpense);
+    map['isIncome'] = Variable<bool>(isIncome);
     return map;
   }
 
@@ -195,6 +253,8 @@ class CategoryTableData extends DataClass
           ? const Value.absent()
           : Value(iconString),
       isActive: Value(isActive),
+      isExpense: Value(isExpense),
+      isIncome: Value(isIncome),
     );
   }
 
@@ -209,6 +269,8 @@ class CategoryTableData extends DataClass
       colorHex: serializer.fromJson<String?>(json['colorHex']),
       iconString: serializer.fromJson<String?>(json['iconString']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      isExpense: serializer.fromJson<bool>(json['isExpense']),
+      isIncome: serializer.fromJson<bool>(json['isIncome']),
     );
   }
   @override
@@ -220,6 +282,8 @@ class CategoryTableData extends DataClass
       'colorHex': serializer.toJson<String?>(colorHex),
       'iconString': serializer.toJson<String?>(iconString),
       'isActive': serializer.toJson<bool>(isActive),
+      'isExpense': serializer.toJson<bool>(isExpense),
+      'isIncome': serializer.toJson<bool>(isIncome),
     };
   }
 
@@ -229,12 +293,16 @@ class CategoryTableData extends DataClass
     Value<String?> colorHex = const Value.absent(),
     Value<String?> iconString = const Value.absent(),
     bool? isActive,
+    bool? isExpense,
+    bool? isIncome,
   }) => CategoryTableData(
     id: id ?? this.id,
     name: name ?? this.name,
     colorHex: colorHex.present ? colorHex.value : this.colorHex,
     iconString: iconString.present ? iconString.value : this.iconString,
     isActive: isActive ?? this.isActive,
+    isExpense: isExpense ?? this.isExpense,
+    isIncome: isIncome ?? this.isIncome,
   );
   CategoryTableData copyWithCompanion(CategoriesCompanion data) {
     return CategoryTableData(
@@ -245,6 +313,8 @@ class CategoryTableData extends DataClass
           ? data.iconString.value
           : this.iconString,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      isExpense: data.isExpense.present ? data.isExpense.value : this.isExpense,
+      isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
     );
   }
 
@@ -255,13 +325,23 @@ class CategoryTableData extends DataClass
           ..write('name: $name, ')
           ..write('colorHex: $colorHex, ')
           ..write('iconString: $iconString, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('isExpense: $isExpense, ')
+          ..write('isIncome: $isIncome')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, colorHex, iconString, isActive);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    colorHex,
+    iconString,
+    isActive,
+    isExpense,
+    isIncome,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -270,7 +350,9 @@ class CategoryTableData extends DataClass
           other.name == this.name &&
           other.colorHex == this.colorHex &&
           other.iconString == this.iconString &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.isExpense == this.isExpense &&
+          other.isIncome == this.isIncome);
 }
 
 class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
@@ -279,12 +361,16 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
   final Value<String?> colorHex;
   final Value<String?> iconString;
   final Value<bool> isActive;
+  final Value<bool> isExpense;
+  final Value<bool> isIncome;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.iconString = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.isExpense = const Value.absent(),
+    this.isIncome = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
@@ -292,6 +378,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     this.colorHex = const Value.absent(),
     this.iconString = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.isExpense = const Value.absent(),
+    this.isIncome = const Value.absent(),
   }) : name = Value(name);
   static Insertable<CategoryTableData> custom({
     Expression<int>? id,
@@ -299,6 +387,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     Expression<String>? colorHex,
     Expression<String>? iconString,
     Expression<bool>? isActive,
+    Expression<bool>? isExpense,
+    Expression<bool>? isIncome,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -306,6 +396,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
       if (colorHex != null) 'colorHex': colorHex,
       if (iconString != null) 'iconString': iconString,
       if (isActive != null) 'isActive': isActive,
+      if (isExpense != null) 'isExpense': isExpense,
+      if (isIncome != null) 'isIncome': isIncome,
     });
   }
 
@@ -315,6 +407,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     Value<String?>? colorHex,
     Value<String?>? iconString,
     Value<bool>? isActive,
+    Value<bool>? isExpense,
+    Value<bool>? isIncome,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -322,6 +416,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
       colorHex: colorHex ?? this.colorHex,
       iconString: iconString ?? this.iconString,
       isActive: isActive ?? this.isActive,
+      isExpense: isExpense ?? this.isExpense,
+      isIncome: isIncome ?? this.isIncome,
     );
   }
 
@@ -343,6 +439,12 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     if (isActive.present) {
       map['isActive'] = Variable<bool>(isActive.value);
     }
+    if (isExpense.present) {
+      map['isExpense'] = Variable<bool>(isExpense.value);
+    }
+    if (isIncome.present) {
+      map['isIncome'] = Variable<bool>(isIncome.value);
+    }
     return map;
   }
 
@@ -353,7 +455,9 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
           ..write('name: $name, ')
           ..write('colorHex: $colorHex, ')
           ..write('iconString: $iconString, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('isExpense: $isExpense, ')
+          ..write('isIncome: $isIncome')
           ..write(')'))
         .toString();
   }
@@ -1985,6 +2089,8 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       Value<String?> colorHex,
       Value<String?> iconString,
       Value<bool> isActive,
+      Value<bool> isExpense,
+      Value<bool> isIncome,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
@@ -1993,6 +2099,8 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<String?> colorHex,
       Value<String?> iconString,
       Value<bool> isActive,
+      Value<bool> isExpense,
+      Value<bool> isIncome,
     });
 
 final class $$CategoriesTableReferences
@@ -2074,6 +2182,16 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isExpense => $composableBuilder(
+    column: $table.isExpense,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isIncome => $composableBuilder(
+    column: $table.isIncome,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2162,6 +2280,16 @@ class $$CategoriesTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isExpense => $composableBuilder(
+    column: $table.isExpense,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isIncome => $composableBuilder(
+    column: $table.isIncome,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -2189,6 +2317,12 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get isExpense =>
+      $composableBuilder(column: $table.isExpense, builder: (column) => column);
+
+  GeneratedColumn<bool> get isIncome =>
+      $composableBuilder(column: $table.isIncome, builder: (column) => column);
 
   Expression<T> recurringTransactionsRefs<T extends Object>(
     Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
@@ -2278,12 +2412,16 @@ class $$CategoriesTableTableManager
                 Value<String?> colorHex = const Value.absent(),
                 Value<String?> iconString = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isExpense = const Value.absent(),
+                Value<bool> isIncome = const Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
                 name: name,
                 colorHex: colorHex,
                 iconString: iconString,
                 isActive: isActive,
+                isExpense: isExpense,
+                isIncome: isIncome,
               ),
           createCompanionCallback:
               ({
@@ -2292,12 +2430,16 @@ class $$CategoriesTableTableManager
                 Value<String?> colorHex = const Value.absent(),
                 Value<String?> iconString = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isExpense = const Value.absent(),
+                Value<bool> isIncome = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 name: name,
                 colorHex: colorHex,
                 iconString: iconString,
                 isActive: isActive,
+                isExpense: isExpense,
+                isIncome: isIncome,
               ),
           withReferenceMapper: (p0) => p0
               .map(

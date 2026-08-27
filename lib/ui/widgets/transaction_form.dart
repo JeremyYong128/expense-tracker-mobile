@@ -195,6 +195,10 @@ class TransactionFormState extends State<TransactionForm> {
     });
   }
 
+  List<Category> get _filteredCategories {
+    return _categories.where((c) => _isIncome ? c.isIncome : c.isExpense).toList();
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -293,7 +297,22 @@ class TransactionFormState extends State<TransactionForm> {
           // Income / Expense Toggle
           TransactionTypeToggle(
             isIncome: _isIncome,
-            onChanged: (value) => setState(() => _isIncome = value),
+            onChanged: (value) {
+              setState(() {
+                _isIncome = value;
+                
+                // Auto-select fallback category if current one is invalid
+                final validCategories = _filteredCategories;
+                if (_selectedCategory != null) {
+                  final isValid = _isIncome ? _selectedCategory!.isIncome : _selectedCategory!.isExpense;
+                  if (!isValid) {
+                    _selectedCategory = validCategories.isNotEmpty ? validCategories.first : null;
+                  }
+                } else {
+                  _selectedCategory = validCategories.isNotEmpty ? validCategories.first : null;
+                }
+              });
+            },
           ),
           const SizedBox(height: 32.0),
 
@@ -339,7 +358,7 @@ class TransactionFormState extends State<TransactionForm> {
                     ? const Center(child: CircularProgressIndicator())
                     : CustomDropdownField<Category?>(
                         label: 'Category'.cased(context),
-                        items: _categories,
+                        items: _filteredCategories,
                         selectedItem: _selectedCategory,
                         displayText: (cat) => cat?.name ?? '',
                         onChanged: (val) =>
