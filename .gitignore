@@ -45,6 +45,5 @@ app.*.map.json
 /android/app/release
 
 # Secrets/Docs
-PUBLISHING.md
 GoogleService-Info.plist
-scripts/publish.sh
+scripts/publish.env
