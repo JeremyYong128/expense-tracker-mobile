@@ -105,7 +105,9 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 
 ### Priority Changes
-- 
+- Screens for no entries (cards, recurring transactions, categories, history)
+- Horizontal display
+- Notification items
 
 ### Future
 

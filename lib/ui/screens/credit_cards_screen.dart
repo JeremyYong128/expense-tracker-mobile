@@ -9,6 +9,7 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.da
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class CreditCardsScreen extends StatefulWidget {
   const CreditCardsScreen({super.key});
@@ -83,7 +84,8 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(e.message)));
           }
-        } catch (e) {
+        } catch (e, stack) {
+          AppLogger.error('Failed to restore credit card', e, stack);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('An unexpected error occurred.')),

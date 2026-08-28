@@ -11,7 +11,8 @@ This Privacy Policy applies to the "Expense Tracker Mobile" application (hereby 
 The App operates entirely locally on your device:
 * **Local Storage:** All your transactions, categories, and financial data are saved directly to your device's internal storage using a local SQLite database. 
 * **No Cloud Servers:** The App does not connect to any external cloud databases or servers to back up or process your data.
-* **No Analytics or Tracking:** We do not use third-party analytics SDKs, crash reporters, or advertising trackers that harvest your personal information or usage habits.
+* **No Analytics or Advertising Trackers:** We do not use third-party analytics SDKs or advertising trackers that harvest your personal information or usage habits.
+* **Anonymous Crash Reporting:** To help improve the stability of the App, we use Firebase Crashlytics to collect anonymous crash reports and error logs. These reports do not contain personally identifiable financial information (like your specific transaction amounts or titles), but they do include technical device information (like iOS version and device model) and stack traces to help us fix bugs.
 
 ## Third-Party Access
 Because your data never leaves your device, no third-party individuals, companies, or services have access to your financial information through the App. 

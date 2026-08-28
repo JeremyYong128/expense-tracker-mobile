@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class TransactionFormData {
   final double amount;
@@ -246,7 +247,8 @@ class TransactionFormState extends State<TransactionForm> {
           curve: Curves.easeOut,
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      AppLogger.error('Failed to submit transaction', e, stack);
       if (mounted) {
         setState(() {
           _formError = 'An unexpected error occurred: $e';

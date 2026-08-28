@@ -1,5 +1,6 @@
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class RecurringProcessingService {
   /// Fetches all recurring transactions whose nextDueDate has passed
@@ -35,6 +36,11 @@ class RecurringProcessingService {
 
     // Sort by due date (oldest first)
     pendingInstances.sort((a, b) => a.date.compareTo(b.date));
+    
+    if (pendingInstances.isNotEmpty) {
+      AppLogger.info('Found ${pendingInstances.length} pending recurring transactions to process.');
+    }
+    
     return pendingInstances;
   }
 

@@ -9,6 +9,7 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class CreditCardModal extends StatefulWidget {
   final CreditCard? card;
@@ -87,7 +88,8 @@ class _CreditCardModalState extends State<CreditCardModal> {
           curve: Curves.easeOut,
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      AppLogger.error('Failed to save credit card', e, stack);
       if (mounted) {
         setState(() {
           _formError = 'An unexpected error occurred.';

@@ -46,3 +46,5 @@ app.*.map.json
 
 # Secrets/Docs
 PUBLISHING.md
+GoogleService-Info.plist
+scripts/publish.sh

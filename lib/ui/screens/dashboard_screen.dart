@@ -36,7 +36,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
@@ -44,7 +43,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final creditCardProvider = context.watch<CreditCardProvider>();
 
-    if (transactionProvider.isLoading || categoryProvider.isLoading || creditCardProvider.isLoading) {
+    if (transactionProvider.isLoading ||
+        categoryProvider.isLoading ||
+        creditCardProvider.isLoading) {
       return Scaffold(
         appBar: AppBar(title: Text('Home'.cased(context))),
         body: const Center(child: CircularProgressIndicator()),
@@ -82,7 +83,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.expense,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.surface, width: 1.5),
+                        border: Border.all(
+                          color: AppColors.surface,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -91,200 +95,116 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         body: SingleChildScrollView(
-              padding: AppStyles.screenPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          padding: AppStyles.screenPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: () => _navigateMonth(-1),
-                        padding: EdgeInsets.zero,
-                      ),
-                      Expanded(
-                        child: Text(
-                          DateFormat(
-                            'MMMM yyyy',
-                          ).format(_currentMonth).cased(context),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: () => _navigateMonth(1),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: () => _navigateMonth(-1),
+                    padding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 24),
-                  // SUMMARY CARDS
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          'Income',
-                          stats.totalIncome,
-                          AppColors.primary,
-                          percentageChange: stats.incomePercentageChange,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          'Expense',
-                          stats.totalExpense,
-                          AppColors.primary,
-                          percentageChange: stats.expensePercentageChange,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // TOP CATEGORIES
-                  if (stats.topCategories.isNotEmpty) ...[
-                    Text(
-                      'Top Categories'.cased(context),
+                  Expanded(
+                    child: Text(
+                      DateFormat(
+                        'MMMM yyyy',
+                      ).format(_currentMonth).cased(context),
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    ...stats.topCategories.entries.map((entry) {
-                      final category = entry.key;
-                      final amount = entry.value;
-                      final color = category.color;
-                      final percentage = stats.totalExpense > 0
-                          ? (amount / stats.totalExpense)
-                          : 0.0;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: Icon(
-                                category.iconData,
-                                color: color,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        category.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      Text(
-                                        _currencyFormat.format(amount),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: percentage,
-                                      backgroundColor: AppColors.grey
-                                          .withValues(alpha: 0.3),
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        color,
-                                      ),
-                                      minHeight: 6,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // REWARDS SECTION
-                  if (stats.monthlyRewards.isNotEmpty) ...[
-                    Text(
-                      'Rewards Earned'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: () => _navigateMonth(1),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // SUMMARY CARDS
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryCard(
+                      'Income',
+                      stats.totalIncome,
+                      AppColors.primary,
+                      percentageChange: stats.incomePercentageChange,
                     ),
-                    const SizedBox(height: 16),
-                    ...stats.monthlyRewards.entries.map((entry) {
-                      final card = entry.key;
-                      final reward = entry.value;
-                      final isCashback = card.rewardType == 'Cashback';
-                      final rewardText = isCashback
-                          ? '\$${reward.toStringAsFixed(2)}'
-                          : NumberFormat.decimalPattern().format(
-                              reward.toInt(),
-                            );
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSummaryCard(
+                      'Expense',
+                      stats.totalExpense,
+                      AppColors.primary,
+                      percentageChange: stats.expensePercentageChange,
+                    ),
+                  ),
+                ],
+              ),
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
+              const SizedBox(height: 32),
+
+              // TOP CATEGORIES
+              if (stats.topCategories.isNotEmpty) ...[
+                Text(
+                  'Top Categories'.cased(context),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...stats.topCategories.entries.map((entry) {
+                  final category = entry.key;
+                  final amount = entry.value;
+                  final color = category.color;
+                  final percentage = stats.totalExpense > 0
+                      ? (amount / stats.totalExpense)
+                      : 0.0;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                            ),
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Icon(
+                            category.iconData,
+                            color: color,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.stars,
-                                      color: AppColors.primary,
-                                      size: 20,
+                                  Text(
+                                    category.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
                                   Text(
-                                    card.name,
+                                    _currencyFormat.format(amount),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -292,24 +212,107 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ],
                               ),
-                              Text(
-                                '+$rewardText ${card.rewardType}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.income,
-                                  fontSize: 15,
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: percentage,
+                                  backgroundColor: AppColors.grey.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    color,
+                                  ),
+                                  minHeight: 6,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    }),
-                    const SizedBox(height: 24),
-                  ],
-                ],
-              ),
-            ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 24),
+              ],
+
+              // REWARDS SECTION
+              if (stats.monthlyRewards.isNotEmpty) ...[
+                Text(
+                  'Rewards Earned'.cased(context),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...stats.monthlyRewards.entries.map((entry) {
+                  final card = entry.key;
+                  final reward = entry.value;
+                  final isCashback = card.rewardType == 'Cashback';
+                  final rewardText = isCashback
+                      ? '\$${reward.toStringAsFixed(2)}'
+                      : NumberFormat.decimalPattern().format(reward.toInt());
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.stars,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                card.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '+$rewardText ${card.rewardType}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.income,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 24),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class CategoryFormModal extends StatefulWidget {
   final Category? category;
@@ -119,7 +120,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           curve: Curves.easeOut,
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      AppLogger.error('Failed to save category', e, stack);
       if (mounted) {
         setState(() {
           _formError = 'An unexpected error occurred.';
@@ -144,7 +146,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
         widget.onSaved?.call();
         Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (e, stack) {
+      AppLogger.error('Failed to delete category', e, stack);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

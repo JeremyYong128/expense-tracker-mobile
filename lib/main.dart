@@ -13,15 +13,33 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
-import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/providers/notification_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/global_notification_banner.dart';
+import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui';
+import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase (will use GoogleService-Info.plist since we didn't generate options)
+  await Firebase.initializeApp();
+
   final prefs = await SharedPreferences.getInstance();
+
+  // Global Error Handlers
+  FlutterError.onError = (FlutterErrorDetails details) {
+    AppLogger.error('Flutter UI Error', details.exception, details.stack);
+  };
+
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    AppLogger.error('Unhandled App Exception', error, stack);
+    return true; // Prevent default crash behavior
+  };
 
   runApp(
     MultiProvider(
