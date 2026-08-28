@@ -100,7 +100,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -194,31 +194,45 @@ class AppDatabase extends _$AppDatabase {
         );
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 2) {
-          await m.createTable(creditCards);
-          await m.addColumn(transactions, transactions.creditCardId);
+        // --- Robust Migration Fallback ---
+        // Ensure ALL tables and columns exist to prevent crashes from
+        // messy or skipped database migrations in older app versions.
+        final db = this;
+        for (final table in db.allTables) {
+          // 1. Check if the table exists
+          final tableResult = await customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='${table.actualTableName}'",
+          ).get();
+
+          if (tableResult.isEmpty) {
+            // Table doesn't exist, create it
+            await m.createTable(table);
+          } else {
+            // 2. Table exists, check for missing columns
+            final columnResult = await customSelect(
+              'PRAGMA table_info(${table.actualTableName})',
+            ).get();
+            final existingColumns = columnResult
+                .map((row) => row.read<String>('name'))
+                .toSet();
+
+            for (final column in table.$columns) {
+              if (!existingColumns.contains(column.name)) {
+                await m.addColumn(table, column);
+              }
+            }
+          }
         }
-        if (from < 3) {
-          await m.addColumn(
-            recurringTransactions,
-            recurringTransactions.creditCardId,
-          );
-        }
+
+        // Run specific data migrations AFTER schema is guaranteed to be correct
         if (from < 4) {
-          await m.addColumn(
-            recurringTransactions,
-            recurringTransactions.startDate,
-          );
-          await customStatement(
-            'UPDATE recurring_transactions SET startDate = nextDueDate',
-          );
-        }
-        if (from < 5) {
-          await m.addColumn(creditCards, creditCards.isActive);
-        }
-        if (from < 6) {
-          await m.addColumn(categories, categories.isExpense);
-          await m.addColumn(categories, categories.isIncome);
+          try {
+            await customStatement(
+              'UPDATE recurring_transactions SET startDate = nextDueDate',
+            );
+          } catch (e) {
+            // Fallback in case of unexpected errors
+          }
         }
       },
       beforeOpen: (details) async {
