@@ -38,6 +38,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         builder: (context, provider, child) {
           final allCategories = provider.activeCategories;
 
+          if (allCategories.isEmpty) {
+            return Center(
+              child: Text(
+                'No categories found'.cased(context),
+                style: const TextStyle(color: AppColors.grey, fontSize: 16),
+              ),
+            );
+          }
+
           final categories = allCategories.where((c) {
             if (_filter == 'Expense') return c.isExpense;
             if (_filter == 'Income') return c.isIncome;
@@ -175,7 +184,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget _buildFilterChip(String label) {
     final isSelected = _filter == label;
     return Material(
-      color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : AppColors.surfaceLight,
+      color: isSelected
+          ? AppColors.primary.withValues(alpha: 0.2)
+          : AppColors.surfaceLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
@@ -201,7 +212,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

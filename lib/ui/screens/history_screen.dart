@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
+import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -35,9 +36,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
       bottom: true,
       child: Scaffold(
         appBar: AppBar(title: Text('History'.cased(context))),
-        body: SingleChildScrollView(
+        body: Padding(
+          padding: AppStyles.screenPadding,
           child: TransactionList(
             transactions: transactionProvider.transactions,
+            expandVertically: true,
           ),
         ),
       ),

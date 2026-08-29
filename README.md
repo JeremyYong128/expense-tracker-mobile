@@ -105,12 +105,11 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 
 ### Priority Changes
-- Screens for no entries (cards, recurring transactions, categories, history)
-- Horizontal display
-- Notification items
+- Notification item design
 
 ### Future
 
+- Horizontal display
 - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
 - Credit cards
     - Need some indication in the history and recurring cards when an expense is tagged with a credit card

@@ -198,12 +198,14 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
                       ),
                     ),
                   )
-                : TransactionList(
-                    transactions: transactionsList,
+                : Padding(
                     padding: const EdgeInsets.only(
                       bottom: 24,
                       left: 16,
                       right: 16,
+                    ),
+                    child: TransactionList(
+                      transactions: transactionsList,
                     ),
                   ),
           ],
