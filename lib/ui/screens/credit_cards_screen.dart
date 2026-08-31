@@ -141,12 +141,14 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                         Container(
                           padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
+                            color: AppColors.getColorFromHex(
+                              card.colorHex,
+                            ).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: Icon(
                             _getIconForRewardType(card.rewardType),
-                            color: AppColors.primary,
+                            color: AppColors.getColorFromHex(card.colorHex),
                             size: 24,
                           ),
                         ),

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 

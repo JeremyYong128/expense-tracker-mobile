@@ -125,16 +125,22 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
+    final creditCardProvider = context.watch<CreditCardProvider>();
+
+    final latestCard = creditCardProvider.creditCards.firstWhere(
+      (c) => c.id == widget.creditCard.id,
+      orElse: () => widget.creditCard,
+    );
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.creditCard.name)),
+        appBar: AppBar(title: Text(latestCard.name)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final transactionsList = transactionProvider.transactions
-        .where((t) => t.creditCardId == widget.creditCard.id)
+        .where((t) => t.creditCardId == latestCard.id)
         .toList();
     transactionsList.sort((a, b) => b.date.compareTo(a.date));
 
@@ -147,30 +153,30 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     }
 
     double totalRewardsAmount = 0;
-    if (widget.creditCard.rewardType == 'Cashback') {
-      totalRewardsAmount = totalSpent * (widget.creditCard.rewardRate / 100);
+    if (latestCard.rewardType == 'Cashback') {
+      totalRewardsAmount = totalSpent * (latestCard.rewardRate / 100);
     } else {
-      totalRewardsAmount = totalSpent * widget.creditCard.rewardRate;
+      totalRewardsAmount = totalSpent * latestCard.rewardRate;
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.creditCard.name),
+        title: Text(latestCard.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit, color: AppColors.white),
-            onPressed: () => _showAddEditDialog(widget.creditCard),
+            onPressed: () => _showAddEditDialog(latestCard),
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: AppColors.white),
-            onPressed: () => _confirmDelete(widget.creditCard),
+            onPressed: () => _confirmDelete(latestCard),
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildDigitalCard(totalRewardsAmount),
+            _buildDigitalCard(latestCard, totalRewardsAmount),
             const SizedBox(height: 16),
             if (transactionsList.isNotEmpty) ...[
               Padding(
@@ -214,19 +220,15 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     );
   }
 
-  LinearGradient _getGradientForName(String name) {
-    int hash = 0;
-    for (int i = 0; i < name.length; i++) {
-      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
-    }
-    final double baseHue = (hash.abs() % 360).toDouble();
-    final Color color1 = HSLColor.fromAHSL(1.0, baseHue, 0.7, 0.5).toColor();
-    final Color color2 = HSLColor.fromAHSL(
-      1.0,
-      (baseHue + 40) % 360,
-      0.8,
-      0.6,
-    ).toColor();
+  LinearGradient _getGradientForCard(CreditCard card) {
+    final Color color1 = AppColors.getColorFromHex(card.colorHex);
+    
+    // Convert to HSL to get a slightly shifted secondary color for the gradient
+    final HSLColor hsl1 = HSLColor.fromColor(color1);
+    final Color color2 = hsl1.withHue((hsl1.hue + 40) % 360).withLightness(
+          (hsl1.lightness + 0.1).clamp(0.0, 1.0),
+        ).toColor();
+
     return LinearGradient(
       colors: [color1, color2],
       begin: Alignment.topLeft,
@@ -260,15 +262,15 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     return '$rateStr ${card.rewardType.cased(context)}';
   }
 
-  Widget _buildDigitalCard(double totalRewardsAmount) {
-    final isCashback = widget.creditCard.rewardType == 'Cashback';
+  Widget _buildDigitalCard(CreditCard card, double totalRewardsAmount) {
+    final isCashback = card.rewardType == 'Cashback';
     final rewardText = isCashback
         ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
         : NumberFormat.decimalPattern().format(totalRewardsAmount.toInt());
 
-    final gradient = _getGradientForName(widget.creditCard.name);
-    final iconData = _getIconForRewardType(widget.creditCard.rewardType);
-    final subtitle = _getRewardSubtitle(context, widget.creditCard);
+    final gradient = _getGradientForCard(card);
+    final iconData = _getIconForRewardType(card.rewardType);
+    final subtitle = _getRewardSubtitle(context, card);
 
     return Container(
       width: double.infinity,
@@ -294,7 +296,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  widget.creditCard.name,
+                  card.name,
                   style: const TextStyle(
                     color: AppColors.white,
                     fontSize: 22,

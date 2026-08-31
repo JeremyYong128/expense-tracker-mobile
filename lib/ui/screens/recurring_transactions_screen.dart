@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/edit_transaction_modal.dart';
@@ -94,7 +93,7 @@ class _RecurringTransactionsScreenState
                     (c) => c.id == tx.categoryId,
                     orElse: () => Category(
                       name: 'Unknown',
-                      colorHex: null,
+                      colorHex: '#9E9E9E',
                       iconString: null,
                       isActive: true,
                     ),

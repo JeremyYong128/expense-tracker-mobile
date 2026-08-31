@@ -10,6 +10,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 
 class CreditCardModal extends StatefulWidget {
   final CreditCard? card;
@@ -25,6 +26,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
   late TextEditingController _nameController;
   late TextEditingController _rateController;
   late String _rewardType;
+  late String _colorHex;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
@@ -40,6 +42,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
       text: isEditing ? widget.card!.rewardRate.toString() : '0.0',
     );
     _rewardType = isEditing ? widget.card!.rewardType : 'None';
+    _colorHex = isEditing ? widget.card!.colorHex : AppColors.colorPaletteHexes.first;
   }
 
   @override
@@ -65,6 +68,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
         name: name,
         rewardType: _rewardType,
         rewardRate: rate,
+        colorHex: _colorHex,
       );
 
       if (widget.card != null) {
@@ -157,6 +161,27 @@ class _CreditCardModalState extends State<CreditCardModal> {
                   onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
+
+              // Colors Picker
+              Text(
+                'Colour'.localized(context).cased(context),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ColorPicker(
+                selectedColorHex: _colorHex,
+                onColorSelected: (hex) {
+                  setState(() {
+                    _colorHex = hex;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+
               CustomDropdownField<String>(
                 label: 'Reward Type'.cased(context),
                 items: const ['None', 'Cashback', 'Miles', 'Points'],

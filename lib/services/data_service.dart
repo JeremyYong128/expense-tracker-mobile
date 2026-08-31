@@ -43,6 +43,7 @@ class DataService {
       name: data.name,
       rewardType: data.rewardType,
       rewardRate: data.rewardRate,
+      colorHex: data.colorHex,
       isActive: data.isActive,
     );
   }
@@ -215,6 +216,7 @@ class DataService {
             name: card.name,
             rewardType: card.rewardType,
             rewardRate: card.rewardRate,
+            colorHex: drift.Value(card.colorHex),
             isActive: drift.Value(card.isActive),
           ),
         );
@@ -244,6 +246,7 @@ class DataService {
         name: drift.Value(card.name),
         rewardType: drift.Value(card.rewardType),
         rewardRate: drift.Value(card.rewardRate),
+        colorHex: drift.Value(card.colorHex),
         isActive: drift.Value(card.isActive),
       ),
     );
@@ -578,7 +581,7 @@ class DataService {
     for (var entry in sortedCategories.take(4)) {
       final category = categories.firstWhere(
         (c) => c.id == entry.key,
-        orElse: () => Category(id: -1, name: 'Unknown', isActive: false),
+        orElse: () => Category(id: -1, name: 'Unknown', colorHex: '#9E9E9E', isActive: false),
       );
       topCatMap[category] = entry.value;
     }

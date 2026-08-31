@@ -118,6 +118,8 @@ flutter run
 - Need a way for users to reorder things in the "Manage" tab
 - Transaction list should have more info, show associated recurring expense/credit card
     - Will need to implement UI info update mechanism, or else the card will bug out when the recurring transaction related to a transaction is deleted, and then a user tries to edit it.
+- Add more analytics to dashboard/category/credit card/screens.
 - Possible changes to consider:
+    - Linking individual transactions to a recurring transaction.
     - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
     - Currently when editing the recurring transaction intervals, if the start date/time or the interval is changed, it calculates the next due date starting from the latest recorded individual transaction, or the new start date, whichever is later. Is this too confusing?

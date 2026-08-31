@@ -3,6 +3,7 @@ class CreditCard {
   final String name;
   final String rewardType;
   final double rewardRate;
+  final String colorHex;
   final bool isActive;
 
   CreditCard({
@@ -10,6 +11,7 @@ class CreditCard {
     required this.name,
     required this.rewardType,
     required this.rewardRate,
+    required this.colorHex,
     this.isActive = true,
   });
 
@@ -19,6 +21,7 @@ class CreditCard {
       'name': name,
       'rewardType': rewardType,
       'rewardRate': rewardRate,
+      'colorHex': colorHex,
       'isActive': isActive,
     };
   }
@@ -28,6 +31,7 @@ class CreditCard {
     String? name,
     String? rewardType,
     double? rewardRate,
+    String? colorHex,
     bool? isActive,
   }) {
     return CreditCard(
@@ -35,6 +39,7 @@ class CreditCard {
       name: name ?? this.name,
       rewardType: rewardType ?? this.rewardType,
       rewardRate: rewardRate ?? this.rewardRate,
+      colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
     );
   }
@@ -45,6 +50,7 @@ class CreditCard {
       name: map['name'],
       rewardType: map['rewardType'],
       rewardRate: map['rewardRate'],
+      colorHex: map['colorHex'] ?? '#9E9E9E',
       isActive: map['isActive'] ?? true,
     );
   }

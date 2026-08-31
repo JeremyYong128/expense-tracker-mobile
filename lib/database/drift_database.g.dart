@@ -38,9 +38,10 @@ class $CategoriesTable extends Categories
   late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
     'colorHex',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    defaultValue: const Constant('#9E9E9E'),
   );
   static const VerificationMeta _iconStringMeta = const VerificationMeta(
     'iconString',
@@ -181,7 +182,7 @@ class $CategoriesTable extends Categories
       colorHex: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}colorHex'],
-      ),
+      )!,
       iconString: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}iconString'],
@@ -211,7 +212,7 @@ class CategoryTableData extends DataClass
     implements Insertable<CategoryTableData> {
   final int id;
   final String name;
-  final String? colorHex;
+  final String colorHex;
   final String? iconString;
   final bool isActive;
   final bool isExpense;
@@ -219,7 +220,7 @@ class CategoryTableData extends DataClass
   const CategoryTableData({
     required this.id,
     required this.name,
-    this.colorHex,
+    required this.colorHex,
     this.iconString,
     required this.isActive,
     required this.isExpense,
@@ -230,9 +231,7 @@ class CategoryTableData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
-    if (!nullToAbsent || colorHex != null) {
-      map['colorHex'] = Variable<String>(colorHex);
-    }
+    map['colorHex'] = Variable<String>(colorHex);
     if (!nullToAbsent || iconString != null) {
       map['iconString'] = Variable<String>(iconString);
     }
@@ -246,9 +245,7 @@ class CategoryTableData extends DataClass
     return CategoriesCompanion(
       id: Value(id),
       name: Value(name),
-      colorHex: colorHex == null && nullToAbsent
-          ? const Value.absent()
-          : Value(colorHex),
+      colorHex: Value(colorHex),
       iconString: iconString == null && nullToAbsent
           ? const Value.absent()
           : Value(iconString),
@@ -266,7 +263,7 @@ class CategoryTableData extends DataClass
     return CategoryTableData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      colorHex: serializer.fromJson<String?>(json['colorHex']),
+      colorHex: serializer.fromJson<String>(json['colorHex']),
       iconString: serializer.fromJson<String?>(json['iconString']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       isExpense: serializer.fromJson<bool>(json['isExpense']),
@@ -279,7 +276,7 @@ class CategoryTableData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'colorHex': serializer.toJson<String?>(colorHex),
+      'colorHex': serializer.toJson<String>(colorHex),
       'iconString': serializer.toJson<String?>(iconString),
       'isActive': serializer.toJson<bool>(isActive),
       'isExpense': serializer.toJson<bool>(isExpense),
@@ -290,7 +287,7 @@ class CategoryTableData extends DataClass
   CategoryTableData copyWith({
     int? id,
     String? name,
-    Value<String?> colorHex = const Value.absent(),
+    String? colorHex,
     Value<String?> iconString = const Value.absent(),
     bool? isActive,
     bool? isExpense,
@@ -298,7 +295,7 @@ class CategoryTableData extends DataClass
   }) => CategoryTableData(
     id: id ?? this.id,
     name: name ?? this.name,
-    colorHex: colorHex.present ? colorHex.value : this.colorHex,
+    colorHex: colorHex ?? this.colorHex,
     iconString: iconString.present ? iconString.value : this.iconString,
     isActive: isActive ?? this.isActive,
     isExpense: isExpense ?? this.isExpense,
@@ -358,7 +355,7 @@ class CategoryTableData extends DataClass
 class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
   final Value<int> id;
   final Value<String> name;
-  final Value<String?> colorHex;
+  final Value<String> colorHex;
   final Value<String?> iconString;
   final Value<bool> isActive;
   final Value<bool> isExpense;
@@ -404,7 +401,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
   CategoriesCompanion copyWith({
     Value<int>? id,
     Value<String>? name,
-    Value<String?>? colorHex,
+    Value<String>? colorHex,
     Value<String?>? iconString,
     Value<bool>? isActive,
     Value<bool>? isExpense,
@@ -513,6 +510,18 @@ class $CreditCardsTable extends CreditCards
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _colorHexMeta = const VerificationMeta(
+    'colorHex',
+  );
+  @override
+  late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
+    'colorHex',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('#9E9E9E'),
+  );
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
   );
@@ -534,6 +543,7 @@ class $CreditCardsTable extends CreditCards
     name,
     rewardType,
     rewardRate,
+    colorHex,
     isActive,
   ];
   @override
@@ -575,6 +585,12 @@ class $CreditCardsTable extends CreditCards
     } else if (isInserting) {
       context.missing(_rewardRateMeta);
     }
+    if (data.containsKey('colorHex')) {
+      context.handle(
+        _colorHexMeta,
+        colorHex.isAcceptableOrUnknown(data['colorHex']!, _colorHexMeta),
+      );
+    }
     if (data.containsKey('isActive')) {
       context.handle(
         _isActiveMeta,
@@ -606,6 +622,10 @@ class $CreditCardsTable extends CreditCards
         DriftSqlType.double,
         data['${effectivePrefix}rewardRate'],
       )!,
+      colorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}colorHex'],
+      )!,
       isActive: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}isActive'],
@@ -625,12 +645,14 @@ class CreditCardTableData extends DataClass
   final String name;
   final String rewardType;
   final double rewardRate;
+  final String colorHex;
   final bool isActive;
   const CreditCardTableData({
     required this.id,
     required this.name,
     required this.rewardType,
     required this.rewardRate,
+    required this.colorHex,
     required this.isActive,
   });
   @override
@@ -640,6 +662,7 @@ class CreditCardTableData extends DataClass
     map['name'] = Variable<String>(name);
     map['rewardType'] = Variable<String>(rewardType);
     map['rewardRate'] = Variable<double>(rewardRate);
+    map['colorHex'] = Variable<String>(colorHex);
     map['isActive'] = Variable<bool>(isActive);
     return map;
   }
@@ -650,6 +673,7 @@ class CreditCardTableData extends DataClass
       name: Value(name),
       rewardType: Value(rewardType),
       rewardRate: Value(rewardRate),
+      colorHex: Value(colorHex),
       isActive: Value(isActive),
     );
   }
@@ -664,6 +688,7 @@ class CreditCardTableData extends DataClass
       name: serializer.fromJson<String>(json['name']),
       rewardType: serializer.fromJson<String>(json['rewardType']),
       rewardRate: serializer.fromJson<double>(json['rewardRate']),
+      colorHex: serializer.fromJson<String>(json['colorHex']),
       isActive: serializer.fromJson<bool>(json['isActive']),
     );
   }
@@ -675,6 +700,7 @@ class CreditCardTableData extends DataClass
       'name': serializer.toJson<String>(name),
       'rewardType': serializer.toJson<String>(rewardType),
       'rewardRate': serializer.toJson<double>(rewardRate),
+      'colorHex': serializer.toJson<String>(colorHex),
       'isActive': serializer.toJson<bool>(isActive),
     };
   }
@@ -684,12 +710,14 @@ class CreditCardTableData extends DataClass
     String? name,
     String? rewardType,
     double? rewardRate,
+    String? colorHex,
     bool? isActive,
   }) => CreditCardTableData(
     id: id ?? this.id,
     name: name ?? this.name,
     rewardType: rewardType ?? this.rewardType,
     rewardRate: rewardRate ?? this.rewardRate,
+    colorHex: colorHex ?? this.colorHex,
     isActive: isActive ?? this.isActive,
   );
   CreditCardTableData copyWithCompanion(CreditCardsCompanion data) {
@@ -702,6 +730,7 @@ class CreditCardTableData extends DataClass
       rewardRate: data.rewardRate.present
           ? data.rewardRate.value
           : this.rewardRate,
+      colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
     );
   }
@@ -713,13 +742,15 @@ class CreditCardTableData extends DataClass
           ..write('name: $name, ')
           ..write('rewardType: $rewardType, ')
           ..write('rewardRate: $rewardRate, ')
+          ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, rewardType, rewardRate, isActive);
+  int get hashCode =>
+      Object.hash(id, name, rewardType, rewardRate, colorHex, isActive);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -728,6 +759,7 @@ class CreditCardTableData extends DataClass
           other.name == this.name &&
           other.rewardType == this.rewardType &&
           other.rewardRate == this.rewardRate &&
+          other.colorHex == this.colorHex &&
           other.isActive == this.isActive);
 }
 
@@ -736,12 +768,14 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
   final Value<String> name;
   final Value<String> rewardType;
   final Value<double> rewardRate;
+  final Value<String> colorHex;
   final Value<bool> isActive;
   const CreditCardsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.rewardType = const Value.absent(),
     this.rewardRate = const Value.absent(),
+    this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
   });
   CreditCardsCompanion.insert({
@@ -749,6 +783,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     required String name,
     required String rewardType,
     required double rewardRate,
+    this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
   }) : name = Value(name),
        rewardType = Value(rewardType),
@@ -758,6 +793,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     Expression<String>? name,
     Expression<String>? rewardType,
     Expression<double>? rewardRate,
+    Expression<String>? colorHex,
     Expression<bool>? isActive,
   }) {
     return RawValuesInsertable({
@@ -765,6 +801,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
       if (name != null) 'name': name,
       if (rewardType != null) 'rewardType': rewardType,
       if (rewardRate != null) 'rewardRate': rewardRate,
+      if (colorHex != null) 'colorHex': colorHex,
       if (isActive != null) 'isActive': isActive,
     });
   }
@@ -774,6 +811,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     Value<String>? name,
     Value<String>? rewardType,
     Value<double>? rewardRate,
+    Value<String>? colorHex,
     Value<bool>? isActive,
   }) {
     return CreditCardsCompanion(
@@ -781,6 +819,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
       name: name ?? this.name,
       rewardType: rewardType ?? this.rewardType,
       rewardRate: rewardRate ?? this.rewardRate,
+      colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
     );
   }
@@ -800,6 +839,9 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
     if (rewardRate.present) {
       map['rewardRate'] = Variable<double>(rewardRate.value);
     }
+    if (colorHex.present) {
+      map['colorHex'] = Variable<String>(colorHex.value);
+    }
     if (isActive.present) {
       map['isActive'] = Variable<bool>(isActive.value);
     }
@@ -813,6 +855,7 @@ class CreditCardsCompanion extends UpdateCompanion<CreditCardTableData> {
           ..write('name: $name, ')
           ..write('rewardType: $rewardType, ')
           ..write('rewardRate: $rewardRate, ')
+          ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive')
           ..write(')'))
         .toString();
@@ -2086,7 +2129,7 @@ typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       required String name,
-      Value<String?> colorHex,
+      Value<String> colorHex,
       Value<String?> iconString,
       Value<bool> isActive,
       Value<bool> isExpense,
@@ -2096,7 +2139,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       Value<String> name,
-      Value<String?> colorHex,
+      Value<String> colorHex,
       Value<String?> iconString,
       Value<bool> isActive,
       Value<bool> isExpense,
@@ -2409,7 +2452,7 @@ class $$CategoriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
-                Value<String?> colorHex = const Value.absent(),
+                Value<String> colorHex = const Value.absent(),
                 Value<String?> iconString = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isExpense = const Value.absent(),
@@ -2427,7 +2470,7 @@ class $$CategoriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
-                Value<String?> colorHex = const Value.absent(),
+                Value<String> colorHex = const Value.absent(),
                 Value<String?> iconString = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isExpense = const Value.absent(),
@@ -2533,6 +2576,7 @@ typedef $$CreditCardsTableCreateCompanionBuilder =
       required String name,
       required String rewardType,
       required double rewardRate,
+      Value<String> colorHex,
       Value<bool> isActive,
     });
 typedef $$CreditCardsTableUpdateCompanionBuilder =
@@ -2541,6 +2585,7 @@ typedef $$CreditCardsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> rewardType,
       Value<double> rewardRate,
+      Value<String> colorHex,
       Value<bool> isActive,
     });
 
@@ -2619,6 +2664,11 @@ class $$CreditCardsTableFilterComposer
 
   ColumnFilters<double> get rewardRate => $composableBuilder(
     column: $table.rewardRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2708,6 +2758,11 @@ class $$CreditCardsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isActive => $composableBuilder(
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
@@ -2738,6 +2793,9 @@ class $$CreditCardsTableAnnotationComposer
     column: $table.rewardRate,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get colorHex =>
+      $composableBuilder(column: $table.colorHex, builder: (column) => column);
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -2829,12 +2887,14 @@ class $$CreditCardsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> rewardType = const Value.absent(),
                 Value<double> rewardRate = const Value.absent(),
+                Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
               }) => CreditCardsCompanion(
                 id: id,
                 name: name,
                 rewardType: rewardType,
                 rewardRate: rewardRate,
+                colorHex: colorHex,
                 isActive: isActive,
               ),
           createCompanionCallback:
@@ -2843,12 +2903,14 @@ class $$CreditCardsTableTableManager
                 required String name,
                 required String rewardType,
                 required double rewardRate,
+                Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
               }) => CreditCardsCompanion.insert(
                 id: id,
                 name: name,
                 rewardType: rewardType,
                 rewardRate: rewardRate,
+                colorHex: colorHex,
                 isActive: isActive,
               ),
           withReferenceMapper: (p0) => p0

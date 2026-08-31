@@ -12,7 +12,8 @@ part 'drift_database.g.dart';
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  TextColumn get colorHex => text().named('colorHex').nullable()();
+  TextColumn get colorHex =>
+      text().named('colorHex').withDefault(const Constant('#9E9E9E'))();
   TextColumn get iconString => text().named('iconString').nullable()();
   BoolColumn get isActive =>
       boolean().named('isActive').withDefault(const Constant(true))();
@@ -54,6 +55,8 @@ class CreditCards extends Table {
   TextColumn get name => text()();
   TextColumn get rewardType => text().named('rewardType')();
   RealColumn get rewardRate => real().named('rewardRate')();
+  TextColumn get colorHex =>
+      text().named('colorHex').withDefault(const Constant('#9E9E9E'))();
   BoolColumn get isActive =>
       boolean().named('isActive').withDefault(const Constant(true))();
 }
@@ -101,7 +104,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -232,7 +235,11 @@ class AppDatabase extends _$AppDatabase {
               'UPDATE recurring_transactions SET startDate = nextDueDate',
             );
           } catch (e, stack) {
-            AppLogger.error('Data migration failed during schema upgrade', e, stack);
+            AppLogger.error(
+              'Data migration failed during schema upgrade',
+              e,
+              stack,
+            );
           }
         }
       },

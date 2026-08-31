@@ -21,13 +21,20 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dial
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase (will use GoogleService-Info.plist since we didn't generate options)
-  await Firebase.initializeApp();
+  if (!kDebugMode) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e, stack) {
+      AppLogger.error('Firebase initialization failed', e, stack);
+    }
+  }
 
   final prefs = await SharedPreferences.getInstance();
 

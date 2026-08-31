@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 
 class CategoryAppearancePicker extends StatefulWidget {
   final String initialIcon;
@@ -52,14 +53,14 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
               child: Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: CategoryAppearance.getColorFromHex(
+                  color: AppColors.getColorFromHex(
                     _selectedColorHex,
                   ).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  CategoryAppearance.getIconData(_selectedIcon),
-                  color: CategoryAppearance.getColorFromHex(_selectedColorHex),
+                  Category.getIconData(_selectedIcon),
+                  color: AppColors.getColorFromHex(_selectedColorHex),
                   size: 48,
                 ),
               ),
@@ -68,7 +69,7 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
 
             // Colors
             Text(
-              'Colors'.cased(context),
+              'Colour'.localized(context).cased(context),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -76,41 +77,20 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: CategoryAppearance.colorHexes.map((hex) {
-                final isSelected = _selectedColorHex == hex;
-                final color = CategoryAppearance.getColorFromHex(hex);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColorHex = hex;
-                    });
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: AppColors.primary, width: 3)
-                          : null,
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, color: AppColors.white, size: 20)
-                        : null,
-                  ),
-                );
-              }).toList(),
+            ColorPicker(
+              selectedColorHex: _selectedColorHex,
+              onColorSelected: (hex) {
+                setState(() {
+                  _selectedColorHex = hex;
+                });
+              },
             ),
 
             const SizedBox(height: 32),
 
             // Icons
             Text(
-              'Icons'.cased(context),
+              'Icon'.cased(context),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -121,9 +101,9 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: CategoryAppearance.iconNames.map((iconName) {
+              children: Category.iconNames.map((iconName) {
                 final isSelected = _selectedIcon == iconName;
-                final iconData = CategoryAppearance.getIconData(iconName);
+                final iconData = Category.getIconData(iconName);
                 return GestureDetector(
                   onTap: () {
                     setState(() {

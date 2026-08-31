@@ -7,10 +7,10 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 
 class CategoryFormModal extends StatefulWidget {
   final Category? category;
@@ -42,9 +42,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     _iconString = isEditing && widget.category!.iconString != null
         ? widget.category!.iconString!
         : 'category';
-    _colorHex = isEditing && widget.category!.colorHex != null
-        ? widget.category!.colorHex!
-        : '#9E9E9E';
+    _colorHex = isEditing ? widget.category!.colorHex : AppColors.colorPaletteHexes.first;
 
     if (isEditing) {
       if (widget.category!.isExpense && widget.category!.isIncome) {
@@ -196,14 +194,14 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: CategoryAppearance.getColorFromHex(
+                    color: AppColors.getColorFromHex(
                       _colorHex,
                     ).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
-                    CategoryAppearance.getIconData(_iconString),
-                    color: CategoryAppearance.getColorFromHex(_colorHex),
+                    Category.getIconData(_iconString),
+                    color: AppColors.getColorFromHex(_colorHex),
                     size: 32,
                   ),
                 ),
@@ -237,7 +235,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
 
               // 3. Colors Picker
               Text(
-                'Colours'.localized(context).cased(context),
+                'Colour'.localized(context).cased(context),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -245,44 +243,19 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                 ),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: CategoryAppearance.colorHexes.map((hex) {
-                  final isSelected = _colorHex == hex;
-                  final color = CategoryAppearance.getColorFromHex(hex);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _colorHex = hex;
-                      });
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: AppColors.primary, width: 3)
-                            : null,
-                      ),
-                      child: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: AppColors.white,
-                              size: 20,
-                            )
-                          : null,
-                    ),
-                  );
-                }).toList(),
+              ColorPicker(
+                selectedColorHex: _colorHex,
+                onColorSelected: (hex) {
+                  setState(() {
+                    _colorHex = hex;
+                  });
+                },
               ),
               const SizedBox(height: 24),
 
               // 4. Icons Picker
               Text(
-                'Icons'.cased(context),
+                'Icon'.cased(context),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -293,9 +266,9 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: CategoryAppearance.iconNames.map((iconName) {
+                children: Category.iconNames.map((iconName) {
                   final isSelected = _iconString == iconName;
-                  final iconData = CategoryAppearance.getIconData(iconName);
+                  final iconData = Category.getIconData(iconName);
                   return GestureDetector(
                     onTap: () {
                       setState(() {

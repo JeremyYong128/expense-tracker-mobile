@@ -31,6 +31,37 @@ class AppColors {
   // Text colours
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF616161);
+
+  // Reusable Color Palette
+  static const List<String> colorPaletteHexes = [
+    '#9E9E9E', // Grey
+    '#245F73', // Primary Blue
+    '#F44336', // Red
+    '#E91E63', // Pink
+    '#9C27B0', // Purple
+    '#673AB7', // Deep Purple
+    '#3F51B5', // Indigo
+    '#03A9F4', // Light Blue
+    '#00BCD4', // Cyan
+    '#009688', // Teal
+    '#4CAF50', // Green
+    '#8BC34A', // Light Green
+    '#CDDC39', // Lime
+    '#FFEB3B', // Yellow
+    '#FFC107', // Amber
+    '#FF9800', // Orange
+    '#FF5722', // Deep Orange
+    '#795548', // Brown
+    '#607D8B', // Blue Grey
+  ];
+
+  static Color getColorFromHex(String? hexString) {
+    if (hexString == null || hexString.isEmpty) return AppColors.grey;
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
 }
 
 class AppStyles {

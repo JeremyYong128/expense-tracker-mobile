@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
-import 'package:expense_tracker_mobile/utils/category_appearance.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
