@@ -935,6 +935,17 @@ class $RecurringTransactionsTable extends RecurringTransactions
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _rewardAmountMeta = const VerificationMeta(
+    'rewardAmount',
+  );
+  @override
+  late final GeneratedColumn<double> rewardAmount = GeneratedColumn<double>(
+    'reward_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _intervalMeta = const VerificationMeta(
     'interval',
   );
@@ -998,6 +1009,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     categoryId,
     note,
     isIncome,
+    rewardAmount,
     interval,
     period,
     startDate,
@@ -1053,6 +1065,15 @@ class $RecurringTransactionsTable extends RecurringTransactions
       context.handle(
         _isIncomeMeta,
         isIncome.isAcceptableOrUnknown(data['isIncome']!, _isIncomeMeta),
+      );
+    }
+    if (data.containsKey('reward_amount')) {
+      context.handle(
+        _rewardAmountMeta,
+        rewardAmount.isAcceptableOrUnknown(
+          data['reward_amount']!,
+          _rewardAmountMeta,
+        ),
       );
     }
     if (data.containsKey('interval')) {
@@ -1133,6 +1154,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.bool,
         data['${effectivePrefix}isIncome'],
       )!,
+      rewardAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}reward_amount'],
+      ),
       interval: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}interval'],
@@ -1170,6 +1195,7 @@ class RecurringTransactionTableData extends DataClass
   final int categoryId;
   final String? note;
   final bool isIncome;
+  final double? rewardAmount;
   final int interval;
   final String period;
   final String startDate;
@@ -1182,6 +1208,7 @@ class RecurringTransactionTableData extends DataClass
     required this.categoryId,
     this.note,
     required this.isIncome,
+    this.rewardAmount,
     required this.interval,
     required this.period,
     required this.startDate,
@@ -1199,6 +1226,9 @@ class RecurringTransactionTableData extends DataClass
       map['note'] = Variable<String>(note);
     }
     map['isIncome'] = Variable<bool>(isIncome);
+    if (!nullToAbsent || rewardAmount != null) {
+      map['reward_amount'] = Variable<double>(rewardAmount);
+    }
     map['interval'] = Variable<int>(interval);
     map['period'] = Variable<String>(period);
     map['startDate'] = Variable<String>(startDate);
@@ -1217,6 +1247,9 @@ class RecurringTransactionTableData extends DataClass
       categoryId: Value(categoryId),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       isIncome: Value(isIncome),
+      rewardAmount: rewardAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rewardAmount),
       interval: Value(interval),
       period: Value(period),
       startDate: Value(startDate),
@@ -1239,6 +1272,7 @@ class RecurringTransactionTableData extends DataClass
       categoryId: serializer.fromJson<int>(json['categoryId']),
       note: serializer.fromJson<String?>(json['note']),
       isIncome: serializer.fromJson<bool>(json['isIncome']),
+      rewardAmount: serializer.fromJson<double?>(json['rewardAmount']),
       interval: serializer.fromJson<int>(json['interval']),
       period: serializer.fromJson<String>(json['period']),
       startDate: serializer.fromJson<String>(json['startDate']),
@@ -1256,6 +1290,7 @@ class RecurringTransactionTableData extends DataClass
       'categoryId': serializer.toJson<int>(categoryId),
       'note': serializer.toJson<String?>(note),
       'isIncome': serializer.toJson<bool>(isIncome),
+      'rewardAmount': serializer.toJson<double?>(rewardAmount),
       'interval': serializer.toJson<int>(interval),
       'period': serializer.toJson<String>(period),
       'startDate': serializer.toJson<String>(startDate),
@@ -1271,6 +1306,7 @@ class RecurringTransactionTableData extends DataClass
     int? categoryId,
     Value<String?> note = const Value.absent(),
     bool? isIncome,
+    Value<double?> rewardAmount = const Value.absent(),
     int? interval,
     String? period,
     String? startDate,
@@ -1283,6 +1319,7 @@ class RecurringTransactionTableData extends DataClass
     categoryId: categoryId ?? this.categoryId,
     note: note.present ? note.value : this.note,
     isIncome: isIncome ?? this.isIncome,
+    rewardAmount: rewardAmount.present ? rewardAmount.value : this.rewardAmount,
     interval: interval ?? this.interval,
     period: period ?? this.period,
     startDate: startDate ?? this.startDate,
@@ -1301,6 +1338,9 @@ class RecurringTransactionTableData extends DataClass
           : this.categoryId,
       note: data.note.present ? data.note.value : this.note,
       isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
+      rewardAmount: data.rewardAmount.present
+          ? data.rewardAmount.value
+          : this.rewardAmount,
       interval: data.interval.present ? data.interval.value : this.interval,
       period: data.period.present ? data.period.value : this.period,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
@@ -1322,6 +1362,7 @@ class RecurringTransactionTableData extends DataClass
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
+          ..write('rewardAmount: $rewardAmount, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
           ..write('startDate: $startDate, ')
@@ -1339,6 +1380,7 @@ class RecurringTransactionTableData extends DataClass
     categoryId,
     note,
     isIncome,
+    rewardAmount,
     interval,
     period,
     startDate,
@@ -1355,6 +1397,7 @@ class RecurringTransactionTableData extends DataClass
           other.categoryId == this.categoryId &&
           other.note == this.note &&
           other.isIncome == this.isIncome &&
+          other.rewardAmount == this.rewardAmount &&
           other.interval == this.interval &&
           other.period == this.period &&
           other.startDate == this.startDate &&
@@ -1370,6 +1413,7 @@ class RecurringTransactionsCompanion
   final Value<int> categoryId;
   final Value<String?> note;
   final Value<bool> isIncome;
+  final Value<double?> rewardAmount;
   final Value<int> interval;
   final Value<String> period;
   final Value<String> startDate;
@@ -1382,6 +1426,7 @@ class RecurringTransactionsCompanion
     this.categoryId = const Value.absent(),
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.rewardAmount = const Value.absent(),
     this.interval = const Value.absent(),
     this.period = const Value.absent(),
     this.startDate = const Value.absent(),
@@ -1395,6 +1440,7 @@ class RecurringTransactionsCompanion
     required int categoryId,
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.rewardAmount = const Value.absent(),
     required int interval,
     required String period,
     this.startDate = const Value.absent(),
@@ -1413,6 +1459,7 @@ class RecurringTransactionsCompanion
     Expression<int>? categoryId,
     Expression<String>? note,
     Expression<bool>? isIncome,
+    Expression<double>? rewardAmount,
     Expression<int>? interval,
     Expression<String>? period,
     Expression<String>? startDate,
@@ -1426,6 +1473,7 @@ class RecurringTransactionsCompanion
       if (categoryId != null) 'categoryId': categoryId,
       if (note != null) 'note': note,
       if (isIncome != null) 'isIncome': isIncome,
+      if (rewardAmount != null) 'reward_amount': rewardAmount,
       if (interval != null) 'interval': interval,
       if (period != null) 'period': period,
       if (startDate != null) 'startDate': startDate,
@@ -1441,6 +1489,7 @@ class RecurringTransactionsCompanion
     Value<int>? categoryId,
     Value<String?>? note,
     Value<bool>? isIncome,
+    Value<double?>? rewardAmount,
     Value<int>? interval,
     Value<String>? period,
     Value<String>? startDate,
@@ -1454,6 +1503,7 @@ class RecurringTransactionsCompanion
       categoryId: categoryId ?? this.categoryId,
       note: note ?? this.note,
       isIncome: isIncome ?? this.isIncome,
+      rewardAmount: rewardAmount ?? this.rewardAmount,
       interval: interval ?? this.interval,
       period: period ?? this.period,
       startDate: startDate ?? this.startDate,
@@ -1483,6 +1533,9 @@ class RecurringTransactionsCompanion
     if (isIncome.present) {
       map['isIncome'] = Variable<bool>(isIncome.value);
     }
+    if (rewardAmount.present) {
+      map['reward_amount'] = Variable<double>(rewardAmount.value);
+    }
     if (interval.present) {
       map['interval'] = Variable<int>(interval.value);
     }
@@ -1510,6 +1563,7 @@ class RecurringTransactionsCompanion
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
+          ..write('rewardAmount: $rewardAmount, ')
           ..write('interval: $interval, ')
           ..write('period: $period, ')
           ..write('startDate: $startDate, ')
@@ -1602,6 +1656,17 @@ class $TransactionsTable extends Transactions
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _rewardAmountMeta = const VerificationMeta(
+    'rewardAmount',
+  );
+  @override
+  late final GeneratedColumn<double> rewardAmount = GeneratedColumn<double>(
+    'reward_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _recurringIdMeta = const VerificationMeta(
     'recurringId',
   );
@@ -1636,6 +1701,7 @@ class $TransactionsTable extends Transactions
     categoryId,
     note,
     isIncome,
+    rewardAmount,
     recurringId,
     creditCardId,
   ];
@@ -1698,6 +1764,15 @@ class $TransactionsTable extends Transactions
         isIncome.isAcceptableOrUnknown(data['isIncome']!, _isIncomeMeta),
       );
     }
+    if (data.containsKey('reward_amount')) {
+      context.handle(
+        _rewardAmountMeta,
+        rewardAmount.isAcceptableOrUnknown(
+          data['reward_amount']!,
+          _rewardAmountMeta,
+        ),
+      );
+    }
     if (data.containsKey('recurringId')) {
       context.handle(
         _recurringIdMeta,
@@ -1753,6 +1828,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.bool,
         data['${effectivePrefix}isIncome'],
       )!,
+      rewardAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}reward_amount'],
+      ),
       recurringId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}recurringId'],
@@ -1779,6 +1858,7 @@ class TransactionTableData extends DataClass
   final int categoryId;
   final String? note;
   final bool isIncome;
+  final double? rewardAmount;
   final int? recurringId;
   final int? creditCardId;
   const TransactionTableData({
@@ -1789,6 +1869,7 @@ class TransactionTableData extends DataClass
     required this.categoryId,
     this.note,
     required this.isIncome,
+    this.rewardAmount,
     this.recurringId,
     this.creditCardId,
   });
@@ -1804,6 +1885,9 @@ class TransactionTableData extends DataClass
       map['note'] = Variable<String>(note);
     }
     map['isIncome'] = Variable<bool>(isIncome);
+    if (!nullToAbsent || rewardAmount != null) {
+      map['reward_amount'] = Variable<double>(rewardAmount);
+    }
     if (!nullToAbsent || recurringId != null) {
       map['recurringId'] = Variable<int>(recurringId);
     }
@@ -1822,6 +1906,9 @@ class TransactionTableData extends DataClass
       categoryId: Value(categoryId),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       isIncome: Value(isIncome),
+      rewardAmount: rewardAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rewardAmount),
       recurringId: recurringId == null && nullToAbsent
           ? const Value.absent()
           : Value(recurringId),
@@ -1844,6 +1931,7 @@ class TransactionTableData extends DataClass
       categoryId: serializer.fromJson<int>(json['categoryId']),
       note: serializer.fromJson<String?>(json['note']),
       isIncome: serializer.fromJson<bool>(json['isIncome']),
+      rewardAmount: serializer.fromJson<double?>(json['rewardAmount']),
       recurringId: serializer.fromJson<int?>(json['recurringId']),
       creditCardId: serializer.fromJson<int?>(json['creditCardId']),
     );
@@ -1859,6 +1947,7 @@ class TransactionTableData extends DataClass
       'categoryId': serializer.toJson<int>(categoryId),
       'note': serializer.toJson<String?>(note),
       'isIncome': serializer.toJson<bool>(isIncome),
+      'rewardAmount': serializer.toJson<double?>(rewardAmount),
       'recurringId': serializer.toJson<int?>(recurringId),
       'creditCardId': serializer.toJson<int?>(creditCardId),
     };
@@ -1872,6 +1961,7 @@ class TransactionTableData extends DataClass
     int? categoryId,
     Value<String?> note = const Value.absent(),
     bool? isIncome,
+    Value<double?> rewardAmount = const Value.absent(),
     Value<int?> recurringId = const Value.absent(),
     Value<int?> creditCardId = const Value.absent(),
   }) => TransactionTableData(
@@ -1882,6 +1972,7 @@ class TransactionTableData extends DataClass
     categoryId: categoryId ?? this.categoryId,
     note: note.present ? note.value : this.note,
     isIncome: isIncome ?? this.isIncome,
+    rewardAmount: rewardAmount.present ? rewardAmount.value : this.rewardAmount,
     recurringId: recurringId.present ? recurringId.value : this.recurringId,
     creditCardId: creditCardId.present ? creditCardId.value : this.creditCardId,
   );
@@ -1896,6 +1987,9 @@ class TransactionTableData extends DataClass
           : this.categoryId,
       note: data.note.present ? data.note.value : this.note,
       isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
+      rewardAmount: data.rewardAmount.present
+          ? data.rewardAmount.value
+          : this.rewardAmount,
       recurringId: data.recurringId.present
           ? data.recurringId.value
           : this.recurringId,
@@ -1915,6 +2009,7 @@ class TransactionTableData extends DataClass
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
+          ..write('rewardAmount: $rewardAmount, ')
           ..write('recurringId: $recurringId, ')
           ..write('creditCardId: $creditCardId')
           ..write(')'))
@@ -1930,6 +2025,7 @@ class TransactionTableData extends DataClass
     categoryId,
     note,
     isIncome,
+    rewardAmount,
     recurringId,
     creditCardId,
   );
@@ -1944,6 +2040,7 @@ class TransactionTableData extends DataClass
           other.categoryId == this.categoryId &&
           other.note == this.note &&
           other.isIncome == this.isIncome &&
+          other.rewardAmount == this.rewardAmount &&
           other.recurringId == this.recurringId &&
           other.creditCardId == this.creditCardId);
 }
@@ -1956,6 +2053,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
   final Value<int> categoryId;
   final Value<String?> note;
   final Value<bool> isIncome;
+  final Value<double?> rewardAmount;
   final Value<int?> recurringId;
   final Value<int?> creditCardId;
   const TransactionsCompanion({
@@ -1966,6 +2064,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.categoryId = const Value.absent(),
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.rewardAmount = const Value.absent(),
     this.recurringId = const Value.absent(),
     this.creditCardId = const Value.absent(),
   });
@@ -1977,6 +2076,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     required int categoryId,
     this.note = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.rewardAmount = const Value.absent(),
     this.recurringId = const Value.absent(),
     this.creditCardId = const Value.absent(),
   }) : amount = Value(amount),
@@ -1991,6 +2091,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Expression<int>? categoryId,
     Expression<String>? note,
     Expression<bool>? isIncome,
+    Expression<double>? rewardAmount,
     Expression<int>? recurringId,
     Expression<int>? creditCardId,
   }) {
@@ -2002,6 +2103,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       if (categoryId != null) 'categoryId': categoryId,
       if (note != null) 'note': note,
       if (isIncome != null) 'isIncome': isIncome,
+      if (rewardAmount != null) 'reward_amount': rewardAmount,
       if (recurringId != null) 'recurringId': recurringId,
       if (creditCardId != null) 'creditCardId': creditCardId,
     });
@@ -2015,6 +2117,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Value<int>? categoryId,
     Value<String?>? note,
     Value<bool>? isIncome,
+    Value<double?>? rewardAmount,
     Value<int?>? recurringId,
     Value<int?>? creditCardId,
   }) {
@@ -2026,6 +2129,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       categoryId: categoryId ?? this.categoryId,
       note: note ?? this.note,
       isIncome: isIncome ?? this.isIncome,
+      rewardAmount: rewardAmount ?? this.rewardAmount,
       recurringId: recurringId ?? this.recurringId,
       creditCardId: creditCardId ?? this.creditCardId,
     );
@@ -2055,6 +2159,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     if (isIncome.present) {
       map['isIncome'] = Variable<bool>(isIncome.value);
     }
+    if (rewardAmount.present) {
+      map['reward_amount'] = Variable<double>(rewardAmount.value);
+    }
     if (recurringId.present) {
       map['recurringId'] = Variable<int>(recurringId.value);
     }
@@ -2074,6 +2181,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
           ..write('categoryId: $categoryId, ')
           ..write('note: $note, ')
           ..write('isIncome: $isIncome, ')
+          ..write('rewardAmount: $rewardAmount, ')
           ..write('recurringId: $recurringId, ')
           ..write('creditCardId: $creditCardId')
           ..write(')'))
@@ -3007,6 +3115,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       required int categoryId,
       Value<String?> note,
       Value<bool> isIncome,
+      Value<double?> rewardAmount,
       required int interval,
       required String period,
       Value<String> startDate,
@@ -3021,6 +3130,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<int> categoryId,
       Value<String?> note,
       Value<bool> isIncome,
+      Value<double?> rewardAmount,
       Value<int> interval,
       Value<String> period,
       Value<String> startDate,
@@ -3126,6 +3236,11 @@ class $$RecurringTransactionsTableFilterComposer
 
   ColumnFilters<bool> get isIncome => $composableBuilder(
     column: $table.isIncome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3255,6 +3370,11 @@ class $$RecurringTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get interval => $composableBuilder(
     column: $table.interval,
     builder: (column) => ColumnOrderings(column),
@@ -3345,6 +3465,11 @@ class $$RecurringTransactionsTableAnnotationComposer
 
   GeneratedColumn<bool> get isIncome =>
       $composableBuilder(column: $table.isIncome, builder: (column) => column);
+
+  GeneratedColumn<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get interval =>
       $composableBuilder(column: $table.interval, builder: (column) => column);
@@ -3484,6 +3609,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<int> categoryId = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<double?> rewardAmount = const Value.absent(),
                 Value<int> interval = const Value.absent(),
                 Value<String> period = const Value.absent(),
                 Value<String> startDate = const Value.absent(),
@@ -3496,6 +3622,7 @@ class $$RecurringTransactionsTableTableManager
                 categoryId: categoryId,
                 note: note,
                 isIncome: isIncome,
+                rewardAmount: rewardAmount,
                 interval: interval,
                 period: period,
                 startDate: startDate,
@@ -3510,6 +3637,7 @@ class $$RecurringTransactionsTableTableManager
                 required int categoryId,
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<double?> rewardAmount = const Value.absent(),
                 required int interval,
                 required String period,
                 Value<String> startDate = const Value.absent(),
@@ -3522,6 +3650,7 @@ class $$RecurringTransactionsTableTableManager
                 categoryId: categoryId,
                 note: note,
                 isIncome: isIncome,
+                rewardAmount: rewardAmount,
                 interval: interval,
                 period: period,
                 startDate: startDate,
@@ -3655,6 +3784,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required int categoryId,
       Value<String?> note,
       Value<bool> isIncome,
+      Value<double?> rewardAmount,
       Value<int?> recurringId,
       Value<int?> creditCardId,
     });
@@ -3667,6 +3797,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int> categoryId,
       Value<String?> note,
       Value<bool> isIncome,
+      Value<double?> rewardAmount,
       Value<int?> recurringId,
       Value<int?> creditCardId,
     });
@@ -3770,6 +3901,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<bool> get isIncome => $composableBuilder(
     column: $table.isIncome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3883,6 +4019,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3980,6 +4121,11 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<bool> get isIncome =>
       $composableBuilder(column: $table.isIncome, builder: (column) => column);
+
+  GeneratedColumn<double> get rewardAmount => $composableBuilder(
+    column: $table.rewardAmount,
+    builder: (column) => column,
+  );
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -4091,6 +4237,7 @@ class $$TransactionsTableTableManager
                 Value<int> categoryId = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<double?> rewardAmount = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
                 Value<int?> creditCardId = const Value.absent(),
               }) => TransactionsCompanion(
@@ -4101,6 +4248,7 @@ class $$TransactionsTableTableManager
                 categoryId: categoryId,
                 note: note,
                 isIncome: isIncome,
+                rewardAmount: rewardAmount,
                 recurringId: recurringId,
                 creditCardId: creditCardId,
               ),
@@ -4113,6 +4261,7 @@ class $$TransactionsTableTableManager
                 required int categoryId,
                 Value<String?> note = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<double?> rewardAmount = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
                 Value<int?> creditCardId = const Value.absent(),
               }) => TransactionsCompanion.insert(
@@ -4123,6 +4272,7 @@ class $$TransactionsTableTableManager
                 categoryId: categoryId,
                 note: note,
                 isIncome: isIncome,
+                rewardAmount: rewardAmount,
                 recurringId: recurringId,
                 creditCardId: creditCardId,
               ),

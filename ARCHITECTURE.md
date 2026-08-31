@@ -73,3 +73,9 @@ Recurring transactions allow users to schedule repeating income or expenses base
 
 ## Technical Implmentation
 - `RecurringProcessingService` parses the database for overdue transactions, calculates future due dates, and handles the logic of approving/rejecting instances. It uses `DataService` for low-level database operations and ` PendingApprovalsDialog` for the interactive modal UI where users sequentially approve or skip due transactions.
+
+# Credit Card Rewards
+
+Users can link expenses to specific credit cards and earn rewards (either Cashback or Points/Miles). To handle edge cases where certain transactions might not be eligible for rewards or the reward amount is slightly off due to rounding, users are allowed to manually edit their reward amounts.
+
+When a user selects a credit card and activates the toggle for rewards, the reward amount field is pre-filled with an amount that is calculated with the reward rate and the expense amount. The user is allowed to type to replace the pre-filled value with any custom value.

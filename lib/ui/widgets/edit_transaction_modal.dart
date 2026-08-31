@@ -47,7 +47,8 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
     final isRec = widget.recurringTransaction != null;
 
     if (isRec) {
-      final updated = widget.recurringTransaction!.copyWith(
+      final updated = RecurringTransaction(
+        id: widget.recurringTransaction!.id,
         amount: data.amount,
         title: data.title,
         categoryId: data.categoryId,
@@ -58,19 +59,23 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         nextDueDate: widget.recurringTransaction!.nextDueDate,
         note: data.note,
         creditCardId: data.creditCardId,
+        rewardAmount: data.rewardAmount,
       );
       await context
           .read<RecurringTransactionProvider>()
           .updateRecurringTransaction(updated);
     } else {
-      final updated = widget.transaction!.copyWith(
+      final updated = t.Transaction(
+        id: widget.transaction!.id,
         amount: data.amount,
         title: data.title,
         categoryId: data.categoryId,
         date: data.date,
         isIncome: data.isIncome,
+        recurringId: widget.transaction!.recurringId,
         note: data.note,
         creditCardId: data.creditCardId,
+        rewardAmount: data.rewardAmount,
       );
       await context.read<TransactionProvider>().updateTransaction(updated);
     }

@@ -57,10 +57,7 @@ class _RecurringTransactionsScreenState
     final recurringTransactions = recurringProvider.transactions;
     final categories = categoryProvider.categories;
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
+    return Scaffold(
         appBar: widget.showAppBar
             ? AppBar(
                 title: Text('Recurring Transactions'.cased(context)),
@@ -77,8 +74,11 @@ class _RecurringTransactionsScreenState
                 ],
               )
             : null,
-        body: recurringTransactions.isEmpty
-            ? Center(
+        body: SafeArea(
+          top: false,
+          bottom: true,
+          child: recurringTransactions.isEmpty
+              ? Center(
                 child: Text(
                   'No recurring transactions found.'.cased(context),
                   style: const TextStyle(color: AppColors.grey, fontSize: 16),
@@ -235,7 +235,7 @@ class _RecurringTransactionsScreenState
                   );
                 },
               ),
-      ),
+        ),
     );
   }
 }

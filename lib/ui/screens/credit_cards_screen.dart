@@ -205,27 +205,27 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     final activeCards = creditCards.where((c) => c.isActive).toList();
     final archivedCards = creditCards.where((c) => !c.isActive).toList();
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Credit Cards'.cased(context)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _showAddEditDialog(),
-            ),
-          ],
-        ),
-        body: creditCards.isEmpty
-            ? Center(
-                child: Text(
-                  'No credit cards added.'.cased(context),
-                  style: const TextStyle(color: AppColors.grey, fontSize: 16),
-                ),
-              )
-            : ListView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Credit Cards'.cased(context)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _showAddEditDialog(),
+          ),
+        ],
+      ),
+      body: creditCards.isEmpty
+          ? Center(
+              child: Text(
+                'No credit cards added.'.cased(context),
+                style: const TextStyle(color: AppColors.grey, fontSize: 16),
+              ),
+            )
+          : SafeArea(
+              top: false,
+              bottom: true,
+              child: ListView(
                 padding: AppStyles.screenPadding,
                 children: [
                   if (activeCards.isNotEmpty) ...[
@@ -261,7 +261,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                   ],
                 ],
               ),
-      ),
+            ),
     );
   }
 }

@@ -10,6 +10,7 @@ class RecurringTransaction {
   final DateTime startDate;
   final DateTime nextDueDate;
   final int? creditCardId;
+  final double? rewardAmount;
 
   RecurringTransaction({
     this.id,
@@ -23,6 +24,7 @@ class RecurringTransaction {
     required this.startDate,
     required this.nextDueDate,
     this.creditCardId,
+    this.rewardAmount,
   });
 
   Map<String, dynamic> toMap() {
@@ -38,6 +40,7 @@ class RecurringTransaction {
       'startDate': startDate.toIso8601String(),
       'nextDueDate': nextDueDate.toIso8601String(),
       'creditCardId': creditCardId,
+      'rewardAmount': rewardAmount,
     };
   }
 
@@ -53,6 +56,7 @@ class RecurringTransaction {
     DateTime? startDate,
     DateTime? nextDueDate,
     int? creditCardId,
+    double? rewardAmount,
   }) {
     return RecurringTransaction(
       id: id ?? this.id,
@@ -66,6 +70,7 @@ class RecurringTransaction {
       startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       creditCardId: creditCardId ?? this.creditCardId,
+      rewardAmount: rewardAmount ?? this.rewardAmount,
     );
   }
 
@@ -82,6 +87,7 @@ class RecurringTransaction {
       startDate: DateTime.parse(map['startDate']),
       nextDueDate: DateTime.parse(map['nextDueDate']),
       creditCardId: map['creditCardId'],
+      rewardAmount: map['rewardAmount'],
     );
   }
 }

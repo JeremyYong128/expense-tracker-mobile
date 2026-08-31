@@ -29,6 +29,7 @@ class TransactionFormData {
   final bool isRecurring;
   final int recurringInterval;
   final String recurringPeriod;
+  final double? rewardAmount;
 
   TransactionFormData({
     required this.amount,
@@ -41,6 +42,7 @@ class TransactionFormData {
     required this.isRecurring,
     required this.recurringInterval,
     required this.recurringPeriod,
+    this.rewardAmount,
   });
 }
 
@@ -78,6 +80,10 @@ class TransactionFormState extends State<TransactionForm> {
   late final TextEditingController _recurringIntervalController;
   late String _recurringPeriod;
   String? _formError;
+
+  late final TextEditingController _rewardAmountController;
+  bool _hasRewards = false;
+  bool _lockRewardRecalculation = false;
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -134,7 +140,39 @@ class TransactionFormState extends State<TransactionForm> {
         ? widget.recurringTransaction!.period
         : _recurringPeriods[2];
 
+    final rewardAmt = isEditRec
+        ? widget.recurringTransaction!.rewardAmount
+        : (isEditNor ? widget.transaction!.rewardAmount : null);
+
+    _hasRewards = rewardAmt != null;
+    _lockRewardRecalculation = rewardAmt != null;
+    _rewardAmountController = TextEditingController(
+      text: rewardAmt != null ? rewardAmt.toStringAsFixed(2) : '',
+    );
+
+    _amountController.addListener(_onAmountChanged);
+
     _loadCategories();
+  }
+
+  void _onAmountChanged() {
+    if (_lockRewardRecalculation ||
+        !_hasRewards ||
+        _selectedCreditCard == null ||
+        _isIncome)
+      return;
+
+    final amtStr = _amountController.text;
+    final amt = double.tryParse(amtStr) ?? 0.0;
+
+    double reward = 0;
+    if (_selectedCreditCard!.rewardType == 'Cashback') {
+      reward = amt * (_selectedCreditCard!.rewardRate / 100);
+    } else {
+      reward = amt * _selectedCreditCard!.rewardRate;
+    }
+
+    _rewardAmountController.text = reward.toStringAsFixed(2);
   }
 
   void _loadCategories() {
@@ -197,11 +235,15 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   List<Category> get _filteredCategories {
-    return _categories.where((c) => _isIncome ? c.isIncome : c.isExpense).toList();
+    return _categories
+        .where((c) => _isIncome ? c.isIncome : c.isExpense)
+        .toList();
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
+    _rewardAmountController.dispose();
     _amountController.dispose();
     _titleController.dispose();
     _noteController.dispose();
@@ -232,6 +274,13 @@ class TransactionFormState extends State<TransactionForm> {
           ? int.parse(_recurringIntervalController.text)
           : 1,
       recurringPeriod: _recurringPeriod,
+      rewardAmount:
+          (!_isIncome &&
+              _selectedCreditCard != null &&
+              _hasRewards &&
+              _rewardAmountController.text.isNotEmpty)
+          ? double.tryParse(_rewardAmountController.text)
+          : null,
     );
 
     try {
@@ -302,16 +351,22 @@ class TransactionFormState extends State<TransactionForm> {
             onChanged: (value) {
               setState(() {
                 _isIncome = value;
-                
+
                 // Auto-select fallback category if current one is invalid
                 final validCategories = _filteredCategories;
                 if (_selectedCategory != null) {
-                  final isValid = _isIncome ? _selectedCategory!.isIncome : _selectedCategory!.isExpense;
+                  final isValid = _isIncome
+                      ? _selectedCategory!.isIncome
+                      : _selectedCategory!.isExpense;
                   if (!isValid) {
-                    _selectedCategory = validCategories.isNotEmpty ? validCategories.first : null;
+                    _selectedCategory = validCategories.isNotEmpty
+                        ? validCategories.first
+                        : null;
                   }
                 } else {
-                  _selectedCategory = validCategories.isNotEmpty ? validCategories.first : null;
+                  _selectedCategory = validCategories.isNotEmpty
+                      ? validCategories.first
+                      : null;
                 }
               });
             },
@@ -320,7 +375,7 @@ class TransactionFormState extends State<TransactionForm> {
 
           CustomValidatedField(
             label: 'Amount'.cased(context),
-            validator: () => Validators.greaterThanZero(_amountController.text),
+            validator: () => Validators.amount(_amountController.text),
             child: TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -417,8 +472,17 @@ class TransactionFormState extends State<TransactionForm> {
                     items: [null, ..._creditCards],
                     displayText: (card) =>
                         card == null ? 'None'.cased(context) : card.name,
-                    onChanged: (val) =>
-                        setState(() => _selectedCreditCard = val),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedCreditCard = val;
+                        if (val != null && val.rewardRate > 0 && !_hasRewards) {
+                          _hasRewards = true;
+                        }
+                        _lockRewardRecalculation =
+                            false; // Reset override state
+                        _onAmountChanged(); // Recalculate
+                      });
+                    },
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -428,6 +492,96 @@ class TransactionFormState extends State<TransactionForm> {
                       color: AppColors.textSecondary,
                     ),
                   ),
+
+                  if (_selectedCreditCard != null &&
+                      _selectedCreditCard!.rewardRate > 0) ...[
+                    const SizedBox(height: 24),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            'Eligible for rewards'.cased(context),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          child: CustomSwitch(
+                            value: _hasRewards,
+                            onChanged: (val) {
+                              setState(() {
+                                _hasRewards = val;
+                                if (val) {
+                                  _lockRewardRecalculation = false;
+                                  _onAmountChanged();
+                                } else {
+                                  _rewardAmountController.clear();
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeInOut,
+                      switchOutCurve: Curves.easeInOut,
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return SizeTransition(
+                              sizeFactor: animation,
+                              alignment: const Alignment(-1.0, -1.0),
+                              child: child,
+                            );
+                          },
+                      child: _hasRewards
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: CustomValidatedField(
+                                padding: EdgeInsets.zero,
+                                validator: () => Validators.rewardAmount(
+                                  _rewardAmountController.text,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _rewardAmountController,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                        decoration: _getInputDecoration(
+                                          hintText: '0.00',
+                                        ),
+                                        onChanged: (_) {
+                                          _lockRewardRecalculation = true;
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16.0),
+                                    Text(
+                                      _selectedCreditCard!.rewardType == 'Cashback'
+                                          ? '% cashback'
+                                          : _selectedCreditCard!.rewardType.toLowerCase(),
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -440,19 +594,26 @@ class TransactionFormState extends State<TransactionForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerLeft,
                     children: [
-                      Text(
-                        'Recurring transaction'.cased(context),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          'Recurring transaction'.cased(context),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      CustomSwitch(
-                        value: _isRecurring,
-                        onChanged: (val) => setState(() => _isRecurring = val),
+                      Positioned(
+                        right: 0,
+                        child: CustomSwitch(
+                          value: _isRecurring,
+                          onChanged: (val) => setState(() => _isRecurring = val),
+                        ),
                       ),
                     ],
                   ),

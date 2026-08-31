@@ -8,6 +8,7 @@ class Transaction {
   final bool isIncome;
   final int? recurringId;
   final int? creditCardId;
+  final double? rewardAmount;
 
   Transaction({
     this.id,
@@ -19,6 +20,7 @@ class Transaction {
     this.isIncome = false,
     this.recurringId,
     this.creditCardId,
+    this.rewardAmount,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +34,7 @@ class Transaction {
       'isIncome': isIncome ? 1 : 0,
       'recurringId': recurringId,
       'creditCardId': creditCardId,
+      'rewardAmount': rewardAmount,
     };
   }
 
@@ -45,6 +48,7 @@ class Transaction {
     bool? isIncome,
     int? recurringId,
     int? creditCardId,
+    double? rewardAmount,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -56,6 +60,7 @@ class Transaction {
       isIncome: isIncome ?? this.isIncome,
       recurringId: recurringId ?? this.recurringId,
       creditCardId: creditCardId ?? this.creditCardId,
+      rewardAmount: rewardAmount ?? this.rewardAmount,
     );
   }
 
@@ -70,6 +75,7 @@ class Transaction {
       isIncome: map['isIncome'] == 1,
       recurringId: map['recurringId'],
       creditCardId: map['creditCardId'],
+      rewardAmount: map['rewardAmount'],
     );
   }
 }

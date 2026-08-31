@@ -11,7 +11,8 @@ class AddTransactionFormConfig {
   final bool initialIsRecurring;
   final Key formKey;
 
-  AddTransactionFormConfig({this.initialIsRecurring = false}) : formKey = UniqueKey();
+  AddTransactionFormConfig({this.initialIsRecurring = false})
+    : formKey = UniqueKey();
 }
 
 final ValueNotifier<AddTransactionFormConfig> addTransactionFormState =
@@ -50,6 +51,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       recurringPeriod: data.recurringPeriod,
       note: data.note ?? '',
       creditCardId: data.creditCardId,
+      rewardAmount: data.rewardAmount,
     );
 
     // Show success and reset form
@@ -75,14 +77,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     // Unique key to completely reset the form upon success
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Scaffold(
-          appBar: AppBar(title: Text('Add Transaction'.cased(context))),
-          body: SingleChildScrollView(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(title: Text('Add Transaction'.cased(context))),
+        body: SafeArea(
+          top: false,
+          bottom: true,
+          child: SingleChildScrollView(
             controller: _scrollController,
             padding: AppStyles.screenPadding,
             child: ValueListenableBuilder<AddTransactionFormConfig>(

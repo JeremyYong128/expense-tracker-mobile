@@ -42,7 +42,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
       text: isEditing ? widget.card!.rewardRate.toString() : '0.0',
     );
     _rewardType = isEditing ? widget.card!.rewardType : 'None';
-    _colorHex = isEditing ? widget.card!.colorHex : AppColors.colorPaletteHexes.first;
+    _colorHex = isEditing
+        ? widget.card!.colorHex
+        : AppColors.colorPaletteHexes.first;
   }
 
   @override
@@ -72,6 +74,29 @@ class _CreditCardModalState extends State<CreditCardModal> {
       );
 
       if (widget.card != null) {
+        if (widget.card!.rewardRate != rate) {
+          final shouldProceed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text('Rate Changed'.cased(context)),
+              content: Text(
+                'Changing the reward rate only applies to new transactions. Past transactions will retain their originally calculated reward amounts.'
+                    .cased(context),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text('Cancel'.cased(context)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text('Continue'.cased(context)),
+                ),
+              ],
+            ),
+          );
+          if (shouldProceed != true) return;
+        }
         await context.read<CreditCardProvider>().updateCreditCard(newCard);
       } else {
         await context.read<CreditCardProvider>().addCreditCard(newCard);

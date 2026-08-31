@@ -58,42 +58,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _currentMonth,
     );
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Home'.cased(context)),
-          actions: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications),
-                  onPressed: () => NotificationsScreen.show(context),
-                ),
-                if (context.watch<NotificationProvider>().hasUnread)
-                  Positioned(
-                    right: 12,
-                    top: 12,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: AppColors.expense,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.surface,
-                          width: 1.5,
-                        ),
-                      ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'.cased(context)),
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: () => NotificationsScreen.show(context),
+              ),
+              if (context.watch<NotificationProvider>().hasUnread)
+                Positioned(
+                  right: 12,
+                  top: 12,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppColors.expense,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.surface, width: 1.5),
                     ),
                   ),
-              ],
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
+                ),
+            ],
+          ),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: SingleChildScrollView(
           padding: AppStyles.screenPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

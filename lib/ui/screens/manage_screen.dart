@@ -11,12 +11,12 @@ class ManageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        appBar: AppBar(title: Text('Manage'.cased(context))),
-        body: ListView(
+    return Scaffold(
+      appBar: AppBar(title: Text('Manage'.cased(context))),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: ListView(
           padding: AppStyles.screenPadding,
           children: [
             _buildManageCard(

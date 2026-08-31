@@ -34,6 +34,7 @@ class DataService {
       isIncome: data.isIncome,
       recurringId: data.recurringId,
       creditCardId: data.creditCardId,
+      rewardAmount: data.rewardAmount,
     );
   }
 
@@ -63,6 +64,7 @@ class DataService {
       startDate: DateTime.parse(data.startDate),
       nextDueDate: DateTime.parse(data.nextDueDate),
       creditCardId: data.creditCardId,
+      rewardAmount: data.rewardAmount,
     );
   }
 
@@ -293,6 +295,7 @@ class DataService {
     required String recurringPeriod,
     required String note,
     int? creditCardId,
+    double? rewardAmount,
   }) async {
     final amount = double.parse(amountText);
     final recurringInterval = int.tryParse(recurringIntervalText) ?? 1;
@@ -312,6 +315,7 @@ class DataService {
               nextDueDate: date.toIso8601String(),
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
               creditCardId: drift.Value(creditCardId),
+              rewardAmount: drift.Value(rewardAmount),
             ),
           );
     } else {
@@ -326,6 +330,7 @@ class DataService {
               isIncome: drift.Value(isIncome),
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
               creditCardId: drift.Value(creditCardId),
+              rewardAmount: drift.Value(rewardAmount),
             ),
           );
     }
@@ -343,6 +348,7 @@ class DataService {
         isIncome: drift.Value(transaction.isIncome),
         note: drift.Value(transaction.note),
         creditCardId: drift.Value(transaction.creditCardId),
+        rewardAmount: drift.Value(transaction.rewardAmount),
       ),
     );
   }
@@ -408,6 +414,7 @@ class DataService {
         nextDueDate: drift.Value(newNextDueDate.toIso8601String()),
         note: drift.Value(transaction.note),
         creditCardId: drift.Value(transaction.creditCardId),
+        rewardAmount: drift.Value(transaction.rewardAmount),
       ),
     );
   }
@@ -588,25 +595,18 @@ class DataService {
 
     Map<CreditCard, double> rewardsMap = {};
 
-    // Group spending by credit card ID for current month
-    Map<int, double> cardSpending = {};
+    // Group rewards by credit card ID for current month
+    Map<int, double> cardRewards = {};
     for (var tx in currentMonthTransactions) {
-      if (!tx.isIncome && tx.creditCardId != null) {
-        cardSpending[tx.creditCardId!] =
-            (cardSpending[tx.creditCardId!] ?? 0) + tx.amount;
+      if (!tx.isIncome && tx.creditCardId != null && tx.rewardAmount != null) {
+        cardRewards[tx.creditCardId!] =
+            (cardRewards[tx.creditCardId!] ?? 0) + tx.rewardAmount!;
       }
     }
 
     for (var card in creditCards) {
-      if (cardSpending.containsKey(card.id)) {
-        double spent = cardSpending[card.id]!;
-        if (card.rewardType == 'Cashback') {
-          rewardsMap[card] =
-              ((spent * (card.rewardRate / 100)) * 100).floorToDouble() / 100;
-        } else {
-          rewardsMap[card] =
-              ((spent * card.rewardRate) * 100).floorToDouble() / 100;
-        }
+      if (cardRewards.containsKey(card.id)) {
+        rewardsMap[card] = cardRewards[card.id]!;
       }
     }
 

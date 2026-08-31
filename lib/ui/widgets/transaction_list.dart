@@ -12,12 +12,10 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
-  final bool expandVertically;
 
   const TransactionList({
     super.key,
     required this.transactions,
-    this.expandVertically = false,
   });
 
   Category _getCategory(List<Category> categories, int id) {
@@ -47,13 +45,6 @@ class TransactionList extends StatelessWidget {
     );
 
     if (transactions.isEmpty) {
-      if (expandVertically) {
-        return CustomScrollView(
-          slivers: [
-            SliverFillRemaining(hasScrollBody: false, child: emptyWidget),
-          ],
-        );
-      }
       return emptyWidget;
     }
 
@@ -66,6 +57,7 @@ class TransactionList extends StatelessWidget {
         final date = entry.key;
         final dayTransactions = entry.value;
         final index = grouped.keys.toList().indexOf(date);
+        final isLastGroup = index == grouped.length - 1;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,15 +78,19 @@ class TransactionList extends StatelessWidget {
                 ),
               ),
             ),
-            ...dayTransactions.map((transaction) {
+            ...dayTransactions.asMap().entries.map((txEntry) {
+              final txIndex = txEntry.key;
+              final transaction = txEntry.value;
+              
               final category = _getCategory(
                 stats.categories,
                 transaction.categoryId,
               );
               final color = category.color;
+              final isLastItem = isLastGroup && txIndex == dayTransactions.length - 1;
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 12.0),
+                margin: EdgeInsets.only(bottom: isLastItem ? 0.0 : 12.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24.0),
@@ -208,12 +204,6 @@ class TransactionList extends StatelessWidget {
         );
       }).toList(),
     );
-
-    if (expandVertically) {
-      return CustomScrollView(
-        slivers: [SliverToBoxAdapter(child: listContent)],
-      );
-    }
 
     return listContent;
   }

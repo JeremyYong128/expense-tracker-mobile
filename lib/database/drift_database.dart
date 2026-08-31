@@ -37,6 +37,7 @@ class Transactions extends Table {
   TextColumn get note => text().nullable()();
   BoolColumn get isIncome =>
       boolean().named('isIncome').withDefault(const Constant(false))();
+  RealColumn get rewardAmount => real().nullable()();
   IntColumn get recurringId => integer()
       .named('recurringId')
       .nullable()
@@ -74,6 +75,7 @@ class RecurringTransactions extends Table {
   TextColumn get note => text().nullable()();
   BoolColumn get isIncome =>
       boolean().named('isIncome').withDefault(const Constant(false))();
+  RealColumn get rewardAmount => real().nullable()();
   IntColumn get interval => integer()();
   TextColumn get period => text()();
   TextColumn get startDate =>
@@ -104,7 +106,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -236,7 +238,43 @@ class AppDatabase extends _$AppDatabase {
             );
           } catch (e, stack) {
             AppLogger.error(
-              'Data migration failed during schema upgrade',
+              'Data migration failed during schema upgrade to v4',
+              e,
+              stack,
+            );
+          }
+        }
+
+        if (from < 10) {
+          try {
+            await customStatement('''
+              UPDATE transactions 
+              SET rewardAmount = (
+                SELECT CASE 
+                  WHEN credit_cards.rewardType = 'Cashback' THEN transactions.amount * (credit_cards.rewardRate / 100.0)
+                  ELSE transactions.amount * credit_cards.rewardRate
+                END
+                FROM credit_cards 
+                WHERE credit_cards.id = transactions.creditCardId
+              )
+              WHERE creditCardId IS NOT NULL AND isIncome = 0;
+            ''');
+
+            await customStatement('''
+              UPDATE recurring_transactions 
+              SET rewardAmount = (
+                SELECT CASE 
+                  WHEN credit_cards.rewardType = 'Cashback' THEN recurring_transactions.amount * (credit_cards.rewardRate / 100.0)
+                  ELSE recurring_transactions.amount * credit_cards.rewardRate
+                END
+                FROM credit_cards 
+                WHERE credit_cards.id = recurring_transactions.creditCardId
+              )
+              WHERE creditCardId IS NOT NULL AND isIncome = 0;
+            ''');
+          } catch (e, stack) {
+            AppLogger.error(
+              'Data migration failed during schema upgrade to v10',
               e,
               stack,
             );

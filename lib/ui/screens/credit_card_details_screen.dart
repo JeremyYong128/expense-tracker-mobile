@@ -145,18 +145,11 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     transactionsList.sort((a, b) => b.date.compareTo(a.date));
 
     // Calculate total rewards
-    double totalSpent = 0;
-    for (var tx in transactionsList) {
-      if (!tx.isIncome) {
-        totalSpent += tx.amount;
-      }
-    }
-
     double totalRewardsAmount = 0;
-    if (latestCard.rewardType == 'Cashback') {
-      totalRewardsAmount = totalSpent * (latestCard.rewardRate / 100);
-    } else {
-      totalRewardsAmount = totalSpent * latestCard.rewardRate;
+    for (var tx in transactionsList) {
+      if (!tx.isIncome && tx.rewardAmount != null) {
+        totalRewardsAmount += tx.rewardAmount!;
+      }
     }
 
     return Scaffold(
@@ -173,48 +166,50 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildDigitalCard(latestCard, totalRewardsAmount),
-            const SizedBox(height: 16),
-            if (transactionsList.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Past Expenses'.cased(context),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildDigitalCard(latestCard, totalRewardsAmount),
+              const SizedBox(height: 16),
+              if (transactionsList.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Past Expenses'.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ],
-            transactionsList.isEmpty
-                ? Center(
-                    child: Text(
-                      'No expenses tagged to this card.'.cased(context),
-                      style: const TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 16,
+                const SizedBox(height: 12),
+              ],
+              transactionsList.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No expenses tagged to this card.'.cased(context),
+                        style: const TextStyle(
+                          color: AppColors.grey,
+                          fontSize: 16,
+                        ),
                       ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: 24,
+                        left: 16,
+                        right: 16,
+                      ),
+                      child: TransactionList(transactions: transactionsList),
                     ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 24,
-                      left: 16,
-                      right: 16,
-                    ),
-                    child: TransactionList(
-                      transactions: transactionsList,
-                    ),
-                  ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -222,12 +217,13 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
 
   LinearGradient _getGradientForCard(CreditCard card) {
     final Color color1 = AppColors.getColorFromHex(card.colorHex);
-    
+
     // Convert to HSL to get a slightly shifted secondary color for the gradient
     final HSLColor hsl1 = HSLColor.fromColor(color1);
-    final Color color2 = hsl1.withHue((hsl1.hue + 40) % 360).withLightness(
-          (hsl1.lightness + 0.1).clamp(0.0, 1.0),
-        ).toColor();
+    final Color color2 = hsl1
+        .withHue((hsl1.hue + 40) % 360)
+        .withLightness((hsl1.lightness + 0.1).clamp(0.0, 1.0))
+        .toColor();
 
     return LinearGradient(
       colors: [color1, color2],

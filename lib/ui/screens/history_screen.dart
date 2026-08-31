@@ -31,18 +31,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
       );
     }
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        appBar: AppBar(title: Text('History'.cased(context))),
-        body: Padding(
-          padding: AppStyles.screenPadding,
-          child: TransactionList(
-            transactions: transactionProvider.transactions,
-            expandVertically: true,
-          ),
-        ),
+    return Scaffold(
+      appBar: AppBar(title: Text('History'.cased(context))),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: transactionProvider.transactions.isEmpty
+            ? TransactionList(transactions: transactionProvider.transactions)
+            : SingleChildScrollView(
+                padding: AppStyles.screenPadding,
+                child: TransactionList(
+                  transactions: transactionProvider.transactions,
+                ),
+              ),
       ),
     );
   }

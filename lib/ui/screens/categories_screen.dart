@@ -33,8 +33,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
         ],
       ),
-      body: Consumer<CategoryProvider>(
-        builder: (context, provider, child) {
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: Consumer<CategoryProvider>(
+          builder: (context, provider, child) {
           final allCategories = provider.activeCategories;
 
           if (allCategories.isEmpty) {
@@ -176,6 +179,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ],
           );
         },
+      ),
       ),
     );
   }
