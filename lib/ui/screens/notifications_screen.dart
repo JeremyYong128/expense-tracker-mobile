@@ -10,9 +10,7 @@ class NotificationsScreen extends StatelessWidget {
 
   static void show(BuildContext context) {
     Navigator.of(context, rootNavigator: true).push(
-      CupertinoPageRoute(
-        builder: (context) => const NotificationsScreen(),
-      ),
+      CupertinoPageRoute(builder: (context) => const NotificationsScreen()),
     );
   }
 
@@ -23,9 +21,7 @@ class NotificationsScreen extends StatelessWidget {
 
     if (notifications.isEmpty) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text('Notifications'.cased(context)),
-        ),
+        appBar: AppBar(title: Text('Notifications'.cased(context))),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -38,10 +34,7 @@ class NotificationsScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'You\'re all caught up!',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
               ),
             ],
           ),
@@ -50,37 +43,45 @@ class NotificationsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'.cased(context)),
-      ),
-      body: ListView.builder(
-        itemCount: notifications.length,
+      appBar: AppBar(title: Text('Notifications'.cased(context))),
+      body: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        itemCount: notifications.length + 1,
+        separatorBuilder: (context, index) =>
+            Divider(height: 1, color: Colors.grey.withValues(alpha: 0.5)),
         itemBuilder: (context, index) {
+          if (index == notifications.length) {
+            return const SizedBox.shrink();
+          }
           final notification = notifications[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: notification.color.withValues(alpha: 0.15),
-              child: Icon(notification.icon, color: notification.color),
-            ),
-            title: Text(
-              notification.title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                notification.message,
-                style: const TextStyle(color: AppColors.textSecondary),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: notification.color.withValues(alpha: 0.15),
+                child: Icon(notification.icon, color: notification.color),
               ),
+              title: Text(
+                notification.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  notification.message,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              onTap: () {
+                // Close the screen first
+                Navigator.of(context).pop();
+                // Execute the action if provided
+                if (notification.onTap != null) {
+                  notification.onTap!(context);
+                }
+              },
             ),
-            onTap: () {
-              // Close the screen first
-              Navigator.of(context).pop();
-              // Execute the action if provided
-              if (notification.onTap != null) {
-                notification.onTap!(context);
-              }
-            },
           );
         },
       ),

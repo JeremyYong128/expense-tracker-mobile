@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
+import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/main.dart';
 
 class AddTransactionFormConfig {
@@ -80,7 +81,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        appBar: AppBar(title: Text('Add Transaction'.cased(context))),
+        appBar: AppBar(
+          title: Text('Add Transaction'.cased(context)),
+          actions: const [NotificationButton()],
+        ),
         body: SafeArea(
           top: false,
           bottom: true,

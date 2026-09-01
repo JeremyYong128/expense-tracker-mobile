@@ -42,7 +42,29 @@ class AppNotification {
 }
 
 class NotificationProvider extends ChangeNotifier {
-  final Map<String, AppNotification> _notifications = {};
+  final Map<String, AppNotification> _notifications = {
+    'mock_1': AppNotification(
+      id: 'mock_1',
+      title: 'Approvals Pending',
+      message: 'You have 3 recurring transactions awaiting your approval.',
+      icon: Icons.assignment_late_outlined,
+      color: Colors.orange,
+    ),
+    'mock_2': AppNotification(
+      id: 'mock_2',
+      title: 'Budget Alert',
+      message: 'You have exceeded your monthly budget for Dining by \$45.00.',
+      icon: Icons.warning_amber_outlined,
+      color: Colors.red,
+    ),
+    'mock_3': AppNotification(
+      id: 'mock_3',
+      title: 'Credit Card Bill Due',
+      message: 'Your Chase Sapphire Reserve bill is due in 3 days.',
+      icon: Icons.credit_card_outlined,
+      color: Colors.blue,
+    ),
+  };
 
   List<AppNotification> get notifications => _notifications.values.toList();
   bool get hasUnread => _notifications.isNotEmpty;

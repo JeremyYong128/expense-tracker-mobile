@@ -105,10 +105,11 @@ flutter run
     - Out of scope: Historical rate changes (rewards use current rate).
 
 ### Priority Changes
-- Multiple categories (with handling for aggregation overlap) or add tags
 
 ### Future
 
+- Tags for expenses
+- When adding a credit card expense, a user might write a custom reward amount, and then later change the expense amount. Should the reward amount be recalculated?
 - Notification item design
 - Horizontal display
 - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)

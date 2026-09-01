@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
+import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -26,13 +27,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text('History'.cased(context))),
+        appBar: AppBar(
+          title: Text('History'.cased(context)),
+          actions: const [NotificationButton()],
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('History'.cased(context))),
+      appBar: AppBar(
+        title: Text('History'.cased(context)),
+        actions: const [NotificationButton()],
+      ),
       body: SafeArea(
         top: false,
         bottom: true,

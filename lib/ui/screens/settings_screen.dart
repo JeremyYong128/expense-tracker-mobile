@@ -4,6 +4,7 @@ import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart'
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -15,7 +16,10 @@ class SettingsScreen extends StatelessWidget {
     ).isLowerCaps;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Settings'.cased(context))),
+      appBar: AppBar(
+        title: Text('Settings'.cased(context)),
+        actions: const [NotificationButton()],
+      ),
       body: SafeArea(
         top: false,
         bottom: true,
