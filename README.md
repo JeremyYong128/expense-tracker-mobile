@@ -98,30 +98,24 @@ flutter run
 
 ### Notes
 
-- Credit cards
-    - Out of scope: Category-specific multipliers (only flat rate supported).
-    - Out of scope: Sign-up bonuses or caps.
-    - Out of scope: Custom statement periods (tracking is by calendar month).
-    - Out of scope: Historical rate changes (rewards use current rate).
+### Changes
+- High priority
+    - Transaction list should have more info, show associated recurring expense/credit card
+        - Will need to implement UI info update mechanism, or else the card will bug out when the recurring transaction related to a transaction is deleted, and then a user tries to edit it.
+    - Add more analytics to dashboard/category/credit card/screens.
+        - Clicking on category in dashboard should bring to a page with analytics
 
-### Priority Changes
+- Medium priority
+    - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
+    - List design for notifications screen and manage screen, and dashboard cashback section
+    - Horizontal display
+    - Need a way for users to reorder things in the "Manage" tab
 
-### Future
+- Low priority
+    - Redesign modal for pending approvals
+    - Tags for expenses
+    - Custom dropdowns (including date and time pickers)
 
-- Tags for expenses
-- Clicking on category in dashboard should bring to a page with analytics
-- Notification item design
-- Horizontal display
-- Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
-- Credit cards
-    - Need some indication in the history and recurring cards when an expense is tagged with a credit card
-- Custom dropdowns (including date and time pickers)
-- Redesign modal for pending approvals
-- Need a way for users to reorder things in the "Manage" tab
-- Transaction list should have more info, show associated recurring expense/credit card
-    - Will need to implement UI info update mechanism, or else the card will bug out when the recurring transaction related to a transaction is deleted, and then a user tries to edit it.
-- Add more analytics to dashboard/category/credit card/screens.
 - Possible changes to consider:
-    - Linking individual transactions to a recurring transaction.
-    - Dashboard previous month 0 to current month nonzero: 100% or null for percentage change?
-    - Currently when editing the recurring transaction intervals, if the start date/time or the interval is changed, it calculates the next due date starting from the latest recorded individual transaction, or the new start date, whichever is later. Is this too confusing?
+    - Allow a user to navigate from an individual transaction to its associated recurring transaction
+    - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?

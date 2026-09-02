@@ -72,7 +72,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         categoryId: data.categoryId,
         date: data.date,
         isIncome: data.isIncome,
-        recurringId: widget.transaction!.recurringId,
+        recurringId: data.recurringId,
         note: data.note,
         creditCardId: data.creditCardId,
         rewardAmount: data.rewardAmount,
@@ -89,6 +89,11 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
         await context
             .read<RecurringTransactionProvider>()
             .deleteRecurringTransaction(widget.recurringTransaction!.id!);
+
+        // Immediately refresh transactions
+        if (mounted) {
+          await context.read<TransactionProvider>().fetchTransactions();
+        }
       } else {
         await context.read<TransactionProvider>().deleteTransaction(
           widget.transaction!.id!,

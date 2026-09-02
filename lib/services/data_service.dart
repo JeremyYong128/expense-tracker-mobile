@@ -295,6 +295,7 @@ class DataService {
     required String recurringPeriod,
     required String note,
     int? creditCardId,
+    int? recurringId,
     double? rewardAmount,
   }) async {
     final amount = double.parse(amountText);
@@ -330,6 +331,7 @@ class DataService {
               isIncome: drift.Value(isIncome),
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
               creditCardId: drift.Value(creditCardId),
+              recurringId: drift.Value(recurringId),
               rewardAmount: drift.Value(rewardAmount),
             ),
           );
@@ -348,6 +350,7 @@ class DataService {
         isIncome: drift.Value(transaction.isIncome),
         note: drift.Value(transaction.note),
         creditCardId: drift.Value(transaction.creditCardId),
+        recurringId: drift.Value(transaction.recurringId),
         rewardAmount: drift.Value(transaction.rewardAmount),
       ),
     );

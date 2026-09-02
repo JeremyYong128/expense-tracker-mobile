@@ -30,6 +30,7 @@ class TransactionProvider extends ChangeNotifier {
     required String recurringPeriod,
     required String note,
     int? creditCardId,
+    int? recurringId,
     double? rewardAmount,
   }) async {
     await DataService.addTransaction(
@@ -43,6 +44,7 @@ class TransactionProvider extends ChangeNotifier {
       recurringPeriod: recurringPeriod,
       note: note,
       creditCardId: creditCardId,
+      recurringId: recurringId,
       rewardAmount: rewardAmount,
     );
     await fetchTransactions();

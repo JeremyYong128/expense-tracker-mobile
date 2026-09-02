@@ -52,6 +52,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       recurringPeriod: data.recurringPeriod,
       note: data.note ?? '',
       creditCardId: data.creditCardId,
+      recurringId: data.recurringId,
       rewardAmount: data.rewardAmount,
     );
 
