@@ -228,6 +228,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
                 label: _rewardType == 'Cashback'
                     ? 'Reward Rate (%)'.cased(context)
                     : 'Reward Rate (per \$)'.cased(context),
+                infoText: _rewardType != 'None'
+                    ? 'This will be the default rate applied to new transactions. You can modify or remove the rewards on individual transactions later.'
+                    : null,
                 validator: () => _rewardType == 'None'
                     ? null
                     : Validators.greaterThanZero(_rateController.text),
@@ -256,7 +259,6 @@ class _CreditCardModalState extends State<CreditCardModal> {
                   onSubmitted: (_) => _saveCreditCard(),
                 ),
               ),
-              const SizedBox(height: 32),
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],
           ),

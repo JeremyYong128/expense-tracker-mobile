@@ -109,7 +109,7 @@ flutter run
 ### Future
 
 - Tags for expenses
-- When adding a credit card expense, a user might write a custom reward amount, and then later change the expense amount. Should the reward amount be recalculated?
+- Clicking on category in dashboard should bring to a page with analytics
 - Notification item design
 - Horizontal display
 - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)

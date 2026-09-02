@@ -13,10 +13,7 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
 
-  const TransactionList({
-    super.key,
-    required this.transactions,
-  });
+  const TransactionList({super.key, required this.transactions});
 
   Category _getCategory(List<Category> categories, int id) {
     return categories.firstWhere(
@@ -81,13 +78,14 @@ class TransactionList extends StatelessWidget {
             ...dayTransactions.asMap().entries.map((txEntry) {
               final txIndex = txEntry.key;
               final transaction = txEntry.value;
-              
+
               final category = _getCategory(
                 stats.categories,
                 transaction.categoryId,
               );
               final color = category.color;
-              final isLastItem = isLastGroup && txIndex == dayTransactions.length - 1;
+              final isLastItem =
+                  isLastGroup && txIndex == dayTransactions.length - 1;
 
               return Container(
                 margin: EdgeInsets.only(bottom: isLastItem ? 0.0 : 12.0),

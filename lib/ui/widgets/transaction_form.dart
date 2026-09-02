@@ -404,33 +404,21 @@ class TransactionFormState extends State<TransactionForm> {
           ),
 
           CustomValidatedField(
+            infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
             validator: () => Validators.required(
               _selectedCategory?.name,
               'Select a valid category.',
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _isLoadingCategories
-                    ? const Center(child: CircularProgressIndicator())
-                    : CustomDropdownField<Category?>(
-                        label: 'Category'.cased(context),
-                        items: _filteredCategories,
-                        selectedItem: _selectedCategory,
-                        displayText: (cat) => cat?.name ?? '',
-                        onChanged: (val) =>
-                            setState(() => _selectedCategory = val),
-                      ),
-                const SizedBox(height: 8),
-                Text(
-                  'Add or edit categories under \'Manage\'.'.cased(context),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+            child: _isLoadingCategories
+                ? const Center(child: CircularProgressIndicator())
+                : CustomDropdownField<Category?>(
+                    label: 'Category'.cased(context),
+                    items: _filteredCategories,
+                    selectedItem: _selectedCategory,
+                    displayText: (cat) => cat?.name ?? '',
+                    onChanged: (val) =>
+                        setState(() => _selectedCategory = val),
                   ),
-                ),
-              ],
-            ),
           ),
 
           Padding(
@@ -466,30 +454,26 @@ class TransactionFormState extends State<TransactionForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomDropdownField<CreditCard?>(
-                    label: 'Credit Card'.cased(context),
-                    selectedItem: _selectedCreditCard,
-                    items: [null, ..._creditCards],
-                    displayText: (card) =>
-                        card == null ? 'None'.cased(context) : card.name,
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedCreditCard = val;
-                        if (val != null && val.rewardRate > 0 && !_hasRewards) {
-                          _hasRewards = true;
-                        }
-                        _lockRewardRecalculation =
-                            false; // Reset override state
-                        _onAmountChanged(); // Recalculate
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Add or edit credit cards under \'Manage\'.'.cased(context),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+                  CustomValidatedField(
+                    infoText: 'Add or edit credit cards under \'Manage\'.'.cased(context),
+                    padding: EdgeInsets.zero,
+                    child: CustomDropdownField<CreditCard?>(
+                      label: 'Credit Card'.cased(context),
+                      selectedItem: _selectedCreditCard,
+                      items: [null, ..._creditCards],
+                      displayText: (card) =>
+                          card == null ? 'None'.cased(context) : card.name,
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCreditCard = val;
+                          if (val != null && val.rewardRate > 0 && !_hasRewards) {
+                            _hasRewards = true;
+                          }
+                          _lockRewardRecalculation =
+                              false; // Reset override state
+                          _onAmountChanged(); // Recalculate
+                        });
+                      },
                     ),
                   ),
 

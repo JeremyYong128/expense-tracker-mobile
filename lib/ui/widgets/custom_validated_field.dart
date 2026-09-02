@@ -7,6 +7,7 @@ class CustomValidatedField extends StatelessWidget {
   final String? Function()? validator;
   final double? height;
   final EdgeInsetsGeometry padding;
+  final String? infoText;
 
   const CustomValidatedField({
     super.key,
@@ -15,6 +16,7 @@ class CustomValidatedField extends StatelessWidget {
     this.validator,
     this.height,
     this.padding = const EdgeInsets.only(bottom: 24.0),
+    this.infoText,
   });
 
   @override
@@ -41,6 +43,31 @@ class CustomValidatedField extends StatelessWidget {
                 SizedBox(height: height, child: child)
               else
                 child,
+              if (infoText != null && !state.hasError)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 4.0, right: 4.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          infoText!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               if (state.hasError)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, left: 16.0),
