@@ -78,5 +78,9 @@ else
     exit 1
 fi
 
+# 6. Update the version in PUBLISHING.md
+sed -i '' "s/^\*\*Latest published version:\*\* .*/\*\*Latest published version:\*\* $VERSION/" PUBLISHING.md
+echo -e "${GREEN}✓ Version updated in PUBLISHING.md${NC}"
+
 echo -e "\n${GREEN}=== Publish Complete! ===${NC}"
 echo "You can now log into App Store Connect to release the app via TestFlight or submit for review."

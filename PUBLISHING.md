@@ -1,5 +1,7 @@
 # App Store Publishing Guide
 
+**Latest published version:** 1.1.3+1
+
 Follow these steps to publish a new version of Expense Tracker Mobile to the Apple App Store.
 
 ## Usage
