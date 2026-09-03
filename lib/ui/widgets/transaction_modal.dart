@@ -37,7 +37,8 @@ class _TransactionModalState extends State<TransactionModal> {
   }
 
   Future<void> _saveTransaction(TransactionFormData data) async {
-    final isAdd = widget.transaction == null && widget.recurringTransaction == null;
+    final isAdd =
+        widget.transaction == null && widget.recurringTransaction == null;
     final isRec = widget.recurringTransaction != null;
 
     if (isAdd) {
@@ -62,6 +63,11 @@ class _TransactionModalState extends State<TransactionModal> {
             content: Text('Transaction added successfully!'.cased(context)),
           ),
         );
+        if (data.isRecurring) {
+          context
+              .read<RecurringTransactionProvider>()
+              .fetchRecurringTransactions();
+        }
       }
     } else if (isRec) {
       final updated = RecurringTransaction(
@@ -130,8 +136,9 @@ class _TransactionModalState extends State<TransactionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdd = widget.transaction == null && widget.recurringTransaction == null;
-    
+    final isAdd =
+        widget.transaction == null && widget.recurringTransaction == null;
+
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.of(context).pop(),

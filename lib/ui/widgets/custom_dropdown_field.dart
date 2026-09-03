@@ -9,6 +9,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final T selectedItem;
   final ValueChanged<T> onChanged;
   final String Function(T) displayText;
+  final bool enabled;
 
   const CustomDropdownField({
     super.key,
@@ -17,10 +18,11 @@ class CustomDropdownField<T> extends StatelessWidget {
     required this.selectedItem,
     required this.onChanged,
     required this.displayText,
+    this.enabled = true,
   });
 
   void _showPicker(BuildContext context) {
-    if (items.isEmpty) return;
+    if (!enabled || items.isEmpty) return;
 
     int selectedIndex = items.indexOf(selectedItem);
     if (selectedIndex == -1) selectedIndex = 0;
@@ -114,7 +116,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         borderSide: BorderSide.none,
       ),
       filled: true,
-      fillColor: AppColors.white,
+      fillColor: enabled ? AppColors.white : Colors.grey.shade200,
     );
   }
 
@@ -131,7 +133,7 @@ class CustomDropdownField<T> extends StatelessWidget {
           const SizedBox(height: 8.0),
         ],
         InkWell(
-          onTap: () => _showPicker(context),
+          onTap: enabled ? () => _showPicker(context) : null,
           borderRadius: BorderRadius.circular(16.0),
           child: InputDecorator(
             decoration: _getInputDecoration(),
@@ -140,13 +142,16 @@ class CustomDropdownField<T> extends StatelessWidget {
                 Expanded(
                   child: Text(
                     displayText(selectedItem),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.textPrimary,
+                      color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
                     ),
                   ),
                 ),
-                const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: enabled ? AppColors.primary : AppColors.textSecondary,
+                ),
               ],
             ),
           ),

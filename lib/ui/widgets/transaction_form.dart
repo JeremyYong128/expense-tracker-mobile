@@ -385,6 +385,19 @@ class TransactionFormState extends State<TransactionForm> {
     );
   }
 
+  Widget _buildRecurringDropdown(BuildContext context) {
+    return CustomValidatedField(
+      padding: EdgeInsets.zero,
+      child: CustomDropdownField<RecurringTransaction?>(
+        label: 'Link to existing recurring transaction'.cased(context),
+        items: [null, ..._filteredRecurringTransactions],
+        selectedItem: _selectedRecurring,
+        displayText: (r) => r?.title ?? 'None'.cased(context),
+        onChanged: _onRecurringSelected,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // If both are null, it's Add mode. If one is not null, it's Edit mode.
@@ -485,6 +498,7 @@ class TransactionFormState extends State<TransactionForm> {
                     selectedItem: _selectedCategory,
                     displayText: (cat) => cat?.name ?? '',
                     onChanged: (val) => setState(() => _selectedCategory = val),
+                    enabled: _selectedRecurring == null,
                   ),
           ),
 
@@ -715,22 +729,7 @@ class TransactionFormState extends State<TransactionForm> {
                             child: Column(
                               children: [
                                 const SizedBox(height: 24.0),
-                                CustomValidatedField(
-                                  padding: EdgeInsets.zero,
-                                  child: CustomDropdownField<RecurringTransaction?>(
-                                    label:
-                                        'Link to existing recurring transaction'
-                                            .cased(context),
-                                    items: [
-                                      null,
-                                      ..._filteredRecurringTransactions,
-                                    ],
-                                    selectedItem: _selectedRecurring,
-                                    displayText: (r) =>
-                                        r?.title ?? 'None'.cased(context),
-                                    onChanged: _onRecurringSelected,
-                                  ),
-                                ),
+                                _buildRecurringDropdown(context),
                               ],
                             ),
                           ),
@@ -742,17 +741,7 @@ class TransactionFormState extends State<TransactionForm> {
             // Edit Mode (Normal Transaction): Just show the dropdown
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
-              child: CustomValidatedField(
-                infoText: 'Link to existing template (Optional)'.cased(context),
-                padding: EdgeInsets.zero,
-                child: CustomDropdownField<RecurringTransaction?>(
-                  label: 'Recurring Transaction'.cased(context),
-                  items: [null, ..._filteredRecurringTransactions],
-                  selectedItem: _selectedRecurring,
-                  displayText: (r) => r?.title ?? 'None'.cased(context),
-                  onChanged: _onRecurringSelected,
-                ),
-              ),
+              child: _buildRecurringDropdown(context),
             ),
           ] else if (widget.recurringTransaction != null) ...[
             // Edit Mode (Recurring): Show frequency without toggle
