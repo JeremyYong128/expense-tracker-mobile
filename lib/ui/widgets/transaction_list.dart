@@ -56,11 +56,6 @@ class _TransactionListState extends State<TransactionList> {
             .firstOrNull
         : null;
 
-    final hasInfo = creditCard != null ||
-        recurring != null ||
-        (transaction.rewardAmount != null && transaction.rewardAmount! > 0) ||
-        (transaction.note != null && transaction.note!.trim().isNotEmpty);
-
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
       if (creditCard != null) {
