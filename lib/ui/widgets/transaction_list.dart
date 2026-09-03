@@ -61,6 +61,23 @@ class _TransactionListState extends State<TransactionList> {
         (transaction.rewardAmount != null && transaction.rewardAmount! > 0) ||
         (transaction.note != null && transaction.note!.trim().isNotEmpty);
 
+    String rewardText = '';
+    if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
+      if (creditCard != null) {
+        if (creditCard.rewardType == 'Cashback') {
+          rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)} cashback';
+        } else if (creditCard.rewardType == 'Miles') {
+          rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} miles';
+        } else if (creditCard.rewardType == 'Points') {
+          rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} points';
+        } else {
+          rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)}';
+        }
+      } else {
+        rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)}';
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -119,7 +136,7 @@ class _TransactionListState extends State<TransactionList> {
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
-                    '\$${transaction.rewardAmount!.toStringAsFixed(2)}',
+                    rewardText,
                     style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 13),
                   ),

@@ -23,6 +23,7 @@ class RecurringProcessingService {
             isIncome: tx.isIncome,
             recurringId: tx.id,
             creditCardId: tx.creditCardId,
+            rewardAmount: tx.rewardAmount,
           ),
         );
 
@@ -36,11 +37,13 @@ class RecurringProcessingService {
 
     // Sort by due date (oldest first)
     pendingInstances.sort((a, b) => a.date.compareTo(b.date));
-    
+
     if (pendingInstances.isNotEmpty) {
-      AppLogger.info('Found ${pendingInstances.length} pending recurring transactions to process.');
+      AppLogger.info(
+        'Found ${pendingInstances.length} pending recurring transactions to process.',
+      );
     }
-    
+
     return pendingInstances;
   }
 

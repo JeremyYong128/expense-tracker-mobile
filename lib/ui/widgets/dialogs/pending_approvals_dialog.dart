@@ -7,6 +7,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 
 class PendingApprovalsDialog extends StatefulWidget {
   final List<Transaction> initialPending;
@@ -76,8 +77,22 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
     }
   }
 
+  String _getRewardText(Transaction tx, var creditCard) {
+    if (creditCard != null) {
+      if (creditCard.rewardType == 'Cashback') {
+        return '\$${tx.rewardAmount!.toStringAsFixed(2)} cashback';
+      } else if (creditCard.rewardType == 'Miles') {
+        return '${tx.rewardAmount!.toStringAsFixed(0)} miles';
+      } else if (creditCard.rewardType == 'Points') {
+        return '${tx.rewardAmount!.toStringAsFixed(0)} points';
+      }
+    }
+    return '\$${tx.rewardAmount!.toStringAsFixed(2)}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final creditCards = context.watch<CreditCardProvider>().creditCards;
     final groupedPending = <int, List<Transaction>>{};
     for (final tx in _pending) {
       if (tx.recurringId != null) {
@@ -103,6 +118,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                 itemBuilder: (context, index) {
                   final group = groupedPending[groupedKeys[index]]!;
                   final firstTx = group.first;
+                  final creditCard = firstTx.creditCardId != null ? creditCards.where((c) => c.id == firstTx.creditCardId).firstOrNull : null;
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
@@ -141,6 +157,22 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                               ),
                             ],
                           ),
+                          if (firstTx.rewardAmount != null && firstTx.rewardAmount! > 0) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.stars, size: 14, color: AppColors.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _getRewardText(firstTx, creditCard),
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           ...group.map((tx) {
                             final isOldest = tx == group.first;

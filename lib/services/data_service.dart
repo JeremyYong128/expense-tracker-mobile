@@ -471,6 +471,7 @@ class DataService {
             note: drift.Value(transaction.note),
             recurringId: drift.Value(transaction.recurringId),
             creditCardId: drift.Value(transaction.creditCardId),
+            rewardAmount: drift.Value(transaction.rewardAmount),
           ),
         );
   }
