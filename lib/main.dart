@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/screens/dashboard_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/history_screen.dart';
-import 'package:expense_tracker_mobile/ui/screens/add_transaction_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/manage_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/settings_screen.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
@@ -106,12 +107,10 @@ class HomeScreen extends StatefulWidget {
     BuildContext context, {
     bool isRecurring = false,
   }) {
-    final state = context.findAncestorStateOfType<_HomeScreenState>();
-    if (state != null) {
-      addTransactionFormState.value = AddTransactionFormConfig(initialIsRecurring: isRecurring);
-      state._tabController.index = 2; // Add tab
-      state._lastTappedIndex = 2;
-    }
+    SlideUpModal.showCustom(
+      context: context,
+      builder: (context) => TransactionModal(initialIsRecurring: isRecurring),
+    );
   }
 
   @override
@@ -119,12 +118,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const List<Widget> _widgetOptions = <Widget>[
-    DashboardScreen(),
-    HistoryScreen(),
-    AddTransactionScreen(),
-    ManageScreen(),
-    SettingsScreen(),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const DashboardScreen(),
+    const HistoryScreen(),
+    const SizedBox.shrink(), // Handled by modal
+    const ManageScreen(),
+    const SettingsScreen(),
   ];
 
   final CupertinoTabController _tabController = CupertinoTabController();
@@ -196,8 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: _tabController,
       tabBar: CupertinoTabBar(
         onTap: (index) {
-          if (index == 2 && _lastTappedIndex != 2) {
-            addTransactionFormState.value = AddTransactionFormConfig();
+          if (index == 2) {
+            SlideUpModal.showCustom(
+              context: context,
+              builder: (context) => const TransactionModal(),
+            );
+            _tabController.index = _lastTappedIndex;
+            return;
           }
 
           if (_lastTappedIndex == index) {

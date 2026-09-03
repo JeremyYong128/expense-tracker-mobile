@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
-
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
@@ -10,32 +9,26 @@ import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
-class EditTransactionModal extends StatefulWidget {
+class TransactionModal extends StatefulWidget {
   final t.Transaction? transaction;
   final RecurringTransaction? recurringTransaction;
+  final bool initialIsRecurring;
 
-  const EditTransactionModal({
+  const TransactionModal({
     super.key,
     this.transaction,
     this.recurringTransaction,
-  }) : assert(
-         transaction != null || recurringTransaction != null,
-         'Must provide a transaction to edit',
-       );
+    this.initialIsRecurring = false,
+  });
 
   @override
-  State<EditTransactionModal> createState() => _EditTransactionModalState();
+  State<TransactionModal> createState() => _TransactionModalState();
 }
 
-class _EditTransactionModalState extends State<EditTransactionModal> {
+class _TransactionModalState extends State<TransactionModal> {
   final GlobalKey<TransactionFormState> _formKey =
       GlobalKey<TransactionFormState>();
   final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -44,9 +37,33 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
   }
 
   Future<void> _saveTransaction(TransactionFormData data) async {
+    final isAdd = widget.transaction == null && widget.recurringTransaction == null;
     final isRec = widget.recurringTransaction != null;
 
-    if (isRec) {
+    if (isAdd) {
+      await context.read<TransactionProvider>().addTransaction(
+        amountText: data.amount.toString(),
+        title: data.title,
+        date: data.date,
+        categoryId: data.categoryId,
+        isIncome: data.isIncome,
+        isRecurring: data.isRecurring,
+        recurringIntervalText: data.recurringInterval.toString(),
+        recurringPeriod: data.recurringPeriod,
+        note: data.note ?? '',
+        creditCardId: data.creditCardId,
+        recurringId: data.recurringId,
+        rewardAmount: data.rewardAmount,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Transaction added successfully!'.cased(context)),
+          ),
+        );
+      }
+    } else if (isRec) {
       final updated = RecurringTransaction(
         id: widget.recurringTransaction!.id,
         amount: data.amount,
@@ -90,7 +107,6 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
             .read<RecurringTransactionProvider>()
             .deleteRecurringTransaction(widget.recurringTransaction!.id!);
 
-        // Immediately refresh transactions
         if (mounted) {
           await context.read<TransactionProvider>().fetchTransactions();
         }
@@ -114,6 +130,8 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdd = widget.transaction == null && widget.recurringTransaction == null;
+    
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.of(context).pop(),
@@ -131,33 +149,36 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
               key: _formKey,
               transaction: widget.transaction,
               recurringTransaction: widget.recurringTransaction,
+              initialIsRecurring: widget.initialIsRecurring,
               showSaveButton: false,
               scrollController: _scrollController,
               onSave: _saveTransaction,
             ),
-            const SizedBox(height: 24.0),
-            SizedBox(
-              width: double.infinity,
-              height: 56.0,
-              child: ElevatedButton(
-                onPressed: _deleteTransaction,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error.withValues(alpha: 0.1),
-                  foregroundColor: AppColors.error,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+            if (!isAdd) ...[
+              const SizedBox(height: 24.0),
+              SizedBox(
+                width: double.infinity,
+                height: 56.0,
+                child: ElevatedButton(
+                  onPressed: _deleteTransaction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                    foregroundColor: AppColors.error,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Delete Transaction'.cased(context),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  child: Text(
+                    'Delete Transaction'.cased(context),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
             SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
           ],
         ),

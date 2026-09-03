@@ -7,7 +7,7 @@ import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/ui/widgets/edit_transaction_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class TransactionList extends StatelessWidget {
@@ -105,10 +105,10 @@ class TransactionList extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(24.0),
                     onTap: () async {
-                      await SlideUpModal.showCustom(
+                      SlideUpModal.showCustom(
                         context: context,
                         builder: (context) =>
-                            EditTransactionModal(transaction: transaction),
+                            TransactionModal(transaction: transaction),
                       );
                     },
                     child: Padding(

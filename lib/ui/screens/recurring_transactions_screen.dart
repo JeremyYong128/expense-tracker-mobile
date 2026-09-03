@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/ui/widgets/edit_transaction_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
@@ -120,10 +120,10 @@ class _RecurringTransactionsScreenState
                       child: InkWell(
                         borderRadius: BorderRadius.circular(24.0),
                         onTap: () async {
-                          await SlideUpModal.showCustom(
+                          SlideUpModal.showCustom(
                             context: context,
                             builder: (context) =>
-                                EditTransactionModal(recurringTransaction: tx),
+                                TransactionModal(recurringTransaction: tx),
                           );
                         },
                         child: Padding(
