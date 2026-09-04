@@ -138,17 +138,24 @@ class TransactionFormState extends State<TransactionForm> {
 
     _isIncome = initialIsIncome;
     _selectedDate = initialDate ?? DateTime.now();
-    _amountController = TextEditingController(text: initialAmount?.toStringAsFixed(2) ?? '');
+    _amountController = TextEditingController(
+      text: initialAmount?.toStringAsFixed(2) ?? '',
+    );
     _titleController = TextEditingController(text: initialTitle ?? '');
     _noteController = TextEditingController(text: initialNote ?? '');
-    
-    _isRecurring = widget.recurringTransaction != null || widget.initialIsRecurring;
-    _recurringIntervalController = TextEditingController(text: initialInterval.toString());
+
+    _isRecurring =
+        widget.recurringTransaction != null || widget.initialIsRecurring;
+    _recurringIntervalController = TextEditingController(
+      text: initialInterval.toString(),
+    );
     _recurringPeriod = initialPeriod;
-    
+
     _hasRewards = initialRewardAmount != null;
     _lockRewardRecalculation = initialRewardAmount != null;
-    _rewardAmountController = TextEditingController(text: initialRewardAmount?.toStringAsFixed(2) ?? '');
+    _rewardAmountController = TextEditingController(
+      text: initialRewardAmount?.toStringAsFixed(2) ?? '',
+    );
 
     _amountController.addListener(_onAmountChanged);
 
@@ -181,18 +188,23 @@ class TransactionFormState extends State<TransactionForm> {
       if (val != null) {
         if (_selectedCreditCard == null && val.creditCardId != null) {
           try {
-            _selectedCreditCard = _creditCards.firstWhere((c) => c.id == val.creditCardId);
+            _selectedCreditCard = _creditCards.firstWhere(
+              (c) => c.id == val.creditCardId,
+            );
             if (_selectedCreditCard!.rewardRate > 0) {
               _hasRewards = true;
               if (val.rewardAmount != null) {
-                _rewardAmountController.text = val.rewardAmount!.toStringAsFixed(2);
+                _rewardAmountController.text = val.rewardAmount!
+                    .toStringAsFixed(2);
                 _lockRewardRecalculation = true;
               }
             }
           } catch (e) {}
         }
-        
-        if (_amountController.text.trim().isEmpty || _amountController.text == '0.00' || _amountController.text == '0') {
+
+        if (_amountController.text.trim().isEmpty ||
+            _amountController.text == '0.00' ||
+            _amountController.text == '0') {
           if (val.rewardAmount == null) {
             _lockRewardRecalculation = false;
           }
@@ -208,7 +220,9 @@ class TransactionFormState extends State<TransactionForm> {
         }
 
         try {
-          _selectedCategory = _categories.firstWhere((c) => c.id == val.categoryId);
+          _selectedCategory = _categories.firstWhere(
+            (c) => c.id == val.categoryId,
+          );
         } catch (e) {}
       }
     });
@@ -259,9 +273,7 @@ class TransactionFormState extends State<TransactionForm> {
 
       if (ccId != null) {
         try {
-          _selectedCreditCard = _creditCards.firstWhere(
-            (c) => c.id == ccId,
-          );
+          _selectedCreditCard = _creditCards.firstWhere((c) => c.id == ccId);
         } catch (e) {
           _selectedCreditCard = null;
         }
@@ -548,14 +560,14 @@ class TransactionFormState extends State<TransactionForm> {
                       onChanged: (val) {
                         setState(() {
                           _selectedCreditCard = val;
-                          if (val != null &&
-                              val.rewardRate > 0 &&
-                              !_hasRewards) {
+                          if (val != null && val.rewardRate > 0) {
                             _hasRewards = true;
+                          } else {
+                            _hasRewards = false;
+                            _rewardAmountController.clear();
                           }
-                          _lockRewardRecalculation =
-                              false; // Reset override state
-                          _onAmountChanged(); // Recalculate
+                          _lockRewardRecalculation = false;
+                          _onAmountChanged();
                         });
                       },
                     ),
@@ -631,7 +643,9 @@ class TransactionFormState extends State<TransactionForm> {
                                             ),
                                         decoration: _getInputDecoration(
                                           hintText: '0.00',
-                                          prefixIcon: _selectedCreditCard!.rewardType == 'Cashback'
+                                          prefixIcon:
+                                              _selectedCreditCard!.rewardType ==
+                                                  'Cashback'
                                               ? const Icon(
                                                   Icons.attach_money,
                                                   color: AppColors.primary,
