@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
