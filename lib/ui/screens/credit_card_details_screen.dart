@@ -211,7 +211,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Past Expenses'.cased(context),
+                          'Monthly Expenses'.cased(context),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,

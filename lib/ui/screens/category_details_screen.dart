@@ -139,7 +139,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Past Transactions'.cased(context),
+                          'Monthly Transactions'.cased(context),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
