@@ -12,6 +12,7 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.da
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 
 class CreditCardDetailsScreen extends StatefulWidget {
   final CreditCard creditCard;
@@ -24,6 +25,8 @@ class CreditCardDetailsScreen extends StatefulWidget {
 }
 
 class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
+  DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+
   void _showAddEditDialog(CreditCard card) {
     SlideUpModal.showCustom(
       context: context,
@@ -139,10 +142,15 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
       );
     }
 
-    final transactionsList = transactionProvider.transactions
+    final allTransactions = transactionProvider.transactions
         .where((t) => t.creditCardId == latestCard.id)
         .toList();
-    transactionsList.sort((a, b) => b.date.compareTo(a.date));
+    allTransactions.sort((a, b) => b.date.compareTo(a.date));
+
+    final transactionsList = allTransactions.where((t) {
+      return t.date.year == _selectedMonth.year &&
+             t.date.month == _selectedMonth.month;
+    }).toList();
 
     // Calculate total rewards
     double totalRewardsAmount = 0;
@@ -169,47 +177,70 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
       body: SafeArea(
         bottom: true,
         top: false,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildDigitalCard(latestCard, totalRewardsAmount),
-              const SizedBox(height: 16),
-              if (transactionsList.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Past Expenses'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: AppStyles.screenPadding.left,
+                right: AppStyles.screenPadding.right,
+                top: AppStyles.screenPadding.top,
+                bottom: 8.0,
+              ),
+              child: MonthSelectorToggle(
+                selectedMonth: _selectedMonth,
+                transactions: allTransactions,
+                onMonthChanged: (newMonth) {
+                  setState(() {
+                    _selectedMonth = newMonth;
+                  });
+                },
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: AppStyles.screenPadding.left,
+                  right: AppStyles.screenPadding.right,
+                  bottom: AppStyles.screenPadding.bottom,
                 ),
-                const SizedBox(height: 12),
-              ],
-              transactionsList.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No expenses tagged to this card.'.cased(context),
-                        style: const TextStyle(
-                          color: AppColors.grey,
-                          fontSize: 16,
+                child: Column(
+                  children: [
+                    _buildDigitalCard(latestCard, totalRewardsAmount),
+                    const SizedBox(height: 16),
+                    if (transactionsList.isNotEmpty) ...[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Past Expenses'.cased(context),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: 24,
-                        left: 16,
-                        right: 16,
+                      const SizedBox(height: 12),
+                    ],
+                    if (transactionsList.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
+                        child: Text(
+                          'No expenses tagged to this card.'.cased(context),
+                          style: const TextStyle(
+                            color: AppColors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: TransactionList(transactions: transactionsList),
                       ),
-                      child: TransactionList(transactions: transactionsList),
-                    ),
-            ],
-          ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -270,7 +301,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(top: 8, bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: gradient,
@@ -314,7 +345,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Lifetime Rewards'.cased(context).toUpperCase(),
+            'Monthly Rewards'.cased(context).toUpperCase(),
             style: TextStyle(
               color: AppColors.white.withValues(alpha: 0.7),
               fontSize: 10,

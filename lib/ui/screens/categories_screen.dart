@@ -5,6 +5,8 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/widgets/shared_filter_toggle.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -59,14 +61,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             children: [
               Padding(
                 padding: AppStyles.screenPadding.copyWith(bottom: 8.0),
-                child: Row(
-                  children: [
-                    _buildFilterChip('All'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('Expense'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('Income'),
-                  ],
+                child: SharedFilterToggle<String>(
+                  items: const ['All', 'Expense', 'Income'],
+                  selectedItem: _filter,
+                  labelBuilder: (item) => item,
+                  onSelected: (value) {
+                    setState(() {
+                      _filter = value;
+                    });
+                  },
+                  showCheckIcon: true,
                 ),
               ),
               Expanded(
@@ -106,10 +110,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(24.0),
                                 onTap: () {
-                                  SlideUpModal.showCustom(
-                                    context: context,
-                                    builder: (ctx) =>
-                                        CategoryFormModal(category: category),
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CategoryDetailsScreen(category: category),
+                                    ),
                                   );
                                 },
                                 child: Padding(
@@ -184,49 +189,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label) {
-    final isSelected = _filter == label;
-    return Material(
-      color: isSelected
-          ? AppColors.primary.withValues(alpha: 0.2)
-          : AppColors.surfaceLight,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: isSelected ? AppColors.primary : AppColors.divider,
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _filter = label;
-          });
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected) ...[
-                const Icon(Icons.check, size: 18, color: AppColors.primary),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTypeBadge(String label, Color color) {
     return Container(

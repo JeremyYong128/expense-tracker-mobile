@@ -47,20 +47,21 @@ class _TransactionListState extends State<TransactionList> {
   ) {
     final creditCard = transaction.creditCardId != null
         ? creditCardProvider.creditCards
-            .where((c) => c.id == transaction.creditCardId)
-            .firstOrNull
+              .where((c) => c.id == transaction.creditCardId)
+              .firstOrNull
         : null;
     final recurring = transaction.recurringId != null
         ? recurringProvider.transactions
-            .where((r) => r.id == transaction.recurringId)
-            .firstOrNull
+              .where((r) => r.id == transaction.recurringId)
+              .firstOrNull
         : null;
 
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
       if (creditCard != null) {
         if (creditCard.rewardType == 'Cashback') {
-          rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)} cashback';
+          rewardText =
+              '\$${transaction.rewardAmount!.toStringAsFixed(2)} cashback';
         } else if (creditCard.rewardType == 'Miles') {
           rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} miles';
         } else if (creditCard.rewardType == 'Points') {
@@ -89,14 +90,19 @@ class _TransactionListState extends State<TransactionList> {
             Row(
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.repeat,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.repeat,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     recurring.title,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -107,14 +113,19 @@ class _TransactionListState extends State<TransactionList> {
             Row(
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.credit_card,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.credit_card,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     creditCard.name,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -126,31 +137,44 @@ class _TransactionListState extends State<TransactionList> {
             Row(
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.stars,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.stars,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     rewardText,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8.0),
           ],
-          if (transaction.note != null && transaction.note!.trim().isNotEmpty) ...[
+          if (transaction.note != null &&
+              transaction.note!.trim().isNotEmpty) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.sticky_note_2, size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.sticky_note_2,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     transaction.note!,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -171,8 +195,10 @@ class _TransactionListState extends State<TransactionList> {
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text('Edit'),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -181,17 +207,25 @@ class _TransactionListState extends State<TransactionList> {
               TextButton.icon(
                 onPressed: () async {
                   if (transaction.id != null) {
-                    await context
-                        .read<TransactionProvider>()
-                        .deleteTransaction(transaction.id!);
+                    await context.read<TransactionProvider>().deleteTransaction(
+                      transaction.id!,
+                    );
                   }
                 },
-                icon: const Icon(Icons.delete, size: 18, color: AppColors.error),
-                label: const Text('Delete',
-                    style: TextStyle(color: AppColors.error)),
+                icon: const Icon(
+                  Icons.delete,
+                  size: 18,
+                  color: AppColors.error,
+                ),
+                label: const Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -221,8 +255,10 @@ class _TransactionListState extends State<TransactionList> {
       return emptyWidget;
     }
 
-    final stats =
-        DataService.computeHistoryStats(widget.transactions, categories);
+    final stats = DataService.computeHistoryStats(
+      widget.transactions,
+      categories,
+    );
     final grouped = stats.groupedTransactions;
 
     final listContent = Column(
@@ -263,12 +299,11 @@ class _TransactionListState extends State<TransactionList> {
               final color = category.color;
               final isLastItem =
                   isLastGroup && txIndex == dayTransactions.length - 1;
-              final isExpanded = transaction.id != null &&
+              final isExpanded =
+                  transaction.id != null &&
                   _expandedTransactionIds.contains(transaction.id);
 
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
+              return Container(
                 margin: EdgeInsets.only(bottom: isLastItem ? 0.0 : 12.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -302,83 +337,87 @@ class _TransactionListState extends State<TransactionList> {
                       child: Column(
                         children: [
                           Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10.0),
-                                      decoration: BoxDecoration(
-                                        color: color.withValues(alpha: 0.15),
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                      ),
-                                      child: Icon(
-                                        category.iconData,
-                                        color: color,
-                                        size: 24,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 16.0),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                            padding: const EdgeInsets.all(12.0),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        transaction.title,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        decoration: BoxDecoration(
+                                          color: color.withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            12.0,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          category.iconData,
+                                          color: color,
+                                          size: 24,
                                         ),
                                       ),
-                                      const SizedBox(height: 2.0),
-                                      Text(
-                                        '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
-                                        style: const TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 13,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-
                                     ],
                                   ),
-                                ),
-                                const SizedBox(width: 16.0),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      transaction.isIncome
-                                          ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                                          : '-\$${transaction.amount.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        color: transaction.isIncome
-                                            ? AppColors.income
-                                            : AppColors.expense,
-                                      ),
+                                  const SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          transaction.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2.0),
+                                        Text(
+                                          '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 13,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  const SizedBox(width: 16.0),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        transaction.isIncome
+                                            ? '+\$${transaction.amount.toStringAsFixed(2)}'
+                                            : '-\$${transaction.amount.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: transaction.isIncome
+                                              ? AppColors.income
+                                              : AppColors.expense,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        if (isExpanded)
-                          _buildExpandedSection(context, transaction,
-                              creditCardProvider, recurringProvider),
-                      ],
-                    ),
+                          if (isExpanded)
+                            _buildExpandedSection(
+                              context,
+                              transaction,
+                              creditCardProvider,
+                              recurringProvider,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

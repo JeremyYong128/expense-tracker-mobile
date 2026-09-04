@@ -152,7 +152,7 @@ class TransactionFormState extends State<TransactionForm> {
     _recurringPeriod = initialPeriod;
 
     _hasRewards = initialRewardAmount != null;
-    _lockRewardRecalculation = initialRewardAmount != null;
+    _lockRewardRecalculation = false;
     _rewardAmountController = TextEditingController(
       text: initialRewardAmount?.toStringAsFixed(2) ?? '',
     );

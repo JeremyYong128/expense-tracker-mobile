@@ -42,7 +42,9 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     _iconString = isEditing && widget.category!.iconString != null
         ? widget.category!.iconString!
         : 'category';
-    _colorHex = isEditing ? widget.category!.colorHex : AppColors.colorPaletteHexes.first;
+    _colorHex = isEditing
+        ? widget.category!.colorHex
+        : AppColors.colorPaletteHexes.first;
 
     if (isEditing) {
       if (widget.category!.isExpense && widget.category!.isIncome) {
@@ -133,34 +135,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     }
   }
 
-  Future<void> _deleteCategory() async {
-    if (widget.category == null) return;
-
-    try {
-      final provider = context.read<CategoryProvider>();
-      await provider.deleteCategory(widget.category!.id!);
-
-      if (mounted) {
-        widget.onSaved?.call();
-        Navigator.pop(context);
-      }
-    } catch (e, stack) {
-      AppLogger.error('Failed to delete category', e, stack);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete category'.cased(context)),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.category != null;
-
     return SlideUpModal(
       leftButtonTitle: 'Cancel',
       onLeftButtonPressed: () => Navigator.of(context).pop(),
@@ -295,32 +271,6 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                   );
                 }).toList(),
               ),
-
-              if (isEditing) ...[
-                const SizedBox(height: 24.0),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56.0,
-                  child: ElevatedButton(
-                    onPressed: _deleteCategory,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
-                      foregroundColor: AppColors.error,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                    ),
-                    child: Text(
-                      'Delete Category'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
 
               const SizedBox(height: 32),
             ],
