@@ -100,8 +100,6 @@ flutter run
 
 ### Changes
 - High priority
-    - Transaction list should have more info, show associated recurring expense/credit card
-        - Will need to implement UI info update mechanism, or else the card will bug out when the recurring transaction related to a transaction is deleted, and then a user tries to edit it.
     - Add more analytics to dashboard/category/credit card/screens.
         - Clicking on category in dashboard should bring to a page with analytics
 

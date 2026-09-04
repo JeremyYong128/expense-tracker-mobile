@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -38,8 +39,8 @@ class _RecurringTransactionsScreenState
   ) {
     final creditCard = tx.creditCardId != null
         ? creditCardProvider.creditCards
-            .where((c) => c.id == tx.creditCardId)
-            .firstOrNull
+              .where((c) => c.id == tx.creditCardId)
+              .firstOrNull
         : null;
 
     String rewardText = '';
@@ -74,14 +75,19 @@ class _RecurringTransactionsScreenState
           Row(
             children: [
               const SizedBox(width: 60.0),
-              const Icon(Icons.category,
-                  size: 16, color: AppColors.textSecondary),
+              const Icon(
+                Icons.category,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(width: 8.0),
               Expanded(
                 child: Text(
                   category.name,
                   style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13),
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
@@ -90,14 +96,20 @@ class _RecurringTransactionsScreenState
           Row(
             children: [
               const SizedBox(width: 60.0),
-              const Icon(Icons.access_time,
-                  size: 16, color: AppColors.textSecondary),
+              const Icon(
+                Icons.access_time,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  'Every ${tx.interval} ${tx.period.toLowerCase().replaceAll('(s)', tx.interval == 1 ? '' : 's')}'.cased(context),
+                  'Every ${tx.interval} ${tx.period.toLowerCase().replaceAll('(s)', tx.interval == 1 ? '' : 's')}'
+                      .cased(context),
                   style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13),
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
@@ -107,14 +119,19 @@ class _RecurringTransactionsScreenState
             Row(
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.credit_card,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.credit_card,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     creditCard.name,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -125,14 +142,19 @@ class _RecurringTransactionsScreenState
             Row(
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.stars,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.stars,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     rewardText,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -144,14 +166,19 @@ class _RecurringTransactionsScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(width: 60.0),
-                const Icon(Icons.sticky_note_2,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.sticky_note_2,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     tx.note!,
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -172,24 +199,45 @@ class _RecurringTransactionsScreenState
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text('Edit'),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
               const SizedBox(width: 16.0),
               TextButton.icon(
-                onPressed: () async {
-                  await context
-                      .read<RecurringTransactionProvider>()
-                      .deleteRecurringTransaction(tx.id!);
+                onPressed: () {
+                  ConfirmationDialog.show(
+                    context: context,
+                    title: 'Delete Recurring Transaction?',
+                    content:
+                        'Existing transactions linked to this recurring transaction will not be affected.',
+                    confirmText: 'Delete',
+                    isDestructive: true,
+                    onConfirm: () async {
+                      await context
+                          .read<RecurringTransactionProvider>()
+                          .deleteRecurringTransaction(tx.id!);
+                    },
+                  );
                 },
-                icon: const Icon(Icons.delete, size: 18, color: AppColors.error),
-                label: const Text('Delete', style: TextStyle(color: AppColors.error)),
+                icon: const Icon(
+                  Icons.delete,
+                  size: 18,
+                  color: AppColors.error,
+                ),
+                label: const Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
                 style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -233,27 +281,27 @@ class _RecurringTransactionsScreenState
     final categories = categoryProvider.categories;
 
     return Scaffold(
-        appBar: widget.showAppBar
-            ? AppBar(
-                title: Text('Recurring Transactions'.cased(context)),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      HomeScreen.navigateToAddTransaction(
-                        context,
-                        isRecurring: true,
-                      );
-                    },
-                  ),
-                ],
-              )
-            : null,
-        body: SafeArea(
-          top: false,
-          bottom: true,
-          child: recurringTransactions.isEmpty
-              ? Center(
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: Text('Recurring Transactions'.cased(context)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    HomeScreen.navigateToAddTransaction(
+                      context,
+                      isRecurring: true,
+                    );
+                  },
+                ),
+              ],
+            )
+          : null,
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: recurringTransactions.isEmpty
+            ? Center(
                 child: Text(
                   'No recurring transactions found.'.cased(context),
                   style: const TextStyle(color: AppColors.grey, fontSize: 16),
@@ -275,7 +323,8 @@ class _RecurringTransactionsScreenState
                   );
                   final color = category.color;
 
-                  final isExpanded = tx.id != null && _expandedTransactionIds.contains(tx.id);
+                  final isExpanded =
+                      tx.id != null && _expandedTransactionIds.contains(tx.id);
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -318,18 +367,21 @@ class _RecurringTransactionsScreenState
                                 padding: const EdgeInsets.all(12.0),
                                 child: IntrinsicHeight(
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
                                       Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
                                         children: [
                                           Container(
                                             padding: const EdgeInsets.all(10.0),
                                             decoration: BoxDecoration(
-                                              color: color.withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(
-                                                12.0,
+                                              color: color.withValues(
+                                                alpha: 0.15,
                                               ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
                                             ),
                                             child: Icon(
                                               category.iconData,
@@ -366,7 +418,8 @@ class _RecurringTransactionsScreenState
                                         ),
                                       ),
                                       Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             tx.isIncome
@@ -387,7 +440,12 @@ class _RecurringTransactionsScreenState
                                 ),
                               ),
                               if (isExpanded)
-                                _buildExpandedSection(context, tx, category, creditCardProvider),
+                                _buildExpandedSection(
+                                  context,
+                                  tx,
+                                  category,
+                                  creditCardProvider,
+                                ),
                             ],
                           ),
                         ),
@@ -396,7 +454,7 @@ class _RecurringTransactionsScreenState
                   );
                 },
               ),
-        ),
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 
 class TransactionModal extends StatefulWidget {
   final t.Transaction? transaction;
@@ -70,23 +71,34 @@ class _TransactionModalState extends State<TransactionModal> {
         }
       }
     } else if (isRec) {
-      final updated = RecurringTransaction(
-        id: widget.recurringTransaction!.id,
-        amount: data.amount,
-        title: data.title,
-        categoryId: data.categoryId,
-        isIncome: data.isIncome,
-        interval: data.recurringInterval,
-        period: data.recurringPeriod,
-        startDate: data.date,
-        nextDueDate: widget.recurringTransaction!.nextDueDate,
-        note: data.note,
-        creditCardId: data.creditCardId,
-        rewardAmount: data.rewardAmount,
+      ConfirmationDialog.show(
+        context: context,
+        title: 'Save Changes?',
+        content:
+            'Existing transactions linked to this recurring transaction will not be affected.',
+        confirmText: 'Save',
+        onConfirm: () async {
+          final updated = RecurringTransaction(
+            id: widget.recurringTransaction!.id,
+            amount: data.amount,
+            title: data.title,
+            categoryId: data.categoryId,
+            isIncome: data.isIncome,
+            interval: data.recurringInterval,
+            period: data.recurringPeriod,
+            startDate: data.date,
+            nextDueDate: widget.recurringTransaction!.nextDueDate,
+            note: data.note,
+            creditCardId: data.creditCardId,
+            rewardAmount: data.rewardAmount,
+          );
+          await context
+              .read<RecurringTransactionProvider>()
+              .updateRecurringTransaction(updated);
+          if (mounted) Navigator.of(context).pop();
+        },
       );
-      await context
-          .read<RecurringTransactionProvider>()
-          .updateRecurringTransaction(updated);
+      return; // Don't pop immediately, wait for confirmation
     } else {
       final updated = t.Transaction(
         id: widget.transaction!.id,
@@ -106,39 +118,8 @@ class _TransactionModalState extends State<TransactionModal> {
     if (mounted) Navigator.of(context).pop();
   }
 
-  void _deleteTransaction() async {
-    try {
-      if (widget.recurringTransaction != null) {
-        await context
-            .read<RecurringTransactionProvider>()
-            .deleteRecurringTransaction(widget.recurringTransaction!.id!);
-
-        if (mounted) {
-          await context.read<TransactionProvider>().fetchTransactions();
-        }
-      } else {
-        await context.read<TransactionProvider>().deleteTransaction(
-          widget.transaction!.id!,
-        );
-      }
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete transaction'.cased(context)),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isAdd =
-        widget.transaction == null && widget.recurringTransaction == null;
-
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.of(context).pop(),
@@ -161,31 +142,6 @@ class _TransactionModalState extends State<TransactionModal> {
               scrollController: _scrollController,
               onSave: _saveTransaction,
             ),
-            if (!isAdd) ...[
-              const SizedBox(height: 24.0),
-              SizedBox(
-                width: double.infinity,
-                height: 56.0,
-                child: ElevatedButton(
-                  onPressed: _deleteTransaction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.error.withValues(alpha: 0.1),
-                    foregroundColor: AppColors.error,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                  ),
-                  child: Text(
-                    'Delete Transaction'.cased(context),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
             SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
           ],
         ),
