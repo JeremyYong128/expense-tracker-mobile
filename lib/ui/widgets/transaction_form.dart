@@ -302,12 +302,6 @@ class TransactionFormState extends State<TransactionForm> {
         .toList();
   }
 
-  List<RecurringTransaction> get _filteredRecurringTransactions {
-    return _recurringTransactions
-        .where((r) => _isIncome ? r.isIncome : !r.isIncome)
-        .toList();
-  }
-
   @override
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
@@ -322,7 +316,6 @@ class TransactionFormState extends State<TransactionForm> {
   void submit() async {
     setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
-
     FocusScope.of(context).unfocus();
 
     final data = TransactionFormData(
@@ -355,6 +348,17 @@ class TransactionFormState extends State<TransactionForm> {
     );
 
     try {
+      if (_selectedCategory != null) {
+        final isCompatible = _isIncome
+            ? _selectedCategory!.isIncome
+            : _selectedCategory!.isExpense;
+        if (!isCompatible) {
+          throw DatabaseValidationException(
+            '"${_selectedCategory!.name}" does not support a transaction of type "${_isIncome ? 'income' : 'expense'}".',
+          );
+        }
+      }
+
       await widget.onSave(data);
     } on DatabaseValidationException catch (e) {
       if (mounted) {
@@ -402,7 +406,7 @@ class TransactionFormState extends State<TransactionForm> {
       padding: EdgeInsets.zero,
       child: CustomDropdownField<RecurringTransaction?>(
         label: 'Link to existing recurring transaction'.cased(context),
-        items: [null, ..._filteredRecurringTransactions],
+        items: [null, ..._recurringTransactions],
         selectedItem: _selectedRecurring,
         displayText: (r) => r?.title ?? 'None'.cased(context),
         onChanged: _onRecurringSelected,
@@ -436,35 +440,44 @@ class TransactionFormState extends State<TransactionForm> {
               setState(() {
                 _isIncome = value;
 
-                // Auto-select fallback category if current one is invalid
+                // Auto-select fallback category if current one is invalid, UNLESS it's locked by a recurring transaction
                 final validCategories = _filteredCategories;
-                if (_selectedCategory != null) {
-                  final isValid = _isIncome
-                      ? _selectedCategory!.isIncome
-                      : _selectedCategory!.isExpense;
-                  if (!isValid) {
+                if (_selectedRecurring == null) {
+                  if (_selectedCategory != null) {
+                    final isValid = _isIncome
+                        ? _selectedCategory!.isIncome
+                        : _selectedCategory!.isExpense;
+                    if (!isValid) {
+                      _selectedCategory = validCategories.isNotEmpty
+                          ? validCategories.first
+                          : null;
+                    }
+                  } else {
                     _selectedCategory = validCategories.isNotEmpty
                         ? validCategories.first
                         : null;
                   }
-                } else {
-                  _selectedCategory = validCategories.isNotEmpty
-                      ? validCategories.first
-                      : null;
                 }
 
-                if (_selectedRecurring != null) {
-                  final isValid = _isIncome
-                      ? _selectedRecurring!.isIncome
-                      : !_selectedRecurring!.isIncome;
-                  if (!isValid) {
-                    _selectedRecurring = null;
-                  }
+                if (_selectedRecurring != null &&
+                    _selectedRecurring!.categoryId != _selectedCategory?.id) {
+                  _selectedRecurring = null;
                 }
               });
             },
           ),
           const SizedBox(height: 32.0),
+
+          CustomValidatedField(
+            label: 'Title'.cased(context),
+            validator: () => Validators.required(_titleController.text),
+            child: TextField(
+              controller: _titleController,
+              decoration: _getInputDecoration(
+                hintText: 'e.g. Groceries'.cased(context),
+              ),
+            ),
+          ),
 
           CustomValidatedField(
             label: 'Amount'.cased(context),
@@ -486,17 +499,6 @@ class TransactionFormState extends State<TransactionForm> {
           ),
 
           CustomValidatedField(
-            label: 'Title'.cased(context),
-            validator: () => Validators.required(_titleController.text),
-            child: TextField(
-              controller: _titleController,
-              decoration: _getInputDecoration(
-                hintText: 'e.g. Groceries'.cased(context),
-              ),
-            ),
-          ),
-
-          CustomValidatedField(
             infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
             validator: () => Validators.required(
               _selectedCategory?.name,
@@ -509,7 +511,13 @@ class TransactionFormState extends State<TransactionForm> {
                     items: _filteredCategories,
                     selectedItem: _selectedCategory,
                     displayText: (cat) => cat?.name ?? '',
-                    onChanged: (val) => setState(() => _selectedCategory = val),
+                    onChanged: (val) => setState(() {
+                      _selectedCategory = val;
+                      if (_selectedRecurring != null &&
+                          _selectedRecurring!.categoryId != val?.id) {
+                        _selectedRecurring = null;
+                      }
+                    }),
                     enabled: _selectedRecurring == null,
                   ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -31,24 +32,45 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   }
 
   void _confirmDelete(Category category) {
-    ConfirmationDialog.show(
-      context: context,
-      title: 'Delete Category',
-      content:
-          'Are you sure you want to delete this category? If there are transactions associated with it, it will be archived instead.',
-      confirmText: 'Delete',
-      isDestructive: true,
-      onConfirm: () async {
-        final navigator = Navigator.of(context);
-        final provider = context.read<CategoryProvider>();
+    final transactionProvider = context.read<TransactionProvider>();
+    final recurringTxProvider = context.read<RecurringTransactionProvider>();
 
-        await provider.deleteCategory(category.id!);
-
-        if (mounted) {
-          navigator.pop(); // Close details screen
-        }
-      },
+    final hasTransactions = transactionProvider.transactions.any(
+      (t) => t.categoryId == category.id,
     );
+    final hasRecurring = recurringTxProvider.transactions.any(
+      (t) => t.categoryId == category.id,
+    );
+
+    if (hasTransactions || hasRecurring) {
+      ConfirmationDialog.show(
+        context: context,
+        title: 'Delete Category?',
+        content: 'This will not affect past transactions.',
+        confirmText: 'Delete',
+        isDestructive: true,
+        onConfirm: () async {
+          final navigator = Navigator.of(context);
+          final provider = context.read<CategoryProvider>();
+
+          await provider.deleteCategory(category.id!);
+
+          if (mounted) {
+            navigator.pop(); // Close details screen
+          }
+        },
+      );
+    } else {
+      // Immediately delete if no associations exist
+      final navigator = Navigator.of(context);
+      final provider = context.read<CategoryProvider>();
+
+      provider.deleteCategory(category.id!).then((_) {
+        if (mounted) {
+          navigator.pop();
+        }
+      });
+    }
   }
 
   @override
@@ -105,78 +127,112 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       body: SafeArea(
         bottom: true,
         top: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: AppStyles.screenPadding.left,
-                right: AppStyles.screenPadding.right,
-                top: AppStyles.screenPadding.top,
-                bottom: 8.0,
-              ),
-              child: MonthSelectorToggle(
-                selectedMonth: _selectedMonth,
-                transactions: allTransactions,
-                onMonthChanged: (newMonth) {
-                  setState(() {
-                    _selectedMonth = newMonth;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  left: AppStyles.screenPadding.left,
-                  right: AppStyles.screenPadding.right,
-                  bottom: AppStyles.screenPadding.bottom,
+        child: SingleChildScrollView(
+          padding: AppStyles.screenPadding,
+          child: Column(
+            children: [
+              _buildCategoryHeader(latestCategory),
+              if (allTransactions.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
+                  child: Text(
+                    'No transactions yet.'.cased(context),
+                    style: const TextStyle(color: AppColors.grey, fontSize: 16),
+                  ),
+                )
+              else ...[
+                const SizedBox(height: 16),
+                MonthSelectorToggle(
+                  selectedMonth: _selectedMonth,
+                  transactions: allTransactions,
+                  onMonthChanged: (newMonth) {
+                    setState(() {
+                      _selectedMonth = newMonth;
+                    });
+                  },
                 ),
-                child: Column(
-                  children: [
-                    _buildCategoryHeader(latestCategory, totalIncome, totalExpense),
-                    const SizedBox(height: 16),
-                    if (transactionsList.isNotEmpty) ...[
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Monthly Transactions'.cased(context),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                const SizedBox(height: 16),
+                _buildMonthlySummary(totalIncome, totalExpense),
+                const SizedBox(height: 24),
+                if (transactionsList.isNotEmpty) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Transactions'.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (transactionsList.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
-                        child: Text(
-                          'No transactions tagged to this category.'.cased(
-                            context,
-                          ),
-                          style: const TextStyle(
-                            color: AppColors.grey,
-                            fontSize: 16,
-                          ),
-                        ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: TransactionList(transactions: transactionsList),
+                    ),
+                  ),
+                ],
+                if (transactionsList.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
+                    child: Text(
+                      'No transactions for this month.'.cased(context),
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 16,
                       ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsetsGeometry.only(top: 8.0),
+                    child: TransactionList(transactions: transactionsList),
+                  ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCategoryHeader(Category category, double totalIncome, double totalExpense) {
+  Widget _buildMonthlySummary(double totalIncome, double totalExpense) {
+    final balance = totalIncome - totalExpense;
+    final isPositive = balance > 0;
+    final isNegative = balance < 0;
+    final color = AppColors.textPrimary;
+    final sign = isPositive ? '+' : (isNegative ? '-' : '');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Monthly Balance'.cased(context).toUpperCase(),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$sign\$${balance.abs().toStringAsFixed(2)}',
+            style: TextStyle(
+              color: color,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryHeader(Category category) {
     final color = AppColors.getColorFromHex(category.colorHex);
 
     return Container(
@@ -222,49 +278,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
-          if (category.isIncome) ...[
-            Text(
-              'Monthly Income'.cased(context).toUpperCase(),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '\$${totalIncome.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-          if (category.isIncome && category.isExpense)
-            const SizedBox(height: 24),
-          if (category.isExpense) ...[
-            Text(
-              'Monthly Expenses'.cased(context).toUpperCase(),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '\$${totalExpense.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
         ],
       ),
     );

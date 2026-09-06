@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
@@ -42,6 +43,7 @@ class _TransactionListState extends State<TransactionList> {
   Widget _buildExpandedSection(
     BuildContext context,
     Transaction transaction,
+    Category category,
     CreditCardProvider creditCardProvider,
     RecurringTransactionProvider recurringProvider,
   ) {
@@ -86,28 +88,70 @@ class _TransactionListState extends State<TransactionList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (recurring != null) ...[
-            Row(
-              children: [
-                const SizedBox(width: 60.0),
-                const Icon(
-                  Icons.repeat,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    recurring.title,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
+          Row(
+            children: [
+              const SizedBox(width: 60.0),
+              Icon(category.iconData, size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Text(
+                  category.name,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          SizedBox(height: recurring != null ? 4.0 : 8.0),
+          if (recurring != null) ...[
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RecurringTransactionDetailsScreen(
+                        recurringTransaction: recurring,
+                      ),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 60.0),
+                      const Icon(
+                        Icons.repeat,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: Text(
+                          recurring.title,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 12.0),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 8.0),
+            const SizedBox(height: 4.0),
           ],
           if (creditCard != null) ...[
             Row(
@@ -376,7 +420,9 @@ class _TransactionListState extends State<TransactionList> {
                                         ),
                                         const SizedBox(height: 2.0),
                                         Text(
-                                          '${DateFormat.jm().format(transaction.date).cased(context)} • ${category.name}',
+                                          DateFormat.jm()
+                                              .format(transaction.date)
+                                              .cased(context),
                                           style: const TextStyle(
                                             color: AppColors.textSecondary,
                                             fontSize: 13,
@@ -413,6 +459,7 @@ class _TransactionListState extends State<TransactionList> {
                             _buildExpandedSection(
                               context,
                               transaction,
+                              category,
                               creditCardProvider,
                               recurringProvider,
                             ),

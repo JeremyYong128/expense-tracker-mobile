@@ -84,7 +84,6 @@ class _MonthSelectorToggleState extends State<MonthSelectorToggle> {
       ),
       labelBuilder: (month) => DateFormat('MMM yyyy').format(month),
       onSelected: widget.onMonthChanged,
-      showCheckIcon: false,
       scrollController: _scrollController,
     );
   }

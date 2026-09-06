@@ -70,7 +70,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       _filter = value;
                     });
                   },
-                  showCheckIcon: true,
                 ),
               ),
               Expanded(

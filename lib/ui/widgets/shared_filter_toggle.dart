@@ -6,7 +6,6 @@ class SharedFilterToggle<T> extends StatefulWidget {
   final T selectedItem;
   final String Function(T item) labelBuilder;
   final ValueChanged<T> onSelected;
-  final bool showCheckIcon;
   final ScrollController? scrollController;
 
   const SharedFilterToggle({
@@ -15,7 +14,6 @@ class SharedFilterToggle<T> extends StatefulWidget {
     required this.selectedItem,
     required this.labelBuilder,
     required this.onSelected,
-    this.showCheckIcon = false,
     this.scrollController,
   });
 
@@ -31,7 +29,7 @@ class _SharedFilterToggleState<T> extends State<SharedFilterToggle<T>> {
     super.initState();
     _initKeys();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSelected();
+      _scrollToSelected(animate: false);
     });
   }
 
@@ -43,7 +41,7 @@ class _SharedFilterToggleState<T> extends State<SharedFilterToggle<T>> {
     }
     if (oldWidget.selectedItem != widget.selectedItem) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToSelected();
+        _scrollToSelected(animate: true);
       });
     }
   }
@@ -55,12 +53,17 @@ class _SharedFilterToggleState<T> extends State<SharedFilterToggle<T>> {
     }
   }
 
-  void _scrollToSelected() {
+  void _scrollToSelected({bool animate = true}) {
     final key = _itemKeys[widget.selectedItem];
     if (key != null && key.currentContext != null) {
-      Scrollable.ensureVisible(
-        key.currentContext!,
-      );
+      final scrollableState = Scrollable.maybeOf(key.currentContext!);
+      if (scrollableState != null) {
+        scrollableState.position.ensureVisible(
+          key.currentContext!.findRenderObject()!,
+          duration: animate ? const Duration(milliseconds: 300) : Duration.zero,
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -106,14 +109,6 @@ class _SharedFilterToggleState<T> extends State<SharedFilterToggle<T>> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (widget.showCheckIcon && isSelected) ...[
-                          const Icon(
-                            Icons.check,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 4),
-                        ],
                         Text(
                           label,
                           style: TextStyle(
