@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' hide Card;
-import 'package:flutter/material.dart' as material;
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -124,8 +123,7 @@ class _CardsScreenState extends State<CardsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CardDetailsScreen(card: card),
+                    builder: (context) => CardDetailsScreen(card: card),
                   ),
                 );
               }

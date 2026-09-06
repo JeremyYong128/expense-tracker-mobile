@@ -102,10 +102,12 @@ flutter run
 - High priority
     - Improve design of detail screens
     - Add more analytics to dashboard/category/credit card/screens.
-        - Clicking on category in dashboard should bring to a page with analytics
         - How to aggregate statistics for categories that support both income and expense?
     - Add 1 more validation layer that validates multiple form fields together, but does not require database checks.
     - Check that save/edit/delete alerts appear at the suitable times.
+    - Change alerts:
+        - Add transaction/recurring transaction: currently snack bar
+        - Add card: currently nothing
 
 - Medium priority
     - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)

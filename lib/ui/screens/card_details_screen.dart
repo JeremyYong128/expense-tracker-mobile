@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' hide Card;
-import 'package:flutter/material.dart' as material;
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
@@ -21,8 +20,7 @@ class CardDetailsScreen extends StatefulWidget {
   const CardDetailsScreen({super.key, required this.card});
 
   @override
-  State<CardDetailsScreen> createState() =>
-      _CardDetailsScreenState();
+  State<CardDetailsScreen> createState() => _CardDetailsScreenState();
 }
 
 class _CardDetailsScreenState extends State<CardDetailsScreen> {
@@ -150,7 +148,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
 
     final transactionsList = allTransactions.where((t) {
       return t.date.year == _selectedMonth.year &&
-             t.date.month == _selectedMonth.month;
+          t.date.month == _selectedMonth.month;
     }).toList();
 
     // Calculate total rewards

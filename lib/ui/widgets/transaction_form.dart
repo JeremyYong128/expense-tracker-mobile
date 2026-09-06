@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' hide Card;
-import 'package:flutter/material.dart' as material;
 import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
@@ -104,6 +103,43 @@ class TransactionFormState extends State<TransactionForm> {
   bool _isLoadingCategories = true;
   final _formKey = GlobalKey<FormState>();
 
+  bool get hasChanges {
+    if (widget.transaction == null && widget.recurringTransaction == null) {
+      return true; // New transaction
+    }
+
+    if (widget.transaction != null) {
+      final t = widget.transaction!;
+      return _amountController.text.trim() != t.amount.toString() ||
+          _titleController.text.trim() != t.title ||
+          _selectedCategory?.id != t.categoryId ||
+          _selectedDate != t.date ||
+          _isIncome != t.isIncome ||
+          _noteController.text.trim() != (t.note ?? '') ||
+          _selectedCard?.id != t.cardId ||
+          _selectedRecurring?.id != t.recurringId ||
+          _isRecurring != false ||
+          _hasRewards != (t.rewardAmount != null && t.rewardAmount! > 0) ||
+          (double.tryParse(_rewardAmountController.text.trim()) ?? 0.0) !=
+              (t.rewardAmount ?? 0.0);
+    } else {
+      final r = widget.recurringTransaction!;
+      return _amountController.text.trim() != r.amount.toString() ||
+          _titleController.text.trim() != r.title ||
+          _selectedCategory?.id != r.categoryId ||
+          _selectedDate != r.startDate ||
+          _isIncome != r.isIncome ||
+          _noteController.text.trim() != (r.note ?? '') ||
+          _selectedCard?.id != r.cardId ||
+          _recurringIntervalController.text.trim() != r.interval.toString() ||
+          _recurringPeriod != r.period ||
+          _isRecurring != true ||
+          _hasRewards != (r.rewardAmount != null && r.rewardAmount! > 0) ||
+          (double.tryParse(_rewardAmountController.text.trim()) ?? 0.0) !=
+              (r.rewardAmount ?? 0.0);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -189,9 +225,7 @@ class TransactionFormState extends State<TransactionForm> {
       if (val != null) {
         if (_selectedCard == null && val.cardId != null) {
           try {
-            _selectedCard = _cards.firstWhere(
-              (c) => c.id == val.cardId,
-            );
+            _selectedCard = _cards.firstWhere((c) => c.id == val.cardId);
             if (_selectedCard!.rewardRate > 0) {
               _hasRewards = true;
               if (val.rewardAmount != null) {
@@ -319,6 +353,11 @@ class TransactionFormState extends State<TransactionForm> {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
+    if (!hasChanges) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+
     final data = TransactionFormData(
       amount: double.parse(_amountController.text),
       title: _titleController.text.trim(),
@@ -328,9 +367,7 @@ class TransactionFormState extends State<TransactionForm> {
       note: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
-      cardId: !_isIncome && _selectedCard != null
-          ? _selectedCard!.id
-          : null,
+      cardId: !_isIncome && _selectedCard != null ? _selectedCard!.id : null,
       recurringId: !_isRecurring && _selectedRecurring != null
           ? _selectedRecurring!.id
           : null,
@@ -557,8 +594,9 @@ class TransactionFormState extends State<TransactionForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomValidatedField(
-                    infoText: 'Add or edit cards under \'Manage\'.'
-                        .cased(context),
+                    infoText: 'Add or edit cards under \'Manage\'.'.cased(
+                      context,
+                    ),
                     padding: EdgeInsets.zero,
                     child: CustomDropdownField<Card?>(
                       label: 'Card'.cased(context),
@@ -668,8 +706,7 @@ class TransactionFormState extends State<TransactionForm> {
                                     ),
                                     const SizedBox(width: 16.0),
                                     Text(
-                                      _selectedCard!.rewardType ==
-                                              'Cashback'
+                                      _selectedCard!.rewardType == 'Cashback'
                                           ? 'cashback'
                                           : _selectedCard!.rewardType
                                                 .toLowerCase(),

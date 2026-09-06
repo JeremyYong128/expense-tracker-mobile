@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' hide Card;
-import 'package:flutter/material.dart' as material;
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
@@ -48,6 +47,20 @@ class _CardModalState extends State<CardModal> {
         : AppColors.colorPaletteHexes.first;
   }
 
+  bool get _hasChanges {
+    if (widget.card == null) {
+      return true; // New card
+    }
+
+    final currentName = _nameController.text.trim();
+    final currentRate = double.tryParse(_rateController.text.trim()) ?? 0.0;
+
+    return currentName != widget.card!.name ||
+        _rewardType != widget.card!.rewardType ||
+        currentRate != widget.card!.rewardRate ||
+        _colorHex != widget.card!.colorHex;
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -60,6 +73,12 @@ class _CardModalState extends State<CardModal> {
     setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
+
+    if (!_hasChanges) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+
     try {
       final name = _nameController.text.trim();
       final rateText = _rateController.text.trim();

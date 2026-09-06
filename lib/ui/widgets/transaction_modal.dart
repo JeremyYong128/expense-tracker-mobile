@@ -70,34 +70,45 @@ class _TransactionModalState extends State<TransactionModal> {
         }
       }
     } else if (isRec) {
-      ConfirmationDialog.show(
-        context: context,
-        title: 'Save Changes?',
-        content:
-            'Existing transactions linked to this recurring transaction will not be affected.',
-        confirmText: 'Save',
-        onConfirm: () async {
-          final updated = RecurringTransaction(
-            id: widget.recurringTransaction!.id,
-            amount: data.amount,
-            title: data.title,
-            categoryId: data.categoryId,
-            isIncome: data.isIncome,
-            interval: data.recurringInterval,
-            period: data.recurringPeriod,
-            startDate: data.date,
-            nextDueDate: widget.recurringTransaction!.nextDueDate,
-            note: data.note,
-            cardId: data.cardId,
-            rewardAmount: data.rewardAmount,
-          );
-          await context
-              .read<RecurringTransactionProvider>()
-              .updateRecurringTransaction(updated);
-          if (mounted) Navigator.of(context).pop();
-        },
+      final hasTransactions = context.read<TransactionProvider>().transactions.any(
+        (t) => t.recurringId == widget.recurringTransaction!.id,
       );
-      return; // Don't pop immediately, wait for confirmation
+
+      final updated = RecurringTransaction(
+        id: widget.recurringTransaction!.id,
+        amount: data.amount,
+        title: data.title,
+        categoryId: data.categoryId,
+        isIncome: data.isIncome,
+        interval: data.recurringInterval,
+        period: data.recurringPeriod,
+        startDate: data.date,
+        nextDueDate: widget.recurringTransaction!.nextDueDate,
+        note: data.note,
+        cardId: data.cardId,
+        rewardAmount: data.rewardAmount,
+      );
+
+      if (hasTransactions) {
+        ConfirmationDialog.show(
+          context: context,
+          title: 'Save Changes?',
+          content:
+              'Existing transactions linked to this recurring transaction will not be affected.',
+          confirmText: 'Save',
+          onConfirm: () async {
+            await context
+                .read<RecurringTransactionProvider>()
+                .updateRecurringTransaction(updated);
+            if (mounted) Navigator.of(context).pop();
+          },
+        );
+        return; // Don't pop immediately, wait for confirmation
+      } else {
+        await context
+            .read<RecurringTransactionProvider>()
+            .updateRecurringTransaction(updated);
+      }
     } else {
       final updated = t.Transaction(
         id: widget.transaction!.id,
