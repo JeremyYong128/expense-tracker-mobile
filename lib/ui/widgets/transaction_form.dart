@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Card;
+import 'package:flutter/material.dart' as material;
 import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
@@ -14,7 +15,7 @@ import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
@@ -26,7 +27,7 @@ class TransactionFormData {
   final DateTime date;
   final bool isIncome;
   final String? note;
-  final int? creditCardId;
+  final int? cardId;
   final int? recurringId;
   final bool isRecurring;
   final int recurringInterval;
@@ -40,7 +41,7 @@ class TransactionFormData {
     required this.date,
     required this.isIncome,
     this.note,
-    this.creditCardId,
+    this.cardId,
     this.recurringId,
     required this.isRecurring,
     required this.recurringInterval,
@@ -96,9 +97,9 @@ class TransactionFormState extends State<TransactionForm> {
   ];
 
   List<Category> _categories = [];
-  List<CreditCard> _creditCards = [];
+  List<Card> _cards = [];
   List<RecurringTransaction> _recurringTransactions = [];
-  CreditCard? _selectedCreditCard;
+  Card? _selectedCard;
   RecurringTransaction? _selectedRecurring;
   bool _isLoadingCategories = true;
   final _formKey = GlobalKey<FormState>();
@@ -165,7 +166,7 @@ class TransactionFormState extends State<TransactionForm> {
   void _onAmountChanged() {
     if (_lockRewardRecalculation ||
         !_hasRewards ||
-        _selectedCreditCard == null ||
+        _selectedCard == null ||
         _isIncome)
       return;
 
@@ -173,10 +174,10 @@ class TransactionFormState extends State<TransactionForm> {
     final amt = double.tryParse(amtStr) ?? 0.0;
 
     double reward = 0;
-    if (_selectedCreditCard!.rewardType == 'Cashback') {
-      reward = amt * (_selectedCreditCard!.rewardRate / 100);
+    if (_selectedCard!.rewardType == 'Cashback') {
+      reward = amt * (_selectedCard!.rewardRate / 100);
     } else {
-      reward = amt * _selectedCreditCard!.rewardRate;
+      reward = amt * _selectedCard!.rewardRate;
     }
 
     _rewardAmountController.text = reward.toStringAsFixed(2);
@@ -186,12 +187,12 @@ class TransactionFormState extends State<TransactionForm> {
     setState(() {
       _selectedRecurring = val;
       if (val != null) {
-        if (_selectedCreditCard == null && val.creditCardId != null) {
+        if (_selectedCard == null && val.cardId != null) {
           try {
-            _selectedCreditCard = _creditCards.firstWhere(
-              (c) => c.id == val.creditCardId,
+            _selectedCard = _cards.firstWhere(
+              (c) => c.id == val.cardId,
             );
-            if (_selectedCreditCard!.rewardRate > 0) {
+            if (_selectedCard!.rewardRate > 0) {
               _hasRewards = true;
               if (val.rewardAmount != null) {
                 _rewardAmountController.text = val.rewardAmount!
@@ -230,7 +231,7 @@ class TransactionFormState extends State<TransactionForm> {
 
   void _loadCategories() {
     final categories = context.read<CategoryProvider>().categories;
-    final creditCards = context.read<CreditCardProvider>().creditCards;
+    final cards = context.read<CardProvider>().cards;
     final recTxs = context.read<RecurringTransactionProvider>().transactions;
     setState(() {
       _recurringTransactions = recTxs;
@@ -244,16 +245,16 @@ class TransactionFormState extends State<TransactionForm> {
 
       int? ccId;
       if (widget.recurringTransaction != null) {
-        ccId = widget.recurringTransaction!.creditCardId;
+        ccId = widget.recurringTransaction!.cardId;
       } else if (widget.transaction != null) {
-        ccId = widget.transaction!.creditCardId;
+        ccId = widget.transaction!.cardId;
       }
 
       _categories = categories.where((c) {
         return c.isActive || c.id == catId;
       }).toList();
 
-      _creditCards = creditCards.where((c) {
+      _cards = cards.where((c) {
         return c.isActive || c.id == ccId;
       }).toList();
       _isLoadingCategories = false;
@@ -273,9 +274,9 @@ class TransactionFormState extends State<TransactionForm> {
 
       if (ccId != null) {
         try {
-          _selectedCreditCard = _creditCards.firstWhere((c) => c.id == ccId);
+          _selectedCard = _cards.firstWhere((c) => c.id == ccId);
         } catch (e) {
-          _selectedCreditCard = null;
+          _selectedCard = null;
         }
       }
 
@@ -327,8 +328,8 @@ class TransactionFormState extends State<TransactionForm> {
       note: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
-      creditCardId: !_isIncome && _selectedCreditCard != null
-          ? _selectedCreditCard!.id
+      cardId: !_isIncome && _selectedCard != null
+          ? _selectedCard!.id
           : null,
       recurringId: !_isRecurring && _selectedRecurring != null
           ? _selectedRecurring!.id
@@ -340,7 +341,7 @@ class TransactionFormState extends State<TransactionForm> {
       recurringPeriod: _recurringPeriod,
       rewardAmount:
           (!_isIncome &&
-              _selectedCreditCard != null &&
+              _selectedCard != null &&
               _hasRewards &&
               _rewardAmountController.text.isNotEmpty)
           ? double.tryParse(_rewardAmountController.text)
@@ -556,18 +557,18 @@ class TransactionFormState extends State<TransactionForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomValidatedField(
-                    infoText: 'Add or edit credit cards under \'Manage\'.'
+                    infoText: 'Add or edit cards under \'Manage\'.'
                         .cased(context),
                     padding: EdgeInsets.zero,
-                    child: CustomDropdownField<CreditCard?>(
-                      label: 'Credit Card'.cased(context),
-                      selectedItem: _selectedCreditCard,
-                      items: [null, ..._creditCards],
+                    child: CustomDropdownField<Card?>(
+                      label: 'Card'.cased(context),
+                      selectedItem: _selectedCard,
+                      items: [null, ..._cards],
                       displayText: (card) =>
                           card == null ? 'None'.cased(context) : card.name,
                       onChanged: (val) {
                         setState(() {
-                          _selectedCreditCard = val;
+                          _selectedCard = val;
                           if (val != null && val.rewardRate > 0) {
                             _hasRewards = true;
                           } else {
@@ -581,8 +582,8 @@ class TransactionFormState extends State<TransactionForm> {
                     ),
                   ),
 
-                  if (_selectedCreditCard != null &&
-                      _selectedCreditCard!.rewardRate > 0) ...[
+                  if (_selectedCard != null &&
+                      _selectedCard!.rewardRate > 0) ...[
                     const SizedBox(height: 24),
                     Stack(
                       clipBehavior: Clip.none,
@@ -652,7 +653,7 @@ class TransactionFormState extends State<TransactionForm> {
                                         decoration: _getInputDecoration(
                                           hintText: '0.00',
                                           prefixIcon:
-                                              _selectedCreditCard!.rewardType ==
+                                              _selectedCard!.rewardType ==
                                                   'Cashback'
                                               ? const Icon(
                                                   Icons.attach_money,
@@ -667,10 +668,10 @@ class TransactionFormState extends State<TransactionForm> {
                                     ),
                                     const SizedBox(width: 16.0),
                                     Text(
-                                      _selectedCreditCard!.rewardType ==
+                                      _selectedCard!.rewardType ==
                                               'Cashback'
                                           ? 'cashback'
-                                          : _selectedCreditCard!.rewardType
+                                          : _selectedCard!.rewardType
                                                 .toLowerCase(),
                                       style: const TextStyle(fontSize: 16),
                                     ),

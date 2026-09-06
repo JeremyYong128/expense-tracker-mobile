@@ -12,7 +12,7 @@ import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart'
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/providers/notification_provider.dart';
@@ -56,7 +56,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
-        ChangeNotifierProvider(create: (_) => CreditCardProvider()),
+        ChangeNotifierProvider(create: (_) => CardProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MainApp(),

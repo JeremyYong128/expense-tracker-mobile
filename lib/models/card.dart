@@ -1,4 +1,4 @@
-class CreditCard {
+class Card {
   final int? id;
   final String name;
   final String rewardType;
@@ -6,7 +6,7 @@ class CreditCard {
   final String colorHex;
   final bool isActive;
 
-  CreditCard({
+  Card({
     this.id,
     required this.name,
     required this.rewardType,
@@ -26,7 +26,7 @@ class CreditCard {
     };
   }
 
-  CreditCard copyWith({
+  Card copyWith({
     int? id,
     String? name,
     String? rewardType,
@@ -34,7 +34,7 @@ class CreditCard {
     String? colorHex,
     bool? isActive,
   }) {
-    return CreditCard(
+    return Card(
       id: id ?? this.id,
       name: name ?? this.name,
       rewardType: rewardType ?? this.rewardType,
@@ -44,8 +44,8 @@ class CreditCard {
     );
   }
 
-  factory CreditCard.fromMap(Map<String, dynamic> map) {
-    return CreditCard(
+  factory Card.fromMap(Map<String, dynamic> map) {
+    return Card(
       id: map['id'],
       name: map['name'],
       rewardType: map['rewardType'],

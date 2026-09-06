@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -39,11 +39,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
 
-    final creditCardProvider = context.watch<CreditCardProvider>();
+    final cardProvider = context.watch<CardProvider>();
 
     if (transactionProvider.isLoading ||
         categoryProvider.isLoading ||
-        creditCardProvider.isLoading) {
+        cardProvider.isLoading) {
       return Scaffold(
         appBar: AppBar(title: Text('Home'.cased(context))),
         body: const Center(child: CircularProgressIndicator()),
@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final stats = DataService.computeDashboardStats(
       transactionProvider.transactions,
       categoryProvider.categories,
-      creditCardProvider.creditCards,
+      cardProvider.cards,
       _currentMonth,
     );
 

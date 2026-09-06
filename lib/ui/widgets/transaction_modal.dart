@@ -52,7 +52,7 @@ class _TransactionModalState extends State<TransactionModal> {
         recurringIntervalText: data.recurringInterval.toString(),
         recurringPeriod: data.recurringPeriod,
         note: data.note ?? '',
-        creditCardId: data.creditCardId,
+        cardId: data.cardId,
         recurringId: data.recurringId,
         rewardAmount: data.rewardAmount,
       );
@@ -88,7 +88,7 @@ class _TransactionModalState extends State<TransactionModal> {
             startDate: data.date,
             nextDueDate: widget.recurringTransaction!.nextDueDate,
             note: data.note,
-            creditCardId: data.creditCardId,
+            cardId: data.cardId,
             rewardAmount: data.rewardAmount,
           );
           await context
@@ -108,7 +108,7 @@ class _TransactionModalState extends State<TransactionModal> {
         isIncome: data.isIncome,
         recurringId: data.recurringId,
         note: data.note,
-        creditCardId: data.creditCardId,
+        cardId: data.cardId,
         rewardAmount: data.rewardAmount,
       );
       await context.read<TransactionProvider>().updateTransaction(updated);

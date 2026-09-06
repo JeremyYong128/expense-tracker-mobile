@@ -43,7 +43,7 @@ class AppLogger {
       'categoryId': tx.categoryId,
       'isIncome': tx.isIncome,
       'recurringId': tx.recurringId,
-      'creditCardId': tx.creditCardId,
+      'cardId': tx.cardId,
     };
   }
 }

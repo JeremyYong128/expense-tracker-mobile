@@ -2,7 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/database/drift_database.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 
@@ -33,13 +33,13 @@ class DataService {
       note: data.note,
       isIncome: data.isIncome,
       recurringId: data.recurringId,
-      creditCardId: data.creditCardId,
+      cardId: data.cardId,
       rewardAmount: data.rewardAmount,
     );
   }
 
-  static CreditCard _mapCreditCard(CreditCardTableData data) {
-    return CreditCard(
+  static Card _mapCard(CardTableData data) {
+    return Card(
       id: data.id,
       name: data.name,
       rewardType: data.rewardType,
@@ -63,7 +63,7 @@ class DataService {
       period: data.period,
       startDate: DateTime.parse(data.startDate),
       nextDueDate: DateTime.parse(data.nextDueDate),
-      creditCardId: data.creditCardId,
+      cardId: data.cardId,
       rewardAmount: data.rewardAmount,
     );
   }
@@ -188,33 +188,33 @@ class DataService {
     }
   }
 
-  // --- Credit Card Methods ---
+  // --- Card Methods ---
 
-  // Get all credit cards
-  static Future<List<CreditCard>> getCreditCards() async {
-    final list = await _db.select(_db.creditCards).get();
-    return list.map(_mapCreditCard).toList();
+  // Get all cards
+  static Future<List<Card>> getCards() async {
+    final list = await _db.select(_db.cards).get();
+    return list.map(_mapCard).toList();
   }
 
-  // Add credit card
-  // Throws an exception if a credit card with the same name already exists
-  static Future<int> addCreditCard(CreditCard card) async {
+  // Add card
+  // Throws an exception if a card with the same name already exists
+  static Future<int> addCard(Card card) async {
     final existing =
-        await (_db.select(_db.creditCards)
+        await (_db.select(_db.cards)
               ..where((c) => c.name.lower().equals(card.name.toLowerCase()))
               ..where((c) => c.isActive.equals(true)))
             .getSingleOrNull();
 
     if (existing != null) {
       throw DatabaseValidationException(
-        'A credit card with this name already exists.',
+        'A card with this name already exists.',
       );
     }
 
     final id = await _db
-        .into(_db.creditCards)
+        .into(_db.cards)
         .insert(
-          CreditCardsCompanion.insert(
+          CardsCompanion.insert(
             name: card.name,
             rewardType: card.rewardType,
             rewardRate: card.rewardRate,
@@ -225,11 +225,11 @@ class DataService {
     return id;
   }
 
-  // Update credit card
-  // Throws an exception if a credit card with the same name already exists
-  static Future<void> updateCreditCard(CreditCard card) async {
+  // Update card
+  // Throws an exception if a card with the same name already exists
+  static Future<void> updateCard(Card card) async {
     final existing =
-        await (_db.select(_db.creditCards)
+        await (_db.select(_db.cards)
               ..where((c) => c.name.lower().equals(card.name.toLowerCase()))
               ..where((c) => c.isActive.equals(true))
               ..where((c) => c.id.equals(card.id!).not()))
@@ -237,14 +237,14 @@ class DataService {
 
     if (existing != null) {
       throw DatabaseValidationException(
-        'A credit card with this name already exists.',
+        'A card with this name already exists.',
       );
     }
 
     await (_db.update(
-      _db.creditCards,
+      _db.cards,
     )..where((c) => c.id.equals(card.id!))).write(
-      CreditCardsCompanion(
+      CardsCompanion(
         name: drift.Value(card.name),
         rewardType: drift.Value(card.rewardType),
         rewardRate: drift.Value(card.rewardRate),
@@ -254,30 +254,30 @@ class DataService {
     );
   }
 
-  // Delete credit card
+  // Delete card
   // Soft delete if there are transactions associated with it, unless forceHardDelete is true
-  static Future<bool> deleteCreditCard(int id, {bool forceHardDelete = false}) async {
+  static Future<bool> deleteCard(int id, {bool forceHardDelete = false}) async {
     final txCount = await (_db.select(
       _db.transactions,
-    )..where((t) => t.creditCardId.equals(id))).get();
+    )..where((t) => t.cardId.equals(id))).get();
     final recCount = await (_db.select(
       _db.recurringTransactions,
-    )..where((r) => r.creditCardId.equals(id))).get();
+    )..where((r) => r.cardId.equals(id))).get();
     
     final hasTransactions = txCount.isNotEmpty || recCount.isNotEmpty;
 
     if (forceHardDelete) {
-      await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+      await (_db.delete(_db.cards)..where((c) => c.id.equals(id))).go();
       return hasTransactions;
     }
 
     if (hasTransactions) {
-      await (_db.update(_db.creditCards)..where((c) => c.id.equals(id))).write(
-        const CreditCardsCompanion(isActive: drift.Value(false)),
+      await (_db.update(_db.cards)..where((c) => c.id.equals(id))).write(
+        const CardsCompanion(isActive: drift.Value(false)),
       );
       return false;
     } else {
-      await (_db.delete(_db.creditCards)..where((c) => c.id.equals(id))).go();
+      await (_db.delete(_db.cards)..where((c) => c.id.equals(id))).go();
       return false;
     }
   }
@@ -294,7 +294,7 @@ class DataService {
     required String recurringIntervalText,
     required String recurringPeriod,
     required String note,
-    int? creditCardId,
+    int? cardId,
     int? recurringId,
     double? rewardAmount,
   }) async {
@@ -315,7 +315,7 @@ class DataService {
               startDate: drift.Value(date.toIso8601String()),
               nextDueDate: date.toIso8601String(),
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
-              creditCardId: drift.Value(creditCardId),
+              cardId: drift.Value(cardId),
               rewardAmount: drift.Value(rewardAmount),
             ),
           );
@@ -330,7 +330,7 @@ class DataService {
               categoryId: categoryId,
               isIncome: drift.Value(isIncome),
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
-              creditCardId: drift.Value(creditCardId),
+              cardId: drift.Value(cardId),
               recurringId: drift.Value(recurringId),
               rewardAmount: drift.Value(rewardAmount),
             ),
@@ -349,7 +349,7 @@ class DataService {
         categoryId: drift.Value(transaction.categoryId),
         isIncome: drift.Value(transaction.isIncome),
         note: drift.Value(transaction.note),
-        creditCardId: drift.Value(transaction.creditCardId),
+        cardId: drift.Value(transaction.cardId),
         recurringId: drift.Value(transaction.recurringId),
         rewardAmount: drift.Value(transaction.rewardAmount),
       ),
@@ -416,7 +416,7 @@ class DataService {
         startDate: drift.Value(transaction.startDate.toIso8601String()),
         nextDueDate: drift.Value(newNextDueDate.toIso8601String()),
         note: drift.Value(transaction.note),
-        creditCardId: drift.Value(transaction.creditCardId),
+        cardId: drift.Value(transaction.cardId),
         rewardAmount: drift.Value(transaction.rewardAmount),
       ),
     );
@@ -470,18 +470,18 @@ class DataService {
             isIncome: drift.Value(transaction.isIncome),
             note: drift.Value(transaction.note),
             recurringId: drift.Value(transaction.recurringId),
-            creditCardId: drift.Value(transaction.creditCardId),
+            cardId: drift.Value(transaction.cardId),
             rewardAmount: drift.Value(transaction.rewardAmount),
           ),
         );
   }
 
   static Future<List<Transaction>> getTransactionsForCard(
-    int creditCardId,
+    int cardId,
   ) async {
     final list = await (_db.select(
       _db.transactions,
-    )..where((t) => t.creditCardId.equals(creditCardId))).get();
+    )..where((t) => t.cardId.equals(cardId))).get();
     return list.map(_mapTransaction).toList();
   }
 
@@ -524,7 +524,7 @@ class DataService {
   static DashboardStats computeDashboardStats(
     List<Transaction> allTransactions,
     List<Category> categories,
-    List<CreditCard> creditCards,
+    List<Card> cards,
     DateTime currentMonth,
   ) {
     // Filter to current month
@@ -597,18 +597,18 @@ class DataService {
       topCatMap[category] = entry.value;
     }
 
-    Map<CreditCard, double> rewardsMap = {};
+    Map<Card, double> rewardsMap = {};
 
-    // Group rewards by credit card ID for current month
+    // Group rewards by card ID for current month
     Map<int, double> cardRewards = {};
     for (var tx in currentMonthTransactions) {
-      if (!tx.isIncome && tx.creditCardId != null && tx.rewardAmount != null) {
-        cardRewards[tx.creditCardId!] =
-            (cardRewards[tx.creditCardId!] ?? 0) + tx.rewardAmount!;
+      if (!tx.isIncome && tx.cardId != null && tx.rewardAmount != null) {
+        cardRewards[tx.cardId!] =
+            (cardRewards[tx.cardId!] ?? 0) + tx.rewardAmount!;
       }
     }
 
-    for (var card in creditCards) {
+    for (var card in cards) {
       if (cardRewards.containsKey(card.id)) {
         rewardsMap[card] = cardRewards[card.id]!;
       }
@@ -651,7 +651,7 @@ class DashboardStats {
   final double? incomePercentageChange;
   final double? expensePercentageChange;
   final Map<Category, double> topCategories;
-  final Map<CreditCard, double> monthlyRewards;
+  final Map<Card, double> monthlyRewards;
 
   DashboardStats({
     required this.totalIncome,

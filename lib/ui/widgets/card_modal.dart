@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:flutter/material.dart' hide Card;
+import 'package:flutter/material.dart' as material;
+import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/validators.dart';
@@ -12,17 +13,17 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 
-class CreditCardModal extends StatefulWidget {
-  final CreditCard? card;
+class CardModal extends StatefulWidget {
+  final Card? card;
   final VoidCallback? onSaved;
 
-  const CreditCardModal({super.key, this.card, this.onSaved});
+  const CardModal({super.key, this.card, this.onSaved});
 
   @override
-  State<CreditCardModal> createState() => _CreditCardModalState();
+  State<CardModal> createState() => _CardModalState();
 }
 
-class _CreditCardModalState extends State<CreditCardModal> {
+class _CardModalState extends State<CardModal> {
   late TextEditingController _nameController;
   late TextEditingController _rateController;
   late String _rewardType;
@@ -55,7 +56,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
     super.dispose();
   }
 
-  void _saveCreditCard() async {
+  void _saveCard() async {
     setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
@@ -65,7 +66,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
 
       final rate = double.parse(rateText);
 
-      final newCard = CreditCard(
+      final newCard = Card(
         id: widget.card?.id,
         name: name,
         rewardType: _rewardType,
@@ -97,9 +98,9 @@ class _CreditCardModalState extends State<CreditCardModal> {
           );
           if (shouldProceed != true) return;
         }
-        await context.read<CreditCardProvider>().updateCreditCard(newCard);
+        await context.read<CardProvider>().updateCard(newCard);
       } else {
-        await context.read<CreditCardProvider>().addCreditCard(newCard);
+        await context.read<CardProvider>().addCard(newCard);
       }
 
       if (mounted) {
@@ -118,7 +119,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
         );
       }
     } catch (e, stack) {
-      AppLogger.error('Failed to save credit card', e, stack);
+      AppLogger.error('Failed to save card', e, stack);
       if (mounted) {
         setState(() {
           _formError = 'An unexpected error occurred.';
@@ -138,7 +139,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
       rightButtonTitle: 'Save'.cased(context),
-      onRightButtonPressed: _saveCreditCard,
+      onRightButtonPressed: _saveCard,
       child: SingleChildScrollView(
         controller: _scrollController,
         child: Form(
@@ -183,7 +184,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
                     filled: true,
                     fillColor: Colors.white,
                   ),
-                  onSubmitted: (_) => _saveCreditCard(),
+                  onSubmitted: (_) => _saveCard(),
                 ),
               ),
 
@@ -256,7 +257,7 @@ class _CreditCardModalState extends State<CreditCardModal> {
                         ? Colors.grey.shade200
                         : Colors.white,
                   ),
-                  onSubmitted: (_) => _saveCreditCard(),
+                  onSubmitted: (_) => _saveCard(),
                 ),
               ),
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom),

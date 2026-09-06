@@ -1,64 +1,65 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Card;
+import 'package:flutter/material.dart' as material;
 import 'package:intl/intl.dart';
-import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/card_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 
-class CreditCardDetailsScreen extends StatefulWidget {
-  final CreditCard creditCard;
+class CardDetailsScreen extends StatefulWidget {
+  final Card card;
 
-  const CreditCardDetailsScreen({super.key, required this.creditCard});
+  const CardDetailsScreen({super.key, required this.card});
 
   @override
-  State<CreditCardDetailsScreen> createState() =>
-      _CreditCardDetailsScreenState();
+  State<CardDetailsScreen> createState() =>
+      _CardDetailsScreenState();
 }
 
-class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
+class _CardDetailsScreenState extends State<CardDetailsScreen> {
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
-  void _showAddEditDialog(CreditCard card) {
+  void _showAddEditDialog(Card card) {
     SlideUpModal.showCustom(
       context: context,
-      builder: (context) => CreditCardModal(card: card),
+      builder: (context) => CardModal(card: card),
     );
   }
 
-  void _confirmDelete(CreditCard card) {
+  void _confirmDelete(Card card) {
     final transactionProvider = context.read<TransactionProvider>();
     final recurringProvider = context.read<RecurringTransactionProvider>();
 
     final hasTransactions = transactionProvider.transactions.any(
-      (t) => t.creditCardId == card.id,
+      (t) => t.cardId == card.id,
     );
     final hasRecurring = recurringProvider.transactions.any(
-      (r) => r.creditCardId == card.id,
+      (r) => r.cardId == card.id,
     );
 
     if (!hasTransactions && !hasRecurring) {
       ConfirmationDialog.show(
         context: context,
-        title: 'Delete Credit Card',
+        title: 'Delete Card',
         content: '${card.name} will be permanently deleted. Continue?',
         confirmText: 'Delete',
         isDestructive: true,
         onConfirm: () async {
           final navigator = Navigator.of(context);
-          final provider = context.read<CreditCardProvider>();
+          final provider = context.read<CardProvider>();
           final txProvider = context.read<TransactionProvider>();
           final recProvider = context.read<RecurringTransactionProvider>();
 
-          final affected = await provider.deleteCreditCard(
+          final affected = await provider.deleteCard(
             card.id!,
             forceHardDelete: true,
           );
@@ -77,7 +78,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
 
     ConfirmationDialog.show(
       context: context,
-      title: 'Delete Credit Card',
+      title: 'Delete Card',
       content: 'You have transactions that use this card. Archive instead?',
       confirmText: 'Delete',
       isDestructive: true,
@@ -91,11 +92,11 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
           isDestructive: true,
           onConfirm: () async {
             final innerNavigator = Navigator.of(context);
-            final provider = context.read<CreditCardProvider>();
+            final provider = context.read<CardProvider>();
             final txProvider = context.read<TransactionProvider>();
             final recProvider = context.read<RecurringTransactionProvider>();
 
-            final affected = await provider.deleteCreditCard(
+            final affected = await provider.deleteCard(
               card.id!,
               forceHardDelete: true,
             );
@@ -113,9 +114,9 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
       secondaryActionText: 'Archive',
       onSecondaryAction: () async {
         final navigator = Navigator.of(context);
-        final provider = context.read<CreditCardProvider>();
+        final provider = context.read<CardProvider>();
 
-        await provider.deleteCreditCard(card.id!, forceHardDelete: false);
+        await provider.deleteCard(card.id!, forceHardDelete: false);
 
         if (mounted) {
           navigator.pop(); // Close details screen
@@ -128,11 +129,11 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
-    final creditCardProvider = context.watch<CreditCardProvider>();
+    final cardProvider = context.watch<CardProvider>();
 
-    final latestCard = creditCardProvider.creditCards.firstWhere(
-      (c) => c.id == widget.creditCard.id,
-      orElse: () => widget.creditCard,
+    final latestCard = cardProvider.cards.firstWhere(
+      (c) => c.id == widget.card.id,
+      orElse: () => widget.card,
     );
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
@@ -143,7 +144,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     }
 
     final allTransactions = transactionProvider.transactions
-        .where((t) => t.creditCardId == latestCard.id)
+        .where((t) => t.cardId == latestCard.id)
         .toList();
     allTransactions.sort((a, b) => b.date.compareTo(a.date));
 
@@ -246,7 +247,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     );
   }
 
-  LinearGradient _getGradientForCard(CreditCard card) {
+  LinearGradient _getGradientForCard(Card card) {
     final Color color1 = AppColors.getColorFromHex(card.colorHex);
 
     // Convert to HSL to get a slightly shifted secondary color for the gradient
@@ -277,7 +278,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     }
   }
 
-  String _getRewardSubtitle(BuildContext context, CreditCard card) {
+  String _getRewardSubtitle(BuildContext context, Card card) {
     final type = card.rewardType.toLowerCase();
     if (type == 'none') return 'No rewards'.cased(context);
     final rateStr = card.rewardRate == card.rewardRate.toInt()
@@ -289,7 +290,7 @@ class _CreditCardDetailsScreenState extends State<CreditCardDetailsScreen> {
     return '$rateStr ${card.rewardType.cased(context)}';
   }
 
-  Widget _buildDigitalCard(CreditCard card, double totalRewardsAmount) {
+  Widget _buildDigitalCard(Card card, double totalRewardsAmount) {
     final isCashback = card.rewardType == 'Cashback';
     final rewardText = isCashback
         ? '\$${totalRewardsAmount.toStringAsFixed(2)}'

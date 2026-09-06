@@ -9,7 +9,7 @@ class RecurringTransaction {
   final String period;
   final DateTime startDate;
   final DateTime nextDueDate;
-  final int? creditCardId;
+  final int? cardId;
   final double? rewardAmount;
 
   RecurringTransaction({
@@ -23,7 +23,7 @@ class RecurringTransaction {
     required this.period,
     required this.startDate,
     required this.nextDueDate,
-    this.creditCardId,
+    this.cardId,
     this.rewardAmount,
   });
 
@@ -39,7 +39,7 @@ class RecurringTransaction {
       'period': period,
       'startDate': startDate.toIso8601String(),
       'nextDueDate': nextDueDate.toIso8601String(),
-      'creditCardId': creditCardId,
+      'cardId': cardId,
       'rewardAmount': rewardAmount,
     };
   }
@@ -55,7 +55,7 @@ class RecurringTransaction {
     String? period,
     DateTime? startDate,
     DateTime? nextDueDate,
-    int? creditCardId,
+    int? cardId,
     double? rewardAmount,
   }) {
     return RecurringTransaction(
@@ -69,7 +69,7 @@ class RecurringTransaction {
       period: period ?? this.period,
       startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
-      creditCardId: creditCardId ?? this.creditCardId,
+      cardId: cardId ?? this.cardId,
       rewardAmount: rewardAmount ?? this.rewardAmount,
     );
   }
@@ -86,7 +86,7 @@ class RecurringTransaction {
       period: map['period'],
       startDate: DateTime.parse(map['startDate']),
       nextDueDate: DateTime.parse(map['nextDueDate']),
-      creditCardId: map['creditCardId'],
+      cardId: map['cardId'],
       rewardAmount: map['rewardAmount'],
     );
   }

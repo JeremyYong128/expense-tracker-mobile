@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
-import 'package:expense_tracker_mobile/ui/screens/credit_cards_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/cards_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/categories_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -56,14 +56,14 @@ class ManageScreen extends StatelessWidget {
             Divider(height: 1, color: Colors.grey.withValues(alpha: 0.5)),
             _buildManageListItem(
               context,
-              title: 'Credit Cards',
+              title: 'Cards',
               icon: Icons.credit_card,
               color: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (context) => const CreditCardsScreen(),
+                    builder: (context) => const CardsScreen(),
                   ),
                 );
               },

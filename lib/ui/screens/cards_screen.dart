@@ -1,24 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:expense_tracker_mobile/models/credit_card.dart';
+import 'package:flutter/material.dart' hide Card;
+import 'package:flutter/material.dart' as material;
+import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/ui/screens/credit_card_details_screen.dart';
-import 'package:expense_tracker_mobile/ui/widgets/credit_card_modal.dart';
+import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/widgets/card_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 
-class CreditCardsScreen extends StatefulWidget {
-  const CreditCardsScreen({super.key});
+class CardsScreen extends StatefulWidget {
+  const CardsScreen({super.key});
 
   @override
-  State<CreditCardsScreen> createState() => _CreditCardsScreenState();
+  State<CardsScreen> createState() => _CardsScreenState();
 }
 
-class _CreditCardsScreenState extends State<CreditCardsScreen> {
+class _CardsScreenState extends State<CardsScreen> {
   @override
   void initState() {
     super.initState();
@@ -38,7 +39,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     }
   }
 
-  String _getRewardSubtitle(BuildContext context, CreditCard card) {
+  String _getRewardSubtitle(BuildContext context, Card card) {
     final type = card.rewardType.toLowerCase();
 
     if (type == 'none') {
@@ -60,22 +61,22 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     return '$rateStr ${card.rewardType.cased(context)}';
   }
 
-  void _showAddEditDialog([CreditCard? card]) {
+  void _showAddEditDialog([Card? card]) {
     SlideUpModal.showCustom(
       context: context,
-      builder: (context) => CreditCardModal(card: card),
+      builder: (context) => CardModal(card: card),
     );
   }
 
-  void _showRestoreDialog(CreditCard card) {
+  void _showRestoreDialog(Card card) {
     ConfirmationDialog.show(
       context: context,
-      title: 'Restore Credit Card',
+      title: 'Restore Card',
       content: '${card.name} will be moved to your active cards.',
       confirmText: 'Restore',
       onConfirm: () async {
         try {
-          await context.read<CreditCardProvider>().updateCreditCard(
+          await context.read<CardProvider>().updateCard(
             card.copyWith(isActive: true),
           );
         } on DatabaseValidationException catch (e) {
@@ -85,7 +86,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
             ).showSnackBar(SnackBar(content: Text(e.message)));
           }
         } catch (e, stack) {
-          AppLogger.error('Failed to restore credit card', e, stack);
+          AppLogger.error('Failed to restore card', e, stack);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('An unexpected error occurred.')),
@@ -96,7 +97,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
     );
   }
 
-  Widget _buildCardItem(CreditCard card, bool isArchived) {
+  Widget _buildCardItem(Card card, bool isArchived) {
     return Opacity(
       opacity: isArchived ? 0.6 : 1.0,
       child: Container(
@@ -124,7 +125,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        CreditCardDetailsScreen(creditCard: card),
+                        CardDetailsScreen(card: card),
                   ),
                 );
               }
@@ -192,22 +193,22 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final creditCardProvider = context.watch<CreditCardProvider>();
+    final cardProvider = context.watch<CardProvider>();
 
-    if (creditCardProvider.isLoading) {
+    if (cardProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text('Credit Cards'.cased(context))),
+        appBar: AppBar(title: Text('Cards'.cased(context))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    final creditCards = creditCardProvider.creditCards;
-    final activeCards = creditCards.where((c) => c.isActive).toList();
-    final archivedCards = creditCards.where((c) => !c.isActive).toList();
+    final cards = cardProvider.cards;
+    final activeCards = cards.where((c) => c.isActive).toList();
+    final archivedCards = cards.where((c) => !c.isActive).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Credit Cards'.cased(context)),
+        title: Text('Cards'.cased(context)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -215,10 +216,10 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
           ),
         ],
       ),
-      body: creditCards.isEmpty
+      body: cards.isEmpty
           ? Center(
               child: Text(
-                'No credit cards added.'.cased(context),
+                'No cards added.'.cased(context),
                 style: const TextStyle(color: AppColors.grey, fontSize: 16),
               ),
             )

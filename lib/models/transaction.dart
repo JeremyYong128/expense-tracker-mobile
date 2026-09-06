@@ -7,7 +7,7 @@ class Transaction {
   final String? note;
   final bool isIncome;
   final int? recurringId;
-  final int? creditCardId;
+  final int? cardId;
   final double? rewardAmount;
 
   Transaction({
@@ -19,7 +19,7 @@ class Transaction {
     this.note,
     this.isIncome = false,
     this.recurringId,
-    this.creditCardId,
+    this.cardId,
     this.rewardAmount,
   });
 
@@ -33,7 +33,7 @@ class Transaction {
       'note': note,
       'isIncome': isIncome ? 1 : 0,
       'recurringId': recurringId,
-      'creditCardId': creditCardId,
+      'cardId': cardId,
       'rewardAmount': rewardAmount,
     };
   }
@@ -47,7 +47,7 @@ class Transaction {
     String? note,
     bool? isIncome,
     int? recurringId,
-    int? creditCardId,
+    int? cardId,
     double? rewardAmount,
   }) {
     return Transaction(
@@ -59,7 +59,7 @@ class Transaction {
       note: note ?? this.note,
       isIncome: isIncome ?? this.isIncome,
       recurringId: recurringId ?? this.recurringId,
-      creditCardId: creditCardId ?? this.creditCardId,
+      cardId: cardId ?? this.cardId,
       rewardAmount: rewardAmount ?? this.rewardAmount,
     );
   }
@@ -74,7 +74,7 @@ class Transaction {
       note: map['note'],
       isIncome: map['isIncome'] == 1,
       recurringId: map['recurringId'],
-      creditCardId: map['creditCardId'],
+      cardId: map['cardId'],
       rewardAmount: map['rewardAmount'],
     );
   }

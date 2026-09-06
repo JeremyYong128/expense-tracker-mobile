@@ -44,14 +44,14 @@ class Transactions extends Table {
       .customConstraint(
         'REFERENCES recurring_transactions(id) ON DELETE SET NULL',
       )();
-  IntColumn get creditCardId => integer()
-      .named('creditCardId')
+  IntColumn get cardId => integer()
+      .named('cardId')
       .nullable()
-      .customConstraint('REFERENCES credit_cards(id) ON DELETE SET NULL')();
+      .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
 }
 
-@DataClassName('CreditCardTableData')
-class CreditCards extends Table {
+@DataClassName('CardTableData')
+class Cards extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get rewardType => text().named('rewardType')();
@@ -81,10 +81,10 @@ class RecurringTransactions extends Table {
   TextColumn get startDate =>
       text().named('startDate').withDefault(const Constant(''))();
   TextColumn get nextDueDate => text().named('nextDueDate')();
-  IntColumn get creditCardId => integer()
-      .named('creditCardId')
+  IntColumn get cardId => integer()
+      .named('cardId')
       .nullable()
-      .customConstraint('REFERENCES credit_cards(id) ON DELETE SET NULL')();
+      .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
 }
 
 LazyDatabase _openConnection() {
@@ -100,13 +100,13 @@ LazyDatabase _openConnection() {
 }
 
 @DriftDatabase(
-  tables: [Categories, Transactions, RecurringTransactions, CreditCards],
+  tables: [Categories, Transactions, RecurringTransactions, Cards],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -200,6 +200,19 @@ class AppDatabase extends _$AppDatabase {
         );
       },
       onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 11) {
+          try {
+            await customStatement('ALTER TABLE credit_cards RENAME TO cards;');
+            await customStatement('ALTER TABLE transactions RENAME COLUMN creditCardId TO cardId;');
+            await customStatement('ALTER TABLE recurring_transactions RENAME COLUMN creditCardId TO cardId;');
+          } catch (e, stack) {
+            AppLogger.error(
+              'Failed to rename credit_cards table and columns',
+              e,
+              stack,
+            );
+          }
+        }
         // --- Robust Migration Fallback ---
         // Ensure ALL tables and columns exist to prevent crashes from
         // messy or skipped database migrations in older app versions.
@@ -251,26 +264,26 @@ class AppDatabase extends _$AppDatabase {
               UPDATE transactions 
               SET rewardAmount = (
                 SELECT CASE 
-                  WHEN credit_cards.rewardType = 'Cashback' THEN transactions.amount * (credit_cards.rewardRate / 100.0)
-                  ELSE transactions.amount * credit_cards.rewardRate
+                  WHEN cards.rewardType = 'Cashback' THEN transactions.amount * (cards.rewardRate / 100.0)
+                  ELSE transactions.amount * cards.rewardRate
                 END
-                FROM credit_cards 
-                WHERE credit_cards.id = transactions.creditCardId
+                FROM cards 
+                WHERE cards.id = transactions.cardId
               )
-              WHERE creditCardId IS NOT NULL AND isIncome = 0;
+              WHERE cardId IS NOT NULL AND isIncome = 0;
             ''');
 
             await customStatement('''
               UPDATE recurring_transactions 
               SET rewardAmount = (
                 SELECT CASE 
-                  WHEN credit_cards.rewardType = 'Cashback' THEN recurring_transactions.amount * (credit_cards.rewardRate / 100.0)
-                  ELSE recurring_transactions.amount * credit_cards.rewardRate
+                  WHEN cards.rewardType = 'Cashback' THEN recurring_transactions.amount * (cards.rewardRate / 100.0)
+                  ELSE recurring_transactions.amount * cards.rewardRate
                 END
-                FROM credit_cards 
-                WHERE credit_cards.id = recurring_transactions.creditCardId
+                FROM cards 
+                WHERE cards.id = recurring_transactions.cardId
               )
-              WHERE creditCardId IS NOT NULL AND isIncome = 0;
+              WHERE cardId IS NOT NULL AND isIncome = 0;
             ''');
           } catch (e, stack) {
             AppLogger.error(

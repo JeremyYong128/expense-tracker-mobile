@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -44,12 +44,12 @@ class _TransactionListState extends State<TransactionList> {
     BuildContext context,
     Transaction transaction,
     Category category,
-    CreditCardProvider creditCardProvider,
+    CardProvider cardProvider,
     RecurringTransactionProvider recurringProvider,
   ) {
-    final creditCard = transaction.creditCardId != null
-        ? creditCardProvider.creditCards
-              .where((c) => c.id == transaction.creditCardId)
+    final card = transaction.cardId != null
+        ? cardProvider.cards
+              .where((c) => c.id == transaction.cardId)
               .firstOrNull
         : null;
     final recurring = transaction.recurringId != null
@@ -60,13 +60,13 @@ class _TransactionListState extends State<TransactionList> {
 
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
-      if (creditCard != null) {
-        if (creditCard.rewardType == 'Cashback') {
+      if (card != null) {
+        if (card.rewardType == 'Cashback') {
           rewardText =
               '\$${transaction.rewardAmount!.toStringAsFixed(2)} cashback';
-        } else if (creditCard.rewardType == 'Miles') {
+        } else if (card.rewardType == 'Miles') {
           rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} miles';
-        } else if (creditCard.rewardType == 'Points') {
+        } else if (card.rewardType == 'Points') {
           rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} points';
         } else {
           rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)}';
@@ -153,7 +153,7 @@ class _TransactionListState extends State<TransactionList> {
             ),
             const SizedBox(height: 4.0),
           ],
-          if (creditCard != null) ...[
+          if (card != null) ...[
             Row(
               children: [
                 const SizedBox(width: 60.0),
@@ -165,7 +165,7 @@ class _TransactionListState extends State<TransactionList> {
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
-                    creditCard.name,
+                    card.name,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -284,7 +284,7 @@ class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
-    final creditCardProvider = context.watch<CreditCardProvider>();
+    final cardProvider = context.watch<CardProvider>();
     final recurringProvider = context.watch<RecurringTransactionProvider>();
     final categories = categoryProvider.categories;
 
@@ -460,7 +460,7 @@ class _TransactionListState extends State<TransactionList> {
                               context,
                               transaction,
                               category,
-                              creditCardProvider,
+                              cardProvider,
                               recurringProvider,
                             ),
                         ],

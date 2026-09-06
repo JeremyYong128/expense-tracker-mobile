@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
-import 'package:expense_tracker_mobile/providers/credit_card_provider.dart';
+import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
@@ -81,7 +81,7 @@ class _RecurringTransactionDetailsScreenState
     final transactionProvider = context.watch<TransactionProvider>();
     final recurringProvider = context.watch<RecurringTransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
-    final creditCardProvider = context.watch<CreditCardProvider>();
+    final cardProvider = context.watch<CardProvider>();
 
     final latestTx = recurringProvider.transactions.firstWhere(
       (c) => c.id == widget.recurringTransaction.id,
@@ -107,9 +107,9 @@ class _RecurringTransactionDetailsScreenState
       ),
     );
 
-    final creditCard = latestTx.creditCardId != null
-        ? creditCardProvider.creditCards
-              .where((c) => c.id == latestTx.creditCardId)
+    final card = latestTx.cardId != null
+        ? cardProvider.cards
+              .where((c) => c.id == latestTx.cardId)
               .firstOrNull
         : null;
 
@@ -171,7 +171,7 @@ class _RecurringTransactionDetailsScreenState
           padding: AppStyles.screenPadding,
           child: Column(
             children: [
-              _buildRecurringHeader(latestTx, category, creditCard),
+              _buildRecurringHeader(latestTx, category, card),
               if (allTransactions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
@@ -316,18 +316,18 @@ class _RecurringTransactionDetailsScreenState
   Widget _buildRecurringHeader(
     RecurringTransaction tx,
     Category category,
-    dynamic creditCard,
+    dynamic card,
   ) {
     final color = AppColors.getColorFromHex(category.colorHex);
 
     String rewardText = '';
     if (tx.rewardAmount != null && tx.rewardAmount! > 0) {
-      if (creditCard != null) {
-        if (creditCard.rewardType == 'Cashback') {
+      if (card != null) {
+        if (card.rewardType == 'Cashback') {
           rewardText = '\$${tx.rewardAmount!.toStringAsFixed(2)} cashback';
-        } else if (creditCard.rewardType == 'Miles') {
+        } else if (card.rewardType == 'Miles') {
           rewardText = '${tx.rewardAmount!.toStringAsFixed(0)} miles';
-        } else if (creditCard.rewardType == 'Points') {
+        } else if (card.rewardType == 'Points') {
           rewardText = '${tx.rewardAmount!.toStringAsFixed(0)} points';
         } else {
           rewardText = '\$${tx.rewardAmount!.toStringAsFixed(2)}';
@@ -471,18 +471,18 @@ class _RecurringTransactionDetailsScreenState
               ),
             ],
           ),
-          if (creditCard != null || rewardText.isNotEmpty) ...[
+          if (card != null || rewardText.isNotEmpty) ...[
             const SizedBox(height: 24),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (creditCard != null)
+                if (card != null)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Credit Card'.cased(context).toUpperCase(),
+                          'Card'.cased(context).toUpperCase(),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 10,
@@ -492,7 +492,7 @@ class _RecurringTransactionDetailsScreenState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          creditCard.name,
+                          card.name,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 16,

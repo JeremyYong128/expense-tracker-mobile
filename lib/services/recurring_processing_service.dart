@@ -22,7 +22,7 @@ class RecurringProcessingService {
             note: tx.note,
             isIncome: tx.isIncome,
             recurringId: tx.id,
-            creditCardId: tx.creditCardId,
+            cardId: tx.cardId,
             rewardAmount: tx.rewardAmount,
           ),
         );

@@ -29,7 +29,7 @@ class TransactionProvider extends ChangeNotifier {
     required String recurringIntervalText,
     required String recurringPeriod,
     required String note,
-    int? creditCardId,
+    int? cardId,
     int? recurringId,
     double? rewardAmount,
   }) async {
@@ -43,7 +43,7 @@ class TransactionProvider extends ChangeNotifier {
       recurringIntervalText: recurringIntervalText,
       recurringPeriod: recurringPeriod,
       note: note,
-      creditCardId: creditCardId,
+      cardId: cardId,
       recurringId: recurringId,
       rewardAmount: rewardAmount,
     );
