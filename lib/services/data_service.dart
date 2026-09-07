@@ -206,7 +206,7 @@ class DataService {
             .getSingleOrNull();
 
     if (existing != null) {
-      throw DatabaseValidationException(
+      throw ValidationException(
         'A card with this name already exists.',
       );
     }
@@ -236,7 +236,7 @@ class DataService {
             .getSingleOrNull();
 
     if (existing != null) {
-      throw DatabaseValidationException(
+      throw ValidationException(
         'A card with this name already exists.',
       );
     }

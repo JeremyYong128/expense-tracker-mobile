@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
-import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/shared_filter_toggle.dart';
@@ -29,7 +29,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             onPressed: () {
               SlideUpModal.showCustom(
                 context: context,
-                builder: (ctx) => const CategoryFormModal(),
+                builder: (ctx) => const CategoryForm(),
               );
             },
           ),

@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/utils/validators.dart';
-import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
+import 'package:expense_tracker_mobile/services/validator_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
@@ -13,17 +13,17 @@ import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
-class CardModal extends StatefulWidget {
+class CardForm extends StatefulWidget {
   final Card? card;
   final VoidCallback? onSaved;
 
-  const CardModal({super.key, this.card, this.onSaved});
+  const CardForm({super.key, this.card, this.onSaved});
 
   @override
-  State<CardModal> createState() => _CardModalState();
+  State<CardForm> createState() => _CardFormState();
 }
 
-class _CardModalState extends State<CardModal> {
+class _CardFormState extends State<CardForm> {
   late TextEditingController _nameController;
   late TextEditingController _rateController;
   late String _rewardType;
@@ -72,7 +72,6 @@ class _CardModalState extends State<CardModal> {
 
   void _saveCard() async {
     setState(() => _formError = null);
-    if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
     if (!_hasChanges) {
@@ -84,18 +83,17 @@ class _CardModalState extends State<CardModal> {
       final name = _nameController.text.trim();
       final rateText = _rateController.text.trim();
 
-      final rate = double.parse(rateText);
-
-      final newCard = Card(
+      final newCard = ValidatorService.validateCard(
+        context: context,
         id: widget.card?.id,
-        name: name,
+        nameText: name,
         rewardType: _rewardType,
-        rewardRate: rate,
+        rateText: rateText,
         colorHex: _colorHex,
       );
 
       if (widget.card != null) {
-        if (widget.card!.rewardRate != rate) {
+        if (widget.card!.rewardRate != newCard.rewardRate) {
           final shouldProceed = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
@@ -118,7 +116,7 @@ class _CardModalState extends State<CardModal> {
           );
           if (shouldProceed != true) return;
         }
-        
+
         if (!mounted) return;
         await context.read<CardProvider>().updateCard(newCard);
         SnackBarService.showSuccess('Card updated successfully');
@@ -131,7 +129,7 @@ class _CardModalState extends State<CardModal> {
         widget.onSaved?.call();
         Navigator.pop(context);
       }
-    } on DatabaseValidationException catch (e) {
+    } on ValidationException catch (e) {
       if (mounted) {
         setState(() {
           _formError = e.message;
@@ -183,15 +181,8 @@ class _CardModalState extends State<CardModal> {
                     ),
                   ),
                 ),
-              CustomValidatedField(
+              CustomField(
                 label: 'Card Name'.cased(context),
-                validator: () {
-                  final text = _nameController.text.trim();
-                  if (text.toLowerCase() == 'none') {
-                    return 'Card name cannot be "None"';
-                  }
-                  return Validators.required(text);
-                },
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
@@ -249,16 +240,13 @@ class _CardModalState extends State<CardModal> {
                 },
               ),
               const SizedBox(height: 24.0),
-              CustomValidatedField(
+              CustomField(
                 label: _rewardType == 'Cashback'
                     ? 'Reward Rate (%)'.cased(context)
                     : 'Reward Rate (per \$)'.cased(context),
                 infoText: _rewardType != 'None'
                     ? 'This will be the default rate applied to new transactions. You can modify or remove the rewards on individual transactions later.'
                     : null,
-                validator: () => _rewardType == 'None'
-                    ? null
-                    : Validators.greaterThanZero(_rateController.text),
                 child: TextField(
                   controller: _rateController,
                   enabled: _rewardType != 'None',

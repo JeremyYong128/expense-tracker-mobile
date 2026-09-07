@@ -59,7 +59,7 @@ class _RecurringTransactionDetailsScreenState
           final provider = context.read<RecurringTransactionProvider>();
 
           await provider.deleteRecurringTransaction(tx.id!);
-          SnackBarService.showSuccess('Recurring transaction deleted successfully!');
+          SnackBarService.showSuccess('Recurring transaction deleted successfully');
 
           if (mounted) {
             navigator.pop();
@@ -71,7 +71,7 @@ class _RecurringTransactionDetailsScreenState
       final provider = context.read<RecurringTransactionProvider>();
 
       provider.deleteRecurringTransaction(tx.id!).then((_) {
-        SnackBarService.showSuccess('Recurring transaction deleted successfully!');
+        SnackBarService.showSuccess('Recurring transaction deleted successfully');
         if (mounted) {
           navigator.pop();
         }
@@ -111,9 +111,7 @@ class _RecurringTransactionDetailsScreenState
     );
 
     final card = latestTx.cardId != null
-        ? cardProvider.cards
-              .where((c) => c.id == latestTx.cardId)
-              .firstOrNull
+        ? cardProvider.cards.where((c) => c.id == latestTx.cardId).firstOrNull
         : null;
 
     final allTransactions = transactionProvider.transactions
@@ -138,8 +136,7 @@ class _RecurringTransactionDetailsScreenState
 
     final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     final prevTransactionsList = allTransactions.where((t) {
-      return t.date.year == prevMonth.year &&
-          t.date.month == prevMonth.month;
+      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
     }).toList();
 
     double prevIncome = 0;
@@ -233,7 +230,11 @@ class _RecurringTransactionDetailsScreenState
     );
   }
 
-  Widget _buildMonthlySummary(double totalIncome, double totalExpense, double prevBalance) {
+  Widget _buildMonthlySummary(
+    double totalIncome,
+    double totalExpense,
+    double prevBalance,
+  ) {
     final balance = totalIncome - totalExpense;
     final isPositive = balance > 0;
     final isNegative = balance < 0;
@@ -292,8 +293,8 @@ class _RecurringTransactionDetailsScreenState
                   percentageChange == 0
                       ? Icons.horizontal_rule
                       : (percentageChange > 0
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward),
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward),
                   size: 16,
                   color: percentageChange == 0
                       ? AppColors.textSecondary

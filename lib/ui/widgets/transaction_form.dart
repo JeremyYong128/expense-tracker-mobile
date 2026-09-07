@@ -8,9 +8,9 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart'
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_type_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
-import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/utils/validators.dart';
+import 'package:expense_tracker_mobile/services/validator_service.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -203,8 +203,9 @@ class TransactionFormState extends State<TransactionForm> {
     if (_lockRewardRecalculation ||
         !_hasRewards ||
         _selectedCard == null ||
-        _isIncome)
+        _isIncome) {
       return;
+    }
 
     final amtStr = _amountController.text;
     final amt = double.tryParse(amtStr) ?? 0.0;
@@ -234,7 +235,9 @@ class TransactionFormState extends State<TransactionForm> {
                 _lockRewardRecalculation = true;
               }
             }
-          } catch (e) {}
+          } catch (e) {
+            // Ignore if card is not found or deleted
+          }
         }
 
         if (_amountController.text.trim().isEmpty ||
@@ -258,7 +261,9 @@ class TransactionFormState extends State<TransactionForm> {
           _selectedCategory = _categories.firstWhere(
             (c) => c.id == val.categoryId,
           );
-        } catch (e) {}
+        } catch (e) {
+          // Ignore if category is not found or deleted
+        }
       }
     });
   }
@@ -350,7 +355,6 @@ class TransactionFormState extends State<TransactionForm> {
 
   void submit() async {
     setState(() => _formError = null);
-    if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
     if (!hasChanges) {
@@ -358,47 +362,26 @@ class TransactionFormState extends State<TransactionForm> {
       return;
     }
 
-    final data = TransactionFormData(
-      amount: double.parse(_amountController.text),
-      title: _titleController.text.trim(),
-      categoryId: _selectedCategory!.id!,
-      date: _selectedDate,
-      isIncome: _isIncome,
-      note: _noteController.text.trim().isEmpty
-          ? null
-          : _noteController.text.trim(),
-      cardId: !_isIncome && _selectedCard != null ? _selectedCard!.id : null,
-      recurringId: !_isRecurring && _selectedRecurring != null
-          ? _selectedRecurring!.id
-          : null,
-      isRecurring: _isRecurring,
-      recurringInterval: _isRecurring
-          ? int.parse(_recurringIntervalController.text)
-          : 1,
-      recurringPeriod: _recurringPeriod,
-      rewardAmount:
-          (!_isIncome &&
-              _selectedCard != null &&
-              _hasRewards &&
-              _rewardAmountController.text.isNotEmpty)
-          ? double.tryParse(_rewardAmountController.text)
-          : null,
-    );
-
     try {
-      if (_selectedCategory != null) {
-        final isCompatible = _isIncome
-            ? _selectedCategory!.isIncome
-            : _selectedCategory!.isExpense;
-        if (!isCompatible) {
-          throw DatabaseValidationException(
-            '"${_selectedCategory!.name}" does not support a transaction of type "${_isIncome ? 'income' : 'expense'}".',
-          );
-        }
-      }
+      final data = await ValidatorService.validateTransaction(
+        context: context,
+        titleText: _titleController.text,
+        amountText: _amountController.text,
+        categoryId: _selectedCategory?.id,
+        date: _selectedDate,
+        isIncome: _isIncome,
+        noteText: _noteController.text,
+        cardId: _selectedCard?.id,
+        recurringId: !_isRecurring && _selectedRecurring != null ? _selectedRecurring!.id : null,
+        isRecurring: _isRecurring,
+        recurringIntervalText: _recurringIntervalController.text,
+        recurringPeriod: _recurringPeriod,
+        rewardAmountText: _rewardAmountController.text,
+        hasRewards: _hasRewards,
+      );
 
       await widget.onSave(data);
-    } on DatabaseValidationException catch (e) {
+    } on ValidationException catch (e) {
       if (mounted) {
         setState(() {
           _formError = e.message;
@@ -440,7 +423,7 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   Widget _buildRecurringDropdown(BuildContext context) {
-    return CustomValidatedField(
+    return CustomField(
       padding: EdgeInsets.zero,
       child: CustomDropdownField<RecurringTransaction?>(
         label: 'Link to existing recurring transaction'.cased(context),
@@ -506,9 +489,8 @@ class TransactionFormState extends State<TransactionForm> {
           ),
           const SizedBox(height: 32.0),
 
-          CustomValidatedField(
+          CustomField(
             label: 'Title'.cased(context),
-            validator: () => Validators.required(_titleController.text),
             child: TextField(
               controller: _titleController,
               decoration: _getInputDecoration(
@@ -517,9 +499,8 @@ class TransactionFormState extends State<TransactionForm> {
             ),
           ),
 
-          CustomValidatedField(
+          CustomField(
             label: 'Amount'.cased(context),
-            validator: () => Validators.amount(_amountController.text),
             child: TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -536,12 +517,8 @@ class TransactionFormState extends State<TransactionForm> {
             ),
           ),
 
-          CustomValidatedField(
+          CustomField(
             infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
-            validator: () => Validators.required(
-              _selectedCategory?.name,
-              'Select a valid category.',
-            ),
             child: _isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
                 : CustomDropdownField<Category?>(
@@ -593,7 +570,7 @@ class TransactionFormState extends State<TransactionForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomValidatedField(
+                  CustomField(
                     infoText: 'Add or edit cards under \'Manage\'.'.cased(
                       context,
                     ),
@@ -671,11 +648,8 @@ class TransactionFormState extends State<TransactionForm> {
                       child: _hasRewards
                           ? Padding(
                               padding: const EdgeInsets.only(top: 16.0),
-                              child: CustomValidatedField(
+                              child: CustomField(
                                 padding: EdgeInsets.zero,
-                                validator: () => Validators.rewardAmount(
-                                  _rewardAmountController.text,
-                                ),
                                 child: Row(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.baseline,
@@ -824,7 +798,7 @@ class TransactionFormState extends State<TransactionForm> {
             ),
           ],
 
-          CustomValidatedField(
+          CustomField(
             label: 'Note (optional)'.cased(context),
             child: TextField(
               controller: _noteController,
@@ -872,10 +846,8 @@ class TransactionFormState extends State<TransactionForm> {
         const SizedBox(width: 16.0),
         Expanded(
           flex: 1,
-          child: CustomValidatedField(
+          child: CustomField(
             padding: EdgeInsets.zero,
-            validator: () =>
-                Validators.greaterThanZero(_recurringIntervalController.text),
             child: TextField(
               controller: _recurringIntervalController,
               keyboardType: TextInputType.number,

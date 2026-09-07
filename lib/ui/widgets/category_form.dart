@@ -4,26 +4,26 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/ui/widgets/custom_validated_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/utils/validators.dart';
+import 'package:expense_tracker_mobile/services/validator_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
-class CategoryFormModal extends StatefulWidget {
+class CategoryForm extends StatefulWidget {
   final Category? category;
   final VoidCallback? onSaved;
 
-  const CategoryFormModal({super.key, this.category, this.onSaved});
+  const CategoryForm({super.key, this.category, this.onSaved});
 
   @override
-  State<CategoryFormModal> createState() => _CategoryFormModalState();
+  State<CategoryForm> createState() => _CategoryFormState();
 }
 
-class _CategoryFormModalState extends State<CategoryFormModal> {
+class _CategoryFormState extends State<CategoryForm> {
   late TextEditingController _nameController;
   late String _iconString;
   late String _colorHex;
@@ -62,15 +62,19 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
 
   bool get _hasChanges {
     if (widget.category == null) return true;
-    
-    final isExpense = _typeSelection == CategoryTypeSelection.expense || _typeSelection == CategoryTypeSelection.both;
-    final isIncome = _typeSelection == CategoryTypeSelection.income || _typeSelection == CategoryTypeSelection.both;
-    
+
+    final isExpense =
+        _typeSelection == CategoryTypeSelection.expense ||
+        _typeSelection == CategoryTypeSelection.both;
+    final isIncome =
+        _typeSelection == CategoryTypeSelection.income ||
+        _typeSelection == CategoryTypeSelection.both;
+
     return _nameController.text.trim() != widget.category!.name ||
-           _colorHex != widget.category!.colorHex ||
-           _iconString != widget.category!.iconString ||
-           isExpense != widget.category!.isExpense ||
-           isIncome != widget.category!.isIncome;
+        _colorHex != widget.category!.colorHex ||
+        _iconString != widget.category!.iconString ||
+        isExpense != widget.category!.isExpense ||
+        isIncome != widget.category!.isIncome;
   }
 
   @override
@@ -82,7 +86,6 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
 
   Future<void> _saveCategory() async {
     setState(() => _formError = null);
-    if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
     if (!_hasChanges) {
@@ -102,9 +105,10 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           _typeSelection == CategoryTypeSelection.both;
 
       if (widget.category != null) {
-        final updatedCategory = Category(
+        final updatedCategory = ValidatorService.validateCategory(
+          context: context,
           id: widget.category!.id,
-          name: text,
+          nameText: text,
           colorHex: _colorHex,
           iconString: _iconString,
           isActive: widget.category!.isActive,
@@ -112,10 +116,12 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           isIncome: isIncome,
         );
         await provider.updateCategory(updatedCategory);
-        SnackBarService.showSuccess('Category updated successfully!');
+        SnackBarService.showSuccess('Category updated successfully');
       } else {
-        final newCategory = Category(
-          name: text,
+        final newCategory = ValidatorService.validateCategory(
+          context: context,
+          id: null,
+          nameText: text,
           colorHex: _colorHex,
           iconString: _iconString,
           isActive: true,
@@ -123,14 +129,14 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           isIncome: isIncome,
         );
         await provider.addCategory(newCategory);
-        SnackBarService.showSuccess('Category added successfully!');
+        SnackBarService.showSuccess('Category added successfully');
       }
 
       if (mounted) {
         widget.onSaved?.call();
         Navigator.pop(context);
       }
-    } on DatabaseValidationException catch (e) {
+    } on ValidationException catch (e) {
       if (mounted) {
         setState(() {
           _formError = e.message;
@@ -206,12 +212,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
               const SizedBox(height: 24.0),
 
               // 2. Name Text Field
-              CustomValidatedField(
+              CustomField(
                 label: 'Category Name'.cased(context),
-                validator: () {
-                  final text = _nameController.text.trim();
-                  return Validators.required(text);
-                },
                 child: TextField(
                   controller: _nameController,
                   decoration: InputDecoration(

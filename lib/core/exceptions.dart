@@ -1,7 +1,7 @@
-class DatabaseValidationException implements Exception {
+class ValidationException implements Exception {
   final String message;
 
-  DatabaseValidationException(this.message);
+  ValidationException(this.message);
 
   @override
   String toString() => message;

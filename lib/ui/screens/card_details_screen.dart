@@ -7,7 +7,7 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/ui/widgets/card_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/card_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
@@ -30,7 +30,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
   void _showAddEditDialog(Card card) {
     SlideUpModal.showCustom(
       context: context,
-      builder: (context) => CardModal(card: card),
+      builder: (context) => CardForm(card: card),
     );
   }
 
@@ -66,7 +66,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
             await txProvider.fetchTransactions();
             await recProvider.fetchRecurringTransactions();
           }
-          SnackBarService.showSuccess('Card deleted successfully!');
+          SnackBarService.showSuccess('Card deleted successfully');
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -104,7 +104,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
               await txProvider.fetchTransactions();
               await recProvider.fetchRecurringTransactions();
             }
-            SnackBarService.showSuccess('Card deleted successfully!');
+            SnackBarService.showSuccess('Card deleted successfully');
 
             if (mounted) {
               innerNavigator.pop(); // Close details screen
@@ -118,7 +118,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         final provider = context.read<CardProvider>();
 
         await provider.deleteCard(card.id!, forceHardDelete: false);
-        SnackBarService.showSuccess('Card archived successfully!');
+        SnackBarService.showSuccess('Card archived successfully');
 
         if (mounted) {
           navigator.pop(); // Close details screen

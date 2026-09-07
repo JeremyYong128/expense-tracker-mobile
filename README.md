@@ -104,7 +104,6 @@ flutter run
     - Add more analytics to dashboard/category/credit card/screens.
         - How to aggregate statistics for categories that support both income and expense?
     - Add 1 more validation layer that validates multiple form fields together, but does not require database checks.
-    - Check that save/edit/delete alerts appear at the suitable times.
     - Change alerts:
         - Add transaction/recurring transaction: currently snack bar
         - Add card: currently nothing

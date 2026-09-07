@@ -3,7 +3,7 @@ import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
-import 'package:expense_tracker_mobile/ui/widgets/card_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/card_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
@@ -64,7 +64,7 @@ class _CardsScreenState extends State<CardsScreen> {
   void _showAddEditDialog([Card? card]) {
     SlideUpModal.showCustom(
       context: context,
-      builder: (context) => CardModal(card: card),
+      builder: (context) => CardForm(card: card),
     );
   }
 
@@ -80,7 +80,7 @@ class _CardsScreenState extends State<CardsScreen> {
             card.copyWith(isActive: true),
           );
           SnackBarService.showSuccess('Card restored successfully');
-        } on DatabaseValidationException catch (e) {
+        } on ValidationException catch (e) {
           SnackBarService.showError(e.message);
         } catch (e, stack) {
           AppLogger.error('Failed to restore card', e, stack);

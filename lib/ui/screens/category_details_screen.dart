@@ -7,7 +7,7 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
-import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
+import 'package:expense_tracker_mobile/ui/widgets/category_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
@@ -28,7 +28,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   void _showAddEditDialog(Category category) {
     SlideUpModal.showCustom(
       context: context,
-      builder: (context) => CategoryFormModal(category: category),
+      builder: (context) => CategoryForm(category: category),
     );
   }
 
@@ -55,7 +55,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           final provider = context.read<CategoryProvider>();
 
           await provider.deleteCategory(category.id!);
-          SnackBarService.showSuccess('Category deleted successfully!');
+          SnackBarService.showSuccess('Category deleted successfully');
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -68,7 +68,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       final provider = context.read<CategoryProvider>();
 
       provider.deleteCategory(category.id!).then((_) {
-        SnackBarService.showSuccess('Category deleted successfully!');
+        SnackBarService.showSuccess('Category deleted successfully');
         if (mounted) {
           navigator.pop();
         }
