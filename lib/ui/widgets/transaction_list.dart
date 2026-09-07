@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
@@ -252,10 +253,15 @@ class _TransactionListState extends State<TransactionList> {
               TextButton.icon(
                 onPressed: () async {
                   if (transaction.id != null) {
-                    await context.read<TransactionProvider>().deleteTransaction(
-                      transaction.id!,
-                    );
-                    SnackBarService.showSuccess('Transaction deleted successfully');
+                    try {
+                      await context.read<TransactionProvider>().deleteTransaction(
+                        transaction.id!,
+                      );
+                      SnackBarService.showSuccess('Transaction deleted successfully');
+                    } catch (e, stack) {
+                      AppLogger.error('Failed to delete transaction', e, stack);
+                      SnackBarService.showError('An unexpected error occurred.');
+                    }
                   }
                 },
                 icon: const Icon(

@@ -29,7 +29,7 @@
       - `transaction_form.dart`: The core form component used for both adding and editing transactions.
       - `transaction_type_toggle.dart`: A segmented control to toggle between Income and Expense.
   - **core/**: Core domain logic and error handling.
-    - `exceptions.dart`: Custom exceptions like `DatabaseValidationException`.
+    - `exceptions.dart`: Custom exceptions like `ValidationException`.
   - **services/**: Handles business logic and data access.
     - `data_service.dart`: Handles all database queries.
     - `recurring_processing_service.dart`: Logic for detecting and processing due recurring transactions.
@@ -50,15 +50,17 @@
 
 # Form Validation
 
-## Validation
+We use a centralized approach for validation that separates User Experience from Data Integrity.
 
-### 1. UI-Level Validation
+### 1. App-Side Validation (ValidatorService)
 
-For validation that does not require database queries, we do it through UI-level checks. These are implemented by the `CustomValidatedField` wrappers, which accept the form field and also validation functions (`utils/validators.dart`). This renders an error message below the form field itself if validation fails.
+All business logic, form field constraints, and state-dependent checks are contained in `ValidatorService`. When a user submits a form, the service validates all inputs at once. It uses `BuildContext` to read directly from Providers, allowing it to perform complex cross-field validations (e.g., verifying a category isn't duplicated, or ensuring a category's type matches the transaction). 
 
-### 2. Database-Level Validation
+If validation fails, it throws a `ValidationException` which the form catches and displays as a single user-friendly error message at the top of the modal.
 
-Form submission functions have a try/catch block that catch any `DatabaseValidationError` and stores the error message in the `_formError` field. This appears as a message at the top of the form for users.
+### 2. Database-Level Validation (Drift)
+
+The SQLite database acts as the final line of defense to ensure pure data integrity (e.g., Foreign Key constraints, basic limits). The app is designed such that the `ValidatorService` should catch any user errors first. If a database error occurs, it is treated as a generic unexpected error or a race condition, rather than a user-facing validation issue.
 
 # Recurring Transactions
 

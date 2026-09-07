@@ -14,6 +14,7 @@ import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class CardDetailsScreen extends StatefulWidget {
   final Card card;
@@ -58,15 +59,20 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
           final txProvider = context.read<TransactionProvider>();
           final recProvider = context.read<RecurringTransactionProvider>();
 
-          final affected = await provider.deleteCard(
-            card.id!,
-            forceHardDelete: true,
-          );
-          if (affected) {
-            await txProvider.fetchTransactions();
-            await recProvider.fetchRecurringTransactions();
+          try {
+            final affected = await provider.deleteCard(
+              card.id!,
+              forceHardDelete: true,
+            );
+            if (affected) {
+              await txProvider.fetchTransactions();
+              await recProvider.fetchRecurringTransactions();
+            }
+            SnackBarService.showSuccess('Card deleted successfully');
+          } catch (e, stack) {
+            AppLogger.error('Failed to delete card', e, stack);
+            SnackBarService.showError('An unexpected error occurred.');
           }
-          SnackBarService.showSuccess('Card deleted successfully');
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -96,15 +102,20 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
             final txProvider = context.read<TransactionProvider>();
             final recProvider = context.read<RecurringTransactionProvider>();
 
-            final affected = await provider.deleteCard(
-              card.id!,
-              forceHardDelete: true,
-            );
-            if (affected) {
-              await txProvider.fetchTransactions();
-              await recProvider.fetchRecurringTransactions();
+            try {
+              final affected = await provider.deleteCard(
+                card.id!,
+                forceHardDelete: true,
+              );
+              if (affected) {
+                await txProvider.fetchTransactions();
+                await recProvider.fetchRecurringTransactions();
+              }
+              SnackBarService.showSuccess('Card deleted successfully');
+            } catch (e, stack) {
+              AppLogger.error('Failed to delete card', e, stack);
+              SnackBarService.showError('An unexpected error occurred.');
             }
-            SnackBarService.showSuccess('Card deleted successfully');
 
             if (mounted) {
               innerNavigator.pop(); // Close details screen
@@ -117,8 +128,13 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         final navigator = Navigator.of(context);
         final provider = context.read<CardProvider>();
 
-        await provider.deleteCard(card.id!, forceHardDelete: false);
-        SnackBarService.showSuccess('Card archived successfully');
+        try {
+          await provider.deleteCard(card.id!, forceHardDelete: false);
+          SnackBarService.showSuccess('Card archived successfully');
+        } catch (e, stack) {
+          AppLogger.error('Failed to archive card', e, stack);
+          SnackBarService.showError('An unexpected error occurred.');
+        }
 
         if (mounted) {
           navigator.pop(); // Close details screen

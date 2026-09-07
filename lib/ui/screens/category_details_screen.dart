@@ -12,6 +12,7 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.da
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class CategoryDetailsScreen extends StatefulWidget {
   final Category category;
@@ -32,7 +33,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     );
   }
 
-  void _confirmDelete(Category category) {
+  void _confirmDelete(Category category) async {
     final transactionProvider = context.read<TransactionProvider>();
     final recurringTxProvider = context.read<RecurringTransactionProvider>();
 
@@ -54,8 +55,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           final navigator = Navigator.of(context);
           final provider = context.read<CategoryProvider>();
 
-          await provider.deleteCategory(category.id!);
-          SnackBarService.showSuccess('Category deleted successfully');
+          try {
+            await provider.deleteCategory(category.id!);
+            SnackBarService.showSuccess('Category deleted successfully');
+          } catch (e, stack) {
+            AppLogger.error('Failed to delete category', e, stack);
+            SnackBarService.showError('An unexpected error occurred.');
+          }
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -67,12 +73,16 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       final navigator = Navigator.of(context);
       final provider = context.read<CategoryProvider>();
 
-      provider.deleteCategory(category.id!).then((_) {
+      try {
+        await provider.deleteCategory(category.id!);
         SnackBarService.showSuccess('Category deleted successfully');
         if (mounted) {
           navigator.pop();
         }
-      });
+      } catch (e, stack) {
+        AppLogger.error('Failed to delete category', e, stack);
+        SnackBarService.showError('An unexpected error occurred.');
+      }
     }
   }
 

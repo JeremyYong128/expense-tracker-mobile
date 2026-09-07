@@ -15,6 +15,7 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.da
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class RecurringTransactionDetailsScreen extends StatefulWidget {
   final RecurringTransaction recurringTransaction;
@@ -40,7 +41,7 @@ class _RecurringTransactionDetailsScreenState
     );
   }
 
-  void _confirmDelete(RecurringTransaction tx) {
+  void _confirmDelete(RecurringTransaction tx) async {
     final transactionProvider = context.read<TransactionProvider>();
     final hasTransactions = transactionProvider.transactions.any(
       (t) => t.recurringId == tx.id,
@@ -58,8 +59,13 @@ class _RecurringTransactionDetailsScreenState
           final navigator = Navigator.of(context);
           final provider = context.read<RecurringTransactionProvider>();
 
-          await provider.deleteRecurringTransaction(tx.id!);
-          SnackBarService.showSuccess('Recurring transaction deleted successfully');
+          try {
+            await provider.deleteRecurringTransaction(tx.id!);
+            SnackBarService.showSuccess('Recurring transaction deleted successfully');
+          } catch (e, stack) {
+            AppLogger.error('Failed to delete recurring transaction', e, stack);
+            SnackBarService.showError('An unexpected error occurred.');
+          }
 
           if (mounted) {
             navigator.pop();
@@ -70,12 +76,16 @@ class _RecurringTransactionDetailsScreenState
       final navigator = Navigator.of(context);
       final provider = context.read<RecurringTransactionProvider>();
 
-      provider.deleteRecurringTransaction(tx.id!).then((_) {
+      try {
+        await provider.deleteRecurringTransaction(tx.id!);
         SnackBarService.showSuccess('Recurring transaction deleted successfully');
         if (mounted) {
           navigator.pop();
         }
-      });
+      } catch (e, stack) {
+        AppLogger.error('Failed to delete recurring transaction', e, stack);
+        SnackBarService.showError('An unexpected error occurred.');
+      }
     }
   }
 
