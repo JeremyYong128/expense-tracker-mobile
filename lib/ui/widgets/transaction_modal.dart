@@ -8,6 +8,7 @@ import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.
 import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class TransactionModal extends StatefulWidget {
   final t.Transaction? transaction;
@@ -42,6 +43,8 @@ class _TransactionModalState extends State<TransactionModal> {
     final isRec = widget.recurringTransaction != null;
 
     if (isAdd) {
+      final recurringProvider = context.read<RecurringTransactionProvider>();
+
       await context.read<TransactionProvider>().addTransaction(
         amountText: data.amount.toString(),
         title: data.title,
@@ -56,23 +59,16 @@ class _TransactionModalState extends State<TransactionModal> {
         recurringId: data.recurringId,
         rewardAmount: data.rewardAmount,
       );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Transaction added successfully!'.cased(context)),
-          ),
-        );
-        if (data.isRecurring) {
-          context
-              .read<RecurringTransactionProvider>()
-              .fetchRecurringTransactions();
-        }
+      SnackBarService.showSuccess('Transaction added successfully');
+      
+      if (data.isRecurring) {
+        recurringProvider.fetchRecurringTransactions();
       }
     } else if (isRec) {
-      final hasTransactions = context.read<TransactionProvider>().transactions.any(
-        (t) => t.recurringId == widget.recurringTransaction!.id,
-      );
+      final hasTransactions = context
+          .read<TransactionProvider>()
+          .transactions
+          .any((t) => t.recurringId == widget.recurringTransaction!.id);
 
       final updated = RecurringTransaction(
         id: widget.recurringTransaction!.id,
@@ -100,6 +96,9 @@ class _TransactionModalState extends State<TransactionModal> {
             await context
                 .read<RecurringTransactionProvider>()
                 .updateRecurringTransaction(updated);
+            SnackBarService.showSuccess(
+              'Recurring transaction updated successfully',
+            );
             if (mounted) Navigator.of(context).pop();
           },
         );
@@ -108,6 +107,9 @@ class _TransactionModalState extends State<TransactionModal> {
         await context
             .read<RecurringTransactionProvider>()
             .updateRecurringTransaction(updated);
+        SnackBarService.showSuccess(
+          'Recurring transaction updated successfully',
+        );
       }
     } else {
       final updated = t.Transaction(
@@ -123,6 +125,7 @@ class _TransactionModalState extends State<TransactionModal> {
         rewardAmount: data.rewardAmount,
       );
       await context.read<TransactionProvider>().updateTransaction(updated);
+      SnackBarService.showSuccess('Transaction updated successfully');
     }
 
     if (mounted) Navigator.of(context).pop();

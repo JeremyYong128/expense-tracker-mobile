@@ -14,6 +14,7 @@ import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class RecurringTransactionDetailsScreen extends StatefulWidget {
   final RecurringTransaction recurringTransaction;
@@ -58,6 +59,7 @@ class _RecurringTransactionDetailsScreenState
           final provider = context.read<RecurringTransactionProvider>();
 
           await provider.deleteRecurringTransaction(tx.id!);
+          SnackBarService.showSuccess('Recurring transaction deleted successfully!');
 
           if (mounted) {
             navigator.pop();
@@ -69,6 +71,7 @@ class _RecurringTransactionDetailsScreenState
       final provider = context.read<RecurringTransactionProvider>();
 
       provider.deleteRecurringTransaction(tx.id!).then((_) {
+        SnackBarService.showSuccess('Recurring transaction deleted successfully!');
         if (mounted) {
           navigator.pop();
         }

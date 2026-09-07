@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/ui/widgets/category_form_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class CategoryDetailsScreen extends StatefulWidget {
   final Category category;
@@ -54,6 +55,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           final provider = context.read<CategoryProvider>();
 
           await provider.deleteCategory(category.id!);
+          SnackBarService.showSuccess('Category deleted successfully!');
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -66,6 +68,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       final provider = context.read<CategoryProvider>();
 
       provider.deleteCategory(category.id!).then((_) {
+        SnackBarService.showSuccess('Category deleted successfully!');
         if (mounted) {
           navigator.pop();
         }

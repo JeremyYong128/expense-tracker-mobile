@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class CardModal extends StatefulWidget {
   final Card? card;
@@ -117,9 +118,13 @@ class _CardModalState extends State<CardModal> {
           );
           if (shouldProceed != true) return;
         }
+        
+        if (!mounted) return;
         await context.read<CardProvider>().updateCard(newCard);
+        SnackBarService.showSuccess('Card updated successfully');
       } else {
         await context.read<CardProvider>().addCard(newCard);
+        SnackBarService.showSuccess('Card added successfully');
       }
 
       if (mounted) {

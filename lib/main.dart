@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:flutter/foundation.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
@@ -70,6 +71,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: SnackBarService.scaffoldMessengerKey,
       title: 'Expense Tracker'.cased(context),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

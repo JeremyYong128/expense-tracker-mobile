@@ -8,11 +8,15 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class PendingApprovalsDialog extends StatefulWidget {
   final List<Transaction> initialPending;
 
-  static Future<void> show(BuildContext context, List<Transaction> pending) async {
+  static Future<void> show(
+    BuildContext context,
+    List<Transaction> pending,
+  ) async {
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -65,14 +69,9 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
         }
       }
     } catch (e) {
+      SnackBarService.showError(e.toString());
       if (mounted) {
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: AppColors.error,
-          ),
-        );
       }
     }
   }
@@ -118,7 +117,9 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                 itemBuilder: (context, index) {
                   final group = groupedPending[groupedKeys[index]]!;
                   final firstTx = group.first;
-                  final card = firstTx.cardId != null ? cards.where((c) => c.id == firstTx.cardId).firstOrNull : null;
+                  final card = firstTx.cardId != null
+                      ? cards.where((c) => c.id == firstTx.cardId).firstOrNull
+                      : null;
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
@@ -157,11 +158,16 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                               ),
                             ],
                           ),
-                          if (firstTx.rewardAmount != null && firstTx.rewardAmount! > 0) ...[
+                          if (firstTx.rewardAmount != null &&
+                              firstTx.rewardAmount! > 0) ...[
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.stars, size: 14, color: AppColors.textSecondary),
+                                const Icon(
+                                  Icons.stars,
+                                  size: 14,
+                                  color: AppColors.textSecondary,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   _getRewardText(firstTx, card),
@@ -223,9 +229,10 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                                     .withValues(alpha: 0.1),
                                                 disabledForegroundColor:
                                                     AppColors.grey,
-                                                disabledBackgroundColor: AppColors
-                                                    .grey
-                                                    .withValues(alpha: 0.1),
+                                                disabledBackgroundColor:
+                                                    AppColors.grey.withValues(
+                                                      alpha: 0.1,
+                                                    ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -262,9 +269,10 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                                     .withValues(alpha: 0.1),
                                                 disabledForegroundColor:
                                                     AppColors.grey,
-                                                disabledBackgroundColor: AppColors
-                                                    .grey
-                                                    .withValues(alpha: 0.1),
+                                                disabledBackgroundColor:
+                                                    AppColors.grey.withValues(
+                                                      alpha: 0.1,
+                                                    ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(

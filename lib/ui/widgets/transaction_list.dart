@@ -13,6 +13,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class TransactionList extends StatefulWidget {
   final List<Transaction> transactions;
@@ -254,6 +255,7 @@ class _TransactionListState extends State<TransactionList> {
                     await context.read<TransactionProvider>().deleteTransaction(
                       transaction.id!,
                     );
+                    SnackBarService.showSuccess('Transaction deleted successfully');
                   }
                 },
                 icon: const Icon(

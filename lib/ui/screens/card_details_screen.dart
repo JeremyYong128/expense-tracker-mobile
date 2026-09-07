@@ -13,6 +13,7 @@ import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class CardDetailsScreen extends StatefulWidget {
   final Card card;
@@ -65,6 +66,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
             await txProvider.fetchTransactions();
             await recProvider.fetchRecurringTransactions();
           }
+          SnackBarService.showSuccess('Card deleted successfully!');
 
           if (mounted) {
             navigator.pop(); // Close details screen
@@ -102,6 +104,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
               await txProvider.fetchTransactions();
               await recProvider.fetchRecurringTransactions();
             }
+            SnackBarService.showSuccess('Card deleted successfully!');
 
             if (mounted) {
               innerNavigator.pop(); // Close details screen
@@ -115,6 +118,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         final provider = context.read<CardProvider>();
 
         await provider.deleteCard(card.id!, forceHardDelete: false);
+        SnackBarService.showSuccess('Card archived successfully!');
 
         if (mounted) {
           navigator.pop(); // Close details screen

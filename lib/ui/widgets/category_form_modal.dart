@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/utils/validators.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class CategoryFormModal extends StatefulWidget {
   final Category? category;
@@ -59,6 +60,19 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     }
   }
 
+  bool get _hasChanges {
+    if (widget.category == null) return true;
+    
+    final isExpense = _typeSelection == CategoryTypeSelection.expense || _typeSelection == CategoryTypeSelection.both;
+    final isIncome = _typeSelection == CategoryTypeSelection.income || _typeSelection == CategoryTypeSelection.both;
+    
+    return _nameController.text.trim() != widget.category!.name ||
+           _colorHex != widget.category!.colorHex ||
+           _iconString != widget.category!.iconString ||
+           isExpense != widget.category!.isExpense ||
+           isIncome != widget.category!.isIncome;
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -70,6 +84,11 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     setState(() => _formError = null);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
+
+    if (!_hasChanges) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
 
     try {
       final text = _nameController.text.trim();
@@ -93,6 +112,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           isIncome: isIncome,
         );
         await provider.updateCategory(updatedCategory);
+        SnackBarService.showSuccess('Category updated successfully!');
       } else {
         final newCategory = Category(
           name: text,
@@ -103,6 +123,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
           isIncome: isIncome,
         );
         await provider.addCategory(newCategory);
+        SnackBarService.showSuccess('Category added successfully!');
       }
 
       if (mounted) {

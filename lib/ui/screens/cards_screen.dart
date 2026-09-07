@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -78,19 +79,12 @@ class _CardsScreenState extends State<CardsScreen> {
           await context.read<CardProvider>().updateCard(
             card.copyWith(isActive: true),
           );
+          SnackBarService.showSuccess('Card restored successfully');
         } on DatabaseValidationException catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(e.message)));
-          }
+          SnackBarService.showError(e.message);
         } catch (e, stack) {
           AppLogger.error('Failed to restore card', e, stack);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('An unexpected error occurred.')),
-            );
-          }
+          SnackBarService.showError('An unexpected error occurred.');
         }
       },
     );
