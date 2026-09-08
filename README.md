@@ -101,19 +101,18 @@ flutter run
 ### Changes
 - High priority
     - Improve design of detail screens
+    - Check casing of snack bars. Some are lower case even when setting is not enabled.
     - Add more analytics to dashboard/category/credit card/screens.
         - How to aggregate statistics for categories that support both income and expense?
-    - Add 1 more validation layer that validates multiple form fields together, but does not require database checks.
-    - Change alerts:
-        - Add transaction/recurring transaction: currently snack bar
-        - Add card: currently nothing
+    - Abstract business logic in widgets: minimise data processing in widgets and move logic to separate classes.
 
 - Medium priority
     - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
     - List design for notifications screen and manage screen, and dashboard cashback section
     - Horizontal display
     - Transaction list should be filtered by month with toggle on the top
-    - Need a way for users to reorder things in the "Manage" tab
+    - Need a way for users to reorder things in the "Manage" tab, should affect choices in the forms
+    = Rounding consistency for miles and points (card details, dashboard, forms)
 
 - Low priority
     - Redesign modal for pending approvals
@@ -123,3 +122,4 @@ flutter run
 - Possible changes to consider:
     - Allow a user to navigate from an individual transaction to its associated recurring transaction
     - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?
+    - Should cards support income transactions too? For things like refunds.

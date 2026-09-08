@@ -328,7 +328,6 @@ class _TransactionListState extends State<TransactionList> {
               padding: EdgeInsets.only(
                 top: index == 0 ? 0.0 : 8.0,
                 bottom: 12.0,
-                left: 4.0,
               ),
               child: Text(
                 DateFormat('EEEE, d MMMM yyyy').format(date).cased(context),

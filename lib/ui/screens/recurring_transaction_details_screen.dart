@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../utils/business_logic.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
@@ -251,12 +252,7 @@ class _RecurringTransactionDetailsScreenState
     final color = AppColors.textPrimary;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
 
-    double? percentageChange;
-    if (prevBalance != 0) {
-      percentageChange = ((balance - prevBalance) / prevBalance.abs()) * 100;
-    } else if (balance != 0) {
-      percentageChange = 100.0;
-    }
+    final percentageChange = BusinessLogic.calculatePercentageChange(balance, prevBalance);
 
     bool isGood = false;
     if (percentageChange != null) {

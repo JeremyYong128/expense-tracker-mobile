@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Card;
 import 'package:intl/intl.dart';
+import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
@@ -171,11 +172,31 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
           t.date.month == _selectedMonth.month;
     }).toList();
 
-    // Calculate total rewards
+    // Calculate total rewards and expense
     double totalRewardsAmount = 0;
+    double totalExpense = 0;
     for (var tx in transactionsList) {
-      if (!tx.isIncome && tx.rewardAmount != null) {
-        totalRewardsAmount += tx.rewardAmount!;
+      if (!tx.isIncome) {
+        totalExpense += tx.amount;
+        if (tx.rewardAmount != null) {
+          totalRewardsAmount += tx.rewardAmount!;
+        }
+      }
+    }
+
+    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+    final prevTransactionsList = allTransactions.where((t) {
+      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
+    }).toList();
+
+    double prevExpense = 0;
+    double prevRewardsAmount = 0;
+    for (var tx in prevTransactionsList) {
+      if (!tx.isIncome) {
+        prevExpense += tx.amount;
+        if (tx.rewardAmount != null) {
+          prevRewardsAmount += tx.rewardAmount!;
+        }
       }
     }
 
@@ -196,70 +217,67 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
       body: SafeArea(
         bottom: true,
         top: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: AppStyles.screenPadding.left,
-                right: AppStyles.screenPadding.right,
-                top: AppStyles.screenPadding.top,
-                bottom: 8.0,
-              ),
-              child: MonthSelectorToggle(
-                selectedMonth: _selectedMonth,
-                transactions: allTransactions,
-                onMonthChanged: (newMonth) {
-                  setState(() {
-                    _selectedMonth = newMonth;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  left: AppStyles.screenPadding.left,
-                  right: AppStyles.screenPadding.right,
-                  bottom: AppStyles.screenPadding.bottom,
+        child: SingleChildScrollView(
+          padding: AppStyles.screenPadding,
+          child: Column(
+            children: [
+              _buildDigitalCard(latestCard),
+              if (allTransactions.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
+                  child: Text(
+                    'No expenses tagged to this card.'.cased(context),
+                    style: const TextStyle(
+                      color: AppColors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+              else ...[
+                const SizedBox(height: 16),
+                MonthSelectorToggle(
+                  selectedMonth: _selectedMonth,
+                  transactions: allTransactions,
+                  onMonthChanged: (newMonth) {
+                    setState(() {
+                      _selectedMonth = newMonth;
+                    });
+                  },
                 ),
-                child: Column(
-                  children: [
-                    _buildDigitalCard(latestCard, totalRewardsAmount),
-                    const SizedBox(height: 16),
-                    if (transactionsList.isNotEmpty) ...[
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Monthly Expenses'.cased(context),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                const SizedBox(height: 16),
+                _buildMonthlySummary(latestCard, totalExpense, totalRewardsAmount, prevExpense, prevRewardsAmount),
+                const SizedBox(height: 24),
+                if (transactionsList.isNotEmpty) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Expenses'.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (transactionsList.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
-                        child: Text(
-                          'No expenses tagged to this card.'.cased(context),
-                          style: const TextStyle(
-                            color: AppColors.grey,
-                            fontSize: 16,
-                          ),
-                        ),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: TransactionList(transactions: transactionsList),
+                    ),
+                  ),
+                ],
+                if (transactionsList.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
+                    child: Text(
+                      'No expenses tagged to this card for this month.'.cased(context),
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 16,
                       ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: TransactionList(transactions: transactionsList),
+                  ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -308,12 +326,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     return '$rateStr ${card.rewardType.cased(context)}';
   }
 
-  Widget _buildDigitalCard(Card card, double totalRewardsAmount) {
-    final isCashback = card.rewardType == 'Cashback';
-    final rewardText = isCashback
-        ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
-        : NumberFormat.decimalPattern().format(totalRewardsAmount.toInt());
-
+  Widget _buildDigitalCard(Card card) {
     final gradient = _getGradientForCard(card);
     final iconData = _getIconForRewardType(card.rewardType);
     final subtitle = _getRewardSubtitle(context, card);
@@ -362,25 +375,126 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 32),
-          Text(
-            'Monthly Rewards'.cased(context).toUpperCase(),
-            style: TextStyle(
-              color: AppColors.white.withValues(alpha: 0.7),
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthlySummary(
+    Card card,
+    double totalExpense,
+    double totalRewardsAmount,
+    double prevExpense,
+    double prevRewardsAmount,
+  ) {
+    final isCashback = card.rewardType == 'Cashback';
+    final rewardText = isCashback
+        ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
+        : NumberFormat('#,##0.##').format(totalRewardsAmount);
+
+    final expensePercentageChange = BusinessLogic.calculatePercentageChange(totalExpense, prevExpense);
+    bool isExpenseGood = false;
+    if (expensePercentageChange != null) {
+      isExpenseGood = expensePercentageChange <= 0;
+    }
+    Color expenseChangeColor = isExpenseGood ? AppColors.income : AppColors.expense;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Monthly Spending'.cased(context).toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${totalExpense.abs().toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (expensePercentageChange != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        expensePercentageChange == 0
+                            ? Icons.horizontal_rule
+                            : (expensePercentageChange > 0
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward),
+                        size: 16,
+                        color: expensePercentageChange == 0
+                            ? AppColors.textSecondary
+                            : expenseChangeColor,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          '${expensePercentageChange.abs().toStringAsFixed(1)}% vs last month',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            rewardText,
-            style: const TextStyle(
-              color: AppColors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
+          if (card.rewardType.toLowerCase() != 'none') ...[
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Monthly Rewards'.cased(context).toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    rewardText,
+                    style: const TextStyle(
+                      color: AppColors.income,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

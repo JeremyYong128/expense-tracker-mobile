@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
@@ -123,6 +124,22 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       }
     }
 
+    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+    final prevTransactionsList = allTransactions.where((t) {
+      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
+    }).toList();
+
+    double prevIncome = 0;
+    double prevExpense = 0;
+    for (var tx in prevTransactionsList) {
+      if (tx.isIncome) {
+        prevIncome += tx.amount;
+      } else {
+        prevExpense += tx.amount;
+      }
+    }
+    double prevBalance = prevIncome - prevExpense;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(latestCategory.name),
@@ -165,7 +182,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildMonthlySummary(totalIncome, totalExpense),
+                _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
                 const SizedBox(height: 24),
                 if (transactionsList.isNotEmpty) ...[
                   Align(
@@ -203,12 +220,24 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     );
   }
 
-  Widget _buildMonthlySummary(double totalIncome, double totalExpense) {
+  Widget _buildMonthlySummary(
+    double totalIncome,
+    double totalExpense,
+    double prevBalance,
+  ) {
     final balance = totalIncome - totalExpense;
     final isPositive = balance > 0;
     final isNegative = balance < 0;
     final color = AppColors.textPrimary;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
+
+    final percentageChange = BusinessLogic.calculatePercentageChange(balance, prevBalance);
+
+    bool isGood = false;
+    if (percentageChange != null) {
+      isGood = percentageChange >= 0;
+    }
+    Color changeColor = isGood ? AppColors.income : AppColors.expense;
 
     return Container(
       width: double.infinity,
@@ -240,6 +269,34 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
               fontWeight: FontWeight.w700,
             ),
           ),
+          if (percentageChange != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  percentageChange == 0
+                      ? Icons.horizontal_rule
+                      : (percentageChange > 0
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward),
+                  size: 16,
+                  color: percentageChange == 0
+                      ? AppColors.textSecondary
+                      : changeColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${percentageChange.abs().toStringAsFixed(1)}% from previous month',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

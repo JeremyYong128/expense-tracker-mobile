@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/database/drift_database.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
+import '../utils/business_logic.dart';
 
 class DataService {
   static final AppDatabase _db = AppDatabase();
@@ -569,19 +570,8 @@ class DataService {
       }
     }
 
-    double? incomePercentageChange;
-    if (pastIncome == 0) {
-      if (income > 0) incomePercentageChange = 100.0;
-    } else {
-      incomePercentageChange = ((income - pastIncome) / pastIncome) * 100;
-    }
-
-    double? expensePercentageChange;
-    if (pastExpense == 0) {
-      if (expense > 0) expensePercentageChange = 100.0;
-    } else {
-      expensePercentageChange = ((expense - pastExpense) / pastExpense) * 100;
-    }
+    final incomePercentageChange = BusinessLogic.calculatePercentageChange(income, pastIncome);
+    final expensePercentageChange = BusinessLogic.calculatePercentageChange(expense, pastExpense);
 
     // Sort category spending to get top ones
     final sortedCategories = categorySpending.entries.toList()
