@@ -283,23 +283,6 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     );
   }
 
-  LinearGradient _getGradientForCard(Card card) {
-    final Color color1 = AppColors.getColorFromHex(card.colorHex);
-
-    // Convert to HSL to get a slightly shifted secondary color for the gradient
-    final HSLColor hsl1 = HSLColor.fromColor(color1);
-    final Color color2 = hsl1
-        .withHue((hsl1.hue + 40) % 360)
-        .withLightness((hsl1.lightness + 0.1).clamp(0.0, 1.0))
-        .toColor();
-
-    return LinearGradient(
-      colors: [color1, color2],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
   IconData _getIconForRewardType(String rewardType) {
     switch (rewardType.toLowerCase()) {
       case 'cashback':
@@ -327,7 +310,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
   }
 
   Widget _buildDigitalCard(Card card) {
-    final gradient = _getGradientForCard(card);
+    final color = AppColors.getColorFromHex(card.colorHex);
     final iconData = _getIconForRewardType(card.rewardType);
     final subtitle = _getRewardSubtitle(context, card);
 
@@ -336,11 +319,11 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
       margin: const EdgeInsets.only(top: 8, bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(24),
+        color: color,
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: gradient.colors.first.withValues(alpha: 0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -404,7 +387,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
       ),
       child: Row(

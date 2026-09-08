@@ -82,8 +82,8 @@ class _TransactionListState extends State<TransactionList> {
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24.0),
-          bottomRight: Radius.circular(24.0),
+          bottomLeft: Radius.circular(AppStyles.cardRadius),
+          bottomRight: Radius.circular(AppStyles.cardRadius),
         ),
       ),
       padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
@@ -358,7 +358,7 @@ class _TransactionListState extends State<TransactionList> {
                 margin: EdgeInsets.only(bottom: isLastItem ? 0.0 : 12.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24.0),
+                  borderRadius: BorderRadius.circular(AppStyles.cardRadius),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.04),
@@ -370,7 +370,7 @@ class _TransactionListState extends State<TransactionList> {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(24.0),
+                    borderRadius: BorderRadius.circular(AppStyles.cardRadius),
                     onTap: () {
                       if (transaction.id == null) return;
                       setState(() {

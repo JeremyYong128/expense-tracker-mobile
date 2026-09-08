@@ -231,7 +231,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final color = AppColors.textPrimary;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
 
-    final percentageChange = BusinessLogic.calculatePercentageChange(balance, prevBalance);
+    final percentageChange = BusinessLogic.calculatePercentageChange(
+      balance,
+      prevBalance,
+    );
 
     bool isGood = false;
     if (percentageChange != null) {
@@ -244,7 +247,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -302,37 +305,55 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     );
   }
 
+  LinearGradient _getGradientForCategory(Category category) {
+    final Color baseColor = AppColors.getColorFromHex(category.colorHex);
+    final HSLColor hsl = HSLColor.fromColor(baseColor);
+
+    // Create a smooth light-to-dark gradient of the exact same color
+    final Color lightColor = hsl
+        .withLightness((hsl.lightness + 0.08).clamp(0.0, 1.0))
+        .toColor();
+    final Color darkColor = hsl
+        .withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0))
+        .toColor();
+
+    return LinearGradient(
+      colors: [lightColor, darkColor],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
   Widget _buildCategoryHeader(Category category) {
-    final color = AppColors.getColorFromHex(category.colorHex);
+    final gradient = _getGradientForCategory(category);
 
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 8, bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
+            color: gradient.colors.first.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
         ],
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Text(
                   category.name,
-                  style: TextStyle(
-                    color: color,
+                  style: const TextStyle(
+                    color: AppColors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
@@ -341,10 +362,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
+                  color: AppColors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(category.iconData, color: color, size: 32),
+                child: Icon(
+                  category.iconData,
+                  color: AppColors.white,
+                  size: 32,
+                ),
               ),
             ],
           ),

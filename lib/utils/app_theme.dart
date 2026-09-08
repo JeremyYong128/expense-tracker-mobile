@@ -70,6 +70,9 @@ class AppStyles {
   
   // Standardized padding for slide-up modals
   static const EdgeInsets modalPadding = EdgeInsets.all(16.0);
+
+  // Standardized border radius for cards
+  static const double cardRadius = 24.0;
 }
 
 class AppTheme {

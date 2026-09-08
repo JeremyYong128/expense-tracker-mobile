@@ -123,3 +123,4 @@ flutter run
     - Allow a user to navigate from an individual transaction to its associated recurring transaction
     - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?
     - Should cards support income transactions too? For things like refunds.
+    - Add more credit card details and make the details screen look like a card.

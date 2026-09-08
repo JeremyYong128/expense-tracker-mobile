@@ -265,7 +265,7 @@ class _RecurringTransactionDetailsScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -353,7 +353,7 @@ class _RecurringTransactionDetailsScreenState
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.1),
