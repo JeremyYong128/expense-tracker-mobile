@@ -31,22 +31,23 @@ const Map<String, String> _ukToUsDictionary = {
 };
 
 extension StringCasing on String {
-  String cased(BuildContext context) {
+  String cased(BuildContext context, {bool listen = true}) {
     try {
-      final isLower = Provider.of<UserPreferencesProvider>(context).isLowerCaps;
+      final isLower = Provider.of<UserPreferencesProvider>(context, listen: listen).isLowerCaps;
       return isLower ? toLowerCase() : this;
     } catch (e) {
       // Fallback in case provider is not found
-      return toLowerCase();
+      return this;
     }
   }
 }
 
 extension StringLocalization on String {
-  String localized(BuildContext context) {
+  String localized(BuildContext context, {bool listen = true}) {
     try {
       final useUsEnglish = Provider.of<UserPreferencesProvider>(
         context,
+        listen: listen,
       ).useUsEnglish;
       if (!useUsEnglish) return this;
 

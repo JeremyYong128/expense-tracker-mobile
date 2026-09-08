@@ -100,8 +100,6 @@ flutter run
 
 ### Changes
 - High priority
-    - Improve design of detail screens
-    - Check casing of snack bars. Some are lower case even when setting is not enabled.
     - Add more analytics to dashboard/category/credit card/screens.
         - How to aggregate statistics for categories that support both income and expense?
     - Abstract business logic in widgets: minimise data processing in widgets and move logic to separate classes.

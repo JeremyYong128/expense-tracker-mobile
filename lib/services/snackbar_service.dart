@@ -20,7 +20,7 @@ class SnackBarService {
 
   static String _getCasedMessage(String message) {
     final ctx = scaffoldMessengerKey.currentContext;
-    final msg = ctx != null ? message.cased(ctx) : message;
+    final msg = ctx != null ? message.cased(ctx, listen: false) : message;
     return msg;
   }
 
