@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart' hide Card;
 import 'package:intl/intl.dart';
-import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
+import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -375,20 +375,16 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
         : NumberFormat('#,##0.##').format(totalRewardsAmount);
 
-    final expensePercentageChange = BusinessLogic.calculatePercentageChange(totalExpense, prevExpense);
-    bool isExpenseGood = false;
-    if (expensePercentageChange != null) {
-      isExpenseGood = expensePercentageChange <= 0;
-    }
-    Color expenseChangeColor = isExpenseGood ? AppColors.income : AppColors.expense;
+    final expenseDiff = BusinessLogic.calculateAbsoluteDifference(totalExpense, prevExpense);
+    final isExpenseGood = expenseDiff <= 0;
+    final expenseChangeColor = isExpenseGood ? AppColors.income : AppColors.expense;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-        border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,12 +395,11 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Monthly Spending'.cased(context).toUpperCase(),
+                  'Monthly Spending'.cased(context),
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                    color: AppColors.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -413,29 +408,23 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 24,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (expensePercentageChange != null) ...[
+                if (expenseDiff != 0) ...[
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        expensePercentageChange == 0
-                            ? Icons.horizontal_rule
-                            : (expensePercentageChange > 0
-                                  ? Icons.arrow_upward
-                                  : Icons.arrow_downward),
+                        expenseDiff > 0 ? Icons.arrow_upward : Icons.arrow_downward,
                         size: 16,
-                        color: expensePercentageChange == 0
-                            ? AppColors.textSecondary
-                            : expenseChangeColor,
+                        color: expenseChangeColor,
                       ),
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
-                          '${expensePercentageChange.abs().toStringAsFixed(1)}% vs last month',
+                          '\$${expenseDiff.abs().toStringAsFixed(2)} vs last month',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -457,21 +446,20 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Monthly Rewards'.cased(context).toUpperCase(),
+                    'Monthly Rewards'.cased(context),
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     rewardText,
                     style: const TextStyle(
-                      color: AppColors.income,
+                      color: AppColors.textPrimary,
                       fontSize: 24,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

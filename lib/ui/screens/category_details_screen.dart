@@ -228,69 +228,53 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final balance = totalIncome - totalExpense;
     final isPositive = balance > 0;
     final isNegative = balance < 0;
-    final color = AppColors.textPrimary;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
 
-    final percentageChange = BusinessLogic.calculatePercentageChange(
-      balance,
-      prevBalance,
-    );
-
-    bool isGood = false;
-    if (percentageChange != null) {
-      isGood = percentageChange >= 0;
-    }
-    Color changeColor = isGood ? AppColors.income : AppColors.expense;
+    final diff = BusinessLogic.calculateAbsoluteDifference(balance, prevBalance);
+    final isGood = diff >= 0;
+    final changeColor = isGood ? AppColors.income : AppColors.expense;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-        border: Border.all(color: AppColors.grey.withValues(alpha: 0.2)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Monthly Balance'.cased(context).toUpperCase(),
+            'Monthly Balance'.cased(context),
             style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+              color: AppColors.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             '$sign\$${balance.abs().toStringAsFixed(2)}',
-            style: TextStyle(
-              color: color,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
               fontSize: 24,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          if (percentageChange != null) ...[
+          if (diff != 0) ...[
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  percentageChange == 0
-                      ? Icons.horizontal_rule
-                      : (percentageChange > 0
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward),
+                  diff > 0 ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
-                  color: percentageChange == 0
-                      ? AppColors.textSecondary
-                      : changeColor,
+                  color: changeColor,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${percentageChange.abs().toStringAsFixed(1)}% from previous month',
+                  '\$${diff.abs().toStringAsFixed(2)} vs last month',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

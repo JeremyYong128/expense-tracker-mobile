@@ -9,4 +9,8 @@ class BusinessLogic {
     }
     return null;
   }
+  /// Calculates the absolute difference between a current value and a previous value.
+  static double calculateAbsoluteDifference(double currentValue, double previousValue) {
+    return currentValue - previousValue;
+  }
 }
