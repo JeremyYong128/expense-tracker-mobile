@@ -3,9 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
@@ -15,6 +14,7 @@ import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/models/analytics_stats.dart';
 
 class TransactionList extends StatefulWidget {
   final List<Transaction> transactions;
@@ -49,16 +49,8 @@ class _TransactionListState extends State<TransactionList> {
     CardProvider cardProvider,
     RecurringTransactionProvider recurringProvider,
   ) {
-    final card = transaction.cardId != null
-        ? cardProvider.cards
-              .where((c) => c.id == transaction.cardId)
-              .firstOrNull
-        : null;
-    final recurring = transaction.recurringId != null
-        ? recurringProvider.transactions
-              .where((r) => r.id == transaction.recurringId)
-              .firstOrNull
-        : null;
+    final card = cardProvider.getCardById(transaction.cardId);
+    final recurring = recurringProvider.getRecurringTransactionById(transaction.recurringId);
 
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
@@ -294,7 +286,6 @@ class _TransactionListState extends State<TransactionList> {
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
     final recurringProvider = context.watch<RecurringTransactionProvider>();
-    final categories = categoryProvider.categories;
 
     Widget emptyWidget = Center(
       child: Text(
@@ -307,9 +298,9 @@ class _TransactionListState extends State<TransactionList> {
       return emptyWidget;
     }
 
-    final stats = DataService.computeHistoryStats(
+    final stats = HistoryStats.fromTransactions(
       widget.transactions,
-      categories,
+      categoryProvider.categories,
     );
     final grouped = stats.groupedTransactions;
 

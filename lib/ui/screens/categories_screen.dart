@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form.dart';
@@ -51,11 +52,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             );
           }
 
-          final categories = allCategories.where((c) {
-            if (_filter == 'Expense') return c.isExpense;
-            if (_filter == 'Income') return c.isIncome;
-            return true;
-          }).toList();
+          List<Category> categories;
+          if (_filter == 'Expense') {
+            categories = provider.activeExpenseCategories;
+          } else if (_filter == 'Income') {
+            categories = provider.activeIncomeCategories;
+          } else {
+            categories = provider.activeCategories;
+          }
 
           return Column(
             children: [

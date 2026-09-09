@@ -91,7 +91,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final cards = context.watch<CardProvider>().cards;
+    final cardProvider = context.watch<CardProvider>();
     final groupedPending = <int, List<Transaction>>{};
     for (final tx in _pending) {
       if (tx.recurringId != null) {
@@ -117,9 +117,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                 itemBuilder: (context, index) {
                   final group = groupedPending[groupedKeys[index]]!;
                   final firstTx = group.first;
-                  final card = firstTx.cardId != null
-                      ? cards.where((c) => c.id == firstTx.cardId).firstOrNull
-                      : null;
+                  final card = cardProvider.getCardById(firstTx.cardId);
 
                   return Card(
                     margin: const EdgeInsets.symmetric(

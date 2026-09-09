@@ -12,6 +12,20 @@ class CategoryProvider extends ChangeNotifier {
   List<Category> get activeIncomeCategories => _categories.where((c) => c.isActive && c.isIncome).toList();
   bool get isLoading => _isLoading;
 
+  List<Category> get incomeCategories => _categories.where((c) => c.isIncome).toList();
+  List<Category> get expenseCategories => _categories.where((c) => c.isExpense).toList();
+
+  Category? getCategoryById(int? id) {
+    if (id == null) return null;
+    return _categories.where((c) => c.id == id).firstOrNull;
+  }
+
+  List<Category> getAvailableCategoriesForDropdown(int? currentCategoryId) {
+    return _categories.where((c) {
+      return c.isActive || c.id == currentCategoryId;
+    }).toList();
+  }
+
   CategoryProvider() {
     fetchCategories();
   }

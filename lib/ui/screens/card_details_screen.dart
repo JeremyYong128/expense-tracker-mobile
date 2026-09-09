@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Card;
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -150,10 +151,8 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
 
-    final latestCard = cardProvider.cards.firstWhere(
-      (c) => c.id == widget.card.id,
-      orElse: () => widget.card,
-    );
+    final latestCard = cardProvider.getCardById(widget.card.id) 
+        ?? widget.card;
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
@@ -162,43 +161,15 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
       );
     }
 
-    final allTransactions = transactionProvider.transactions
-        .where((t) => t.cardId == latestCard.id)
-        .toList();
-    allTransactions.sort((a, b) => b.date.compareTo(a.date));
-
-    final transactionsList = allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
-    }).toList();
-
-    // Calculate total rewards and expense
-    double totalRewardsAmount = 0;
-    double totalExpense = 0;
-    for (var tx in transactionsList) {
-      if (!tx.isIncome) {
-        totalExpense += tx.amount;
-        if (tx.rewardAmount != null) {
-          totalRewardsAmount += tx.rewardAmount!;
-        }
-      }
-    }
-
-    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
-    final prevTransactionsList = allTransactions.where((t) {
-      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
-    }).toList();
-
-    double prevExpense = 0;
-    double prevRewardsAmount = 0;
-    for (var tx in prevTransactionsList) {
-      if (!tx.isIncome) {
-        prevExpense += tx.amount;
-        if (tx.rewardAmount != null) {
-          prevRewardsAmount += tx.rewardAmount!;
-        }
-      }
-    }
+    final analyticsProvider = Provider.of<AnalyticsProvider>(context);
+    final stats = analyticsProvider.getCardStats(latestCard.id!, _selectedMonth);
+    
+    final allTransactions = stats.allCardTransactions;
+    final transactionsList = stats.currentMonthTransactions;
+    final totalExpense = stats.totalExpense;
+    final totalRewardsAmount = stats.totalRewardsAmount;
+    final prevExpense = stats.prevExpense;
+    final prevRewardsAmount = stats.prevRewardsAmount;
 
     return Scaffold(
       appBar: AppBar(

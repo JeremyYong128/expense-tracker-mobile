@@ -9,6 +9,20 @@ class CardProvider extends ChangeNotifier {
   List<Card> get cards => _cards;
   bool get isLoading => _isLoading;
 
+  List<Card> get activeCards => _cards.where((c) => c.isActive).toList();
+  List<Card> get archivedCards => _cards.where((c) => !c.isActive).toList();
+
+  Card? getCardById(int? id) {
+    if (id == null) return null;
+    return _cards.where((c) => c.id == id).firstOrNull;
+  }
+
+  List<Card> getAvailableCardsForDropdown(int? currentCardId) {
+    return _cards.where((c) {
+      return c.isActive || c.id == currentCardId;
+    }).toList();
+  }
+
   CardProvider() {
     fetchCards();
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:provider/provider.dart';
@@ -49,7 +48,7 @@ class _RecurringTransactionsScreenState
     }
 
     final recurringTransactions = recurringProvider.transactions;
-    final categories = categoryProvider.categories;
+
 
     return Scaffold(
       appBar: widget.showAppBar
@@ -83,16 +82,8 @@ class _RecurringTransactionsScreenState
                 itemCount: recurringTransactions.length,
                 itemBuilder: (context, index) {
                   final tx = recurringTransactions[index];
-                  final category = categories.firstWhere(
-                    (c) => c.id == tx.categoryId,
-                    orElse: () => Category(
-                      name: 'Unknown',
-                      colorHex: '#9E9E9E',
-                      iconString: null,
-                      isActive: true,
-                    ),
-                  );
-                  final color = category.color;
+                  final category = categoryProvider.getCategoryById(tx.categoryId);
+                  final color = category?.color ?? AppColors.grey;
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12.0),
@@ -141,7 +132,7 @@ class _RecurringTransactionsScreenState
                                         ),
                                       ),
                                       child: Icon(
-                                        category.iconData,
+                                        category?.iconData ?? Icons.help_outline,
                                         color: color,
                                         size: 24,
                                       ),

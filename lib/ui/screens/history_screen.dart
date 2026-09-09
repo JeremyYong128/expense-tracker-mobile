@@ -3,6 +3,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -38,11 +39,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       );
     }
 
-    final allTransactions = transactionProvider.transactions;
-    final filteredTransactions = allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
-    }).toList();
+    final analyticsProvider = context.watch<AnalyticsProvider>();
+    final filteredTransactions = analyticsProvider.getTransactionsForMonth(_selectedMonth);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +60,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               MonthSelectorToggle(
                 selectedMonth: _selectedMonth,
-                transactions: allTransactions,
+                transactions: transactionProvider.transactions,
                 onMonthChanged: (newMonth) {
                   setState(() {
                     _selectedMonth = newMonth;

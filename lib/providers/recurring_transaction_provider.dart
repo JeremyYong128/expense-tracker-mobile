@@ -9,6 +9,11 @@ class RecurringTransactionProvider extends ChangeNotifier {
   List<RecurringTransaction> get transactions => _transactions;
   bool get isLoading => _isLoading;
 
+  RecurringTransaction? getRecurringTransactionById(int? id) {
+    if (id == null) return null;
+    return _transactions.where((r) => r.id == id).firstOrNull;
+  }
+
   RecurringTransactionProvider() {
     fetchRecurringTransactions();
   }

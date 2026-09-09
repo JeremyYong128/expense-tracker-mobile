@@ -4,6 +4,7 @@ import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -92,10 +93,8 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
 
-    final latestCategory = categoryProvider.categories.firstWhere(
-      (c) => c.id == widget.category.id,
-      orElse: () => widget.category,
-    );
+    final latestCategory = categoryProvider.getCategoryById(widget.category.id) 
+        ?? widget.category;
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
@@ -104,41 +103,14 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
       );
     }
 
-    final allTransactions = transactionProvider.transactions
-        .where((t) => t.categoryId == latestCategory.id)
-        .toList();
-    allTransactions.sort((a, b) => b.date.compareTo(a.date));
+    final analyticsProvider = Provider.of<AnalyticsProvider>(context);
+    final stats = analyticsProvider.getCategoryStats(latestCategory.id!, _selectedMonth);
 
-    final transactionsList = allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
-    }).toList();
-
-    double totalIncome = 0;
-    double totalExpense = 0;
-    for (var tx in transactionsList) {
-      if (tx.isIncome) {
-        totalIncome += tx.amount;
-      } else {
-        totalExpense += tx.amount;
-      }
-    }
-
-    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
-    final prevTransactionsList = allTransactions.where((t) {
-      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
-    }).toList();
-
-    double prevIncome = 0;
-    double prevExpense = 0;
-    for (var tx in prevTransactionsList) {
-      if (tx.isIncome) {
-        prevIncome += tx.amount;
-      } else {
-        prevExpense += tx.amount;
-      }
-    }
-    double prevBalance = prevIncome - prevExpense;
+    final allTransactions = stats.allCategoryTransactions;
+    final transactionsList = stats.currentMonthTransactions;
+    final totalIncome = stats.totalIncome;
+    final totalExpense = stats.totalExpense;
+    final prevBalance = stats.prevBalance;
 
     return Scaffold(
       appBar: AppBar(

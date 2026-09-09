@@ -18,6 +18,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/providers/notification_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/global_notification_banner.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -65,6 +66,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
         ChangeNotifierProvider(create: (_) => CardProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProxyProvider4<TransactionProvider, CategoryProvider, CardProvider, RecurringTransactionProvider, AnalyticsProvider>(
+          create: (_) => AnalyticsProvider(),
+          update: (_, tx, cat, card, rec, prev) => (prev ?? AnalyticsProvider())..update(tx, cat, card, rec),
+        ),
       ],
       child: const MainApp(),
     ),

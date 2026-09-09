@@ -194,9 +194,8 @@ class _CardsScreenState extends State<CardsScreen> {
       );
     }
 
-    final cards = cardProvider.cards;
-    final activeCards = cards.where((c) => c.isActive).toList();
-    final archivedCards = cards.where((c) => !c.isActive).toList();
+    final activeCards = cardProvider.activeCards;
+    final archivedCards = cardProvider.archivedCards;
 
     return Scaffold(
       appBar: AppBar(
@@ -208,7 +207,7 @@ class _CardsScreenState extends State<CardsScreen> {
           ),
         ],
       ),
-      body: cards.isEmpty
+      body: cardProvider.cards.isEmpty
           ? Center(
               child: Text(
                 'No cards added.'.cased(context),

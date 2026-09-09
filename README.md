@@ -100,8 +100,6 @@ flutter run
 
 ### Changes
 - High priority
-    - Add more analytics to dashboard/category/credit card/screens.
-        - How to aggregate statistics for categories that support both income and expense?
     - Abstract business logic in widgets: minimise data processing in widgets and move logic to separate classes.
 
 - Medium priority

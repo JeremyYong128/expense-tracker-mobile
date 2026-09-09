@@ -4,6 +4,7 @@ import '../../utils/business_logic.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -97,10 +98,8 @@ class _RecurringTransactionDetailsScreenState
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
 
-    final latestTx = recurringProvider.transactions.firstWhere(
-      (c) => c.id == widget.recurringTransaction.id,
-      orElse: () => widget.recurringTransaction,
-    );
+    final latestTx = recurringProvider.getRecurringTransactionById(widget.recurringTransaction.id) 
+        ?? widget.recurringTransaction;
 
     if (transactionProvider.isLoading ||
         recurringProvider.isLoading ||
@@ -111,55 +110,25 @@ class _RecurringTransactionDetailsScreenState
       );
     }
 
-    final category = categoryProvider.categories.firstWhere(
-      (c) => c.id == latestTx.categoryId,
-      orElse: () => Category(
+    final category = categoryProvider.getCategoryById(widget.recurringTransaction.categoryId) ?? Category(
         name: 'Unknown',
         colorHex: '#9E9E9E',
         iconString: null,
         isActive: true,
-      ),
-    );
+      );
 
-    final card = latestTx.cardId != null
-        ? cardProvider.cards.where((c) => c.id == latestTx.cardId).firstOrNull
+    final latestCard = latestTx.cardId != null
+        ? cardProvider.getCardById(latestTx.cardId)
         : null;
 
-    final allTransactions = transactionProvider.transactions
-        .where((t) => t.recurringId == latestTx.id)
-        .toList();
-    allTransactions.sort((a, b) => b.date.compareTo(a.date));
+    final analyticsProvider = Provider.of<AnalyticsProvider>(context);
+    final stats = analyticsProvider.getRecurringStats(latestTx.id!, _selectedMonth);
 
-    final transactionsList = allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
-    }).toList();
-
-    double totalIncome = 0;
-    double totalExpense = 0;
-    for (var tx in transactionsList) {
-      if (tx.isIncome) {
-        totalIncome += tx.amount;
-      } else {
-        totalExpense += tx.amount;
-      }
-    }
-
-    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
-    final prevTransactionsList = allTransactions.where((t) {
-      return t.date.year == prevMonth.year && t.date.month == prevMonth.month;
-    }).toList();
-
-    double prevIncome = 0;
-    double prevExpense = 0;
-    for (var tx in prevTransactionsList) {
-      if (tx.isIncome) {
-        prevIncome += tx.amount;
-      } else {
-        prevExpense += tx.amount;
-      }
-    }
-    double prevBalance = prevIncome - prevExpense;
+    final allTransactions = stats.allRecurringTransactions;
+    final transactionsList = stats.currentMonthTransactions;
+    final totalIncome = stats.totalIncome;
+    final totalExpense = stats.totalExpense;
+    final prevBalance = stats.prevBalance;
 
     return Scaffold(
       appBar: AppBar(
@@ -182,7 +151,7 @@ class _RecurringTransactionDetailsScreenState
           padding: AppStyles.screenPadding,
           child: Column(
             children: [
-              _buildRecurringHeader(latestTx, category, card),
+              _buildRecurringHeader(latestTx, category, latestCard),
               if (allTransactions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),

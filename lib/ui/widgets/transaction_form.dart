@@ -226,8 +226,9 @@ class TransactionFormState extends State<TransactionForm> {
       if (val != null) {
         if (_selectedCard == null && val.cardId != null) {
           try {
-            _selectedCard = _cards.firstWhere((c) => c.id == val.cardId);
-            if (_selectedCard!.rewardRate > 0) {
+            final cardProvider = context.read<CardProvider>();
+            _selectedCard = cardProvider.getCardById(val.cardId);
+            if (_selectedCard != null && _selectedCard!.rewardRate > 0) {
               _hasRewards = true;
               if (val.rewardAmount != null) {
                 _rewardAmountController.text = val.rewardAmount!
@@ -258,9 +259,8 @@ class TransactionFormState extends State<TransactionForm> {
         }
 
         try {
-          _selectedCategory = _categories.firstWhere(
-            (c) => c.id == val.categoryId,
-          );
+          final categoryProvider = context.read<CategoryProvider>();
+          _selectedCategory = categoryProvider.getCategoryById(val.categoryId);
         } catch (e) {
           // Ignore if category is not found or deleted
         }
@@ -269,8 +269,7 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   void _loadCategories() {
-    final categories = context.read<CategoryProvider>().categories;
-    final cards = context.read<CardProvider>().cards;
+
     final recTxs = context.read<RecurringTransactionProvider>().transactions;
     setState(() {
       _recurringTransactions = recTxs;
@@ -289,21 +288,15 @@ class TransactionFormState extends State<TransactionForm> {
         ccId = widget.transaction!.cardId;
       }
 
-      _categories = categories.where((c) {
-        return c.isActive || c.id == catId;
-      }).toList();
+      final categoryProvider = context.read<CategoryProvider>();
+      final cardProvider = context.read<CardProvider>();
 
-      _cards = cards.where((c) {
-        return c.isActive || c.id == ccId;
-      }).toList();
+      _categories = categoryProvider.getAvailableCategoriesForDropdown(catId);
+      _cards = cardProvider.getAvailableCardsForDropdown(ccId);
       _isLoadingCategories = false;
 
       if (catId != null) {
-        try {
-          _selectedCategory = _categories.firstWhere((c) => c.id == catId);
-        } catch (e) {
-          _selectedCategory = null;
-        }
+        _selectedCategory = categoryProvider.getCategoryById(catId);
       } else if (_categories.isNotEmpty) {
         _selectedCategory = _categories.firstWhere(
           (c) => c.name.toLowerCase() == 'groceries',
@@ -312,11 +305,7 @@ class TransactionFormState extends State<TransactionForm> {
       }
 
       if (ccId != null) {
-        try {
-          _selectedCard = _cards.firstWhere((c) => c.id == ccId);
-        } catch (e) {
-          _selectedCard = null;
-        }
+        _selectedCard = cardProvider.getCardById(ccId);
       }
 
       int? recurringId;

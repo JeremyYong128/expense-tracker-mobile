@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -51,12 +51,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    final stats = DataService.computeDashboardStats(
-      transactionProvider.transactions,
-      categoryProvider.categories,
-      cardProvider.cards,
-      _currentMonth,
-    );
+    final analyticsProvider = Provider.of<AnalyticsProvider>(context);
+    final stats = analyticsProvider.getDashboardStats(_currentMonth);
 
     return Scaffold(
       appBar: AppBar(

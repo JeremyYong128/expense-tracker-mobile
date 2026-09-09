@@ -1,6 +1,7 @@
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/utils/business_logic.dart';
 
 class RecurringProcessingService {
   /// Fetches all recurring transactions whose nextDueDate has passed
@@ -27,7 +28,7 @@ class RecurringProcessingService {
           ),
         );
 
-        currentDueDate = DataService.calculateNextDueDate(
+        currentDueDate = BusinessLogic.calculateNextDueDate(
           currentDueDate,
           tx.interval,
           tx.period,
@@ -69,7 +70,7 @@ class RecurringProcessingService {
     );
     if (template == null) return;
 
-    final newDueDate = DataService.calculateNextDueDate(
+    final newDueDate = BusinessLogic.calculateNextDueDate(
       pendingTx.date,
       template.interval,
       template.period,
