@@ -105,12 +105,11 @@ flutter run
     - Abstract business logic in widgets: minimise data processing in widgets and move logic to separate classes.
 
 - Medium priority
-    - Swipe left then click to delete stuff (instead of dedicated buttons in the edit forms)
     - List design for notifications screen and manage screen, and dashboard cashback section
-    - Horizontal display
     - Transaction list should be filtered by month with toggle on the top
     - Need a way for users to reorder things in the "Manage" tab, should affect choices in the forms
-    = Rounding consistency for miles and points (card details, dashboard, forms)
+    - Rounding consistency for miles and points (card details, dashboard, forms)
+    - Multicurrency support
 
 - Low priority
     - Redesign modal for pending approvals
