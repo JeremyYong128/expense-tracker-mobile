@@ -18,6 +18,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  bool _isCategoriesExpanded = false;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
@@ -123,18 +124,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 32),
 
-              // TOP CATEGORIES
-              if (stats.topCategories.isNotEmpty) ...[
-                Text(
-                  'Top Categories'.cased(context),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+              // EXPENSES BY CATEGORY
+              if (stats.expenseBreakdown.isNotEmpty) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Expenses by Category'.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (stats.expenseBreakdown.length > 3)
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _isCategoriesExpanded = !_isCategoriesExpanded;
+                          });
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          _isCategoriesExpanded
+                              ? 'Less'.cased(context)
+                              : 'More'.cased(context),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                ...stats.topCategories.entries.map((entry) {
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: (_isCategoriesExpanded
+                            ? stats.expenseBreakdown.entries
+                            : stats.expenseBreakdown.entries.take(3))
+                        .map((entry) {
                   final category = entry.key;
                   final amount = entry.value;
                   final color = category.color;
@@ -203,8 +237,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                   );
-                }),
-                const SizedBox(height: 24),
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 24),
               ],
 
               // REWARDS SECTION

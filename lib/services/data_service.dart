@@ -577,14 +577,14 @@ class DataService {
     final sortedCategories = categorySpending.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    // Map to Category objects (take top 4)
-    Map<Category, double> topCatMap = {};
-    for (var entry in sortedCategories.take(4)) {
+    // Map to Category objects
+    Map<Category, double> expenseBreakdownMap = {};
+    for (var entry in sortedCategories) {
       final category = categories.firstWhere(
         (c) => c.id == entry.key,
         orElse: () => Category(id: -1, name: 'Unknown', colorHex: '#9E9E9E', isActive: false),
       );
-      topCatMap[category] = entry.value;
+      expenseBreakdownMap[category] = entry.value;
     }
 
     Map<Card, double> rewardsMap = {};
@@ -609,7 +609,7 @@ class DataService {
       totalExpense: expense,
       incomePercentageChange: incomePercentageChange,
       expensePercentageChange: expensePercentageChange,
-      topCategories: topCatMap,
+      expenseBreakdown: expenseBreakdownMap,
       monthlyRewards: rewardsMap,
     );
   }
@@ -640,7 +640,7 @@ class DashboardStats {
   final double totalExpense;
   final double? incomePercentageChange;
   final double? expensePercentageChange;
-  final Map<Category, double> topCategories;
+  final Map<Category, double> expenseBreakdown;
   final Map<Card, double> monthlyRewards;
 
   DashboardStats({
@@ -648,7 +648,7 @@ class DashboardStats {
     required this.totalExpense,
     this.incomePercentageChange,
     this.expensePercentageChange,
-    required this.topCategories,
+    required this.expenseBreakdown,
     required this.monthlyRewards,
   });
 }
