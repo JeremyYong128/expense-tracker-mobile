@@ -1,3 +1,4 @@
+import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -87,28 +88,32 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           ),
                         ),
                       )
-                    : ListView.separated(
+                    : CustomReorderableListView(
                         padding: AppStyles.screenPadding.copyWith(top: 8.0),
                         itemCount: categories.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 12),
+                        onReorderItem: (oldIndex, newIndex) {
+                          provider.reorderCategory(oldIndex, newIndex, _filter);
+                        },
                         itemBuilder: (context, index) {
                           final category = categories[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(24.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.04,
+                          return Padding(
+                            key: ValueKey(category.id),
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(24.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.04,
+                                    ),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Material(
+                                ],
+                              ),
+                              child: Material(
                               color: AppColors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(24.0),
@@ -179,6 +184,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                   ),
                                 ),
                               ),
+                            ),
                             ),
                           );
                         },

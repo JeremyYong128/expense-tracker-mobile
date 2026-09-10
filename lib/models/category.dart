@@ -9,6 +9,7 @@ class Category {
   final bool isActive;
   final bool isExpense;
   final bool isIncome;
+  final int sortOrder;
 
   Category({
     this.id,
@@ -18,6 +19,7 @@ class Category {
     this.isActive = true,
     this.isExpense = true,
     this.isIncome = false,
+    this.sortOrder = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,7 +31,30 @@ class Category {
       'isActive': isActive ? 1 : 0,
       'isExpense': isExpense ? 1 : 0,
       'isIncome': isIncome ? 1 : 0,
+      'sortOrder': sortOrder,
     };
+  }
+
+  Category copyWith({
+    int? id,
+    String? name,
+    String? colorHex,
+    String? iconString,
+    bool? isActive,
+    bool? isExpense,
+    bool? isIncome,
+    int? sortOrder,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      colorHex: colorHex ?? this.colorHex,
+      iconString: iconString ?? this.iconString,
+      isActive: isActive ?? this.isActive,
+      isExpense: isExpense ?? this.isExpense,
+      isIncome: isIncome ?? this.isIncome,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
   }
 
   factory Category.fromMap(Map<String, dynamic> map) {

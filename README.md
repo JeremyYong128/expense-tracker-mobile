@@ -100,16 +100,15 @@ flutter run
 
 ### Changes
 - High priority
-    - Abstract business logic in widgets: minimise data processing in widgets and move logic to separate classes.
+
 
 - Medium priority
-    - List design for notifications screen and manage screen, and dashboard cashback section
-    - Transaction list should be filtered by month with toggle on the top
-    - Need a way for users to reorder things in the "Manage" tab, should affect choices in the forms
+    - Dashboard cashback section
     - Rounding consistency for miles and points (card details, dashboard, forms)
     - Multicurrency support
 
 - Low priority
+    - List design for notifications screen and manage screen
     - Redesign modal for pending approvals
     - Tags for expenses
     - Custom dropdowns (including date and time pickers)

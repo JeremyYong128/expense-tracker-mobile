@@ -4,6 +4,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/card_form.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_list_view.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
@@ -233,7 +234,22 @@ class _CardsScreenState extends State<CardsScreen> {
                         ),
                       ),
                     ),
-                    ...activeCards.map((c) => _buildCardItem(c, false)),
+                    CustomReorderableListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: activeCards.length,
+                      onReorderItem: (oldIndex, newIndex) {
+                        cardProvider.reorderCard(oldIndex, newIndex);
+                      },
+                      itemBuilder: (context, index) {
+                        final c = activeCards[index];
+                        return Padding(
+                          key: ValueKey(c.id),
+                          padding: EdgeInsets.zero,
+                          child: _buildCardItem(c, false),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 16),
                   ],
                   if (archivedCards.isNotEmpty) ...[

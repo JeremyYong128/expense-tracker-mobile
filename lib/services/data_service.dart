@@ -73,7 +73,11 @@ class DataService {
 
   // Get all categories
   static Future<List<Category>> getCategories() async {
-    final list = await _db.select(_db.categories).get();
+    final list = await (_db.select(_db.categories)
+          ..orderBy([
+            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+          ]))
+        .get();
     return list.map(_mapCategory).toList();
   }
 
@@ -101,6 +105,14 @@ class DataService {
       return existing.id;
     }
 
+    final minSortOrderCat = await (_db.select(_db.categories)
+          ..orderBy([
+            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    final newSortOrder = (minSortOrderCat?.sortOrder ?? 0) - 1;
+
     final newId = await _db
         .into(_db.categories)
         .insert(
@@ -111,6 +123,7 @@ class DataService {
             isActive: drift.Value(category.isActive),
             isExpense: drift.Value(category.isExpense),
             isIncome: drift.Value(category.isIncome),
+            sortOrder: drift.Value(newSortOrder),
           ),
         );
     return newId;
@@ -193,7 +206,11 @@ class DataService {
 
   // Get all cards
   static Future<List<Card>> getCards() async {
-    final list = await _db.select(_db.cards).get();
+    final list = await (_db.select(_db.cards)
+          ..orderBy([
+            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+          ]))
+        .get();
     return list.map(_mapCard).toList();
   }
 
@@ -212,6 +229,14 @@ class DataService {
       );
     }
 
+    final minSortOrderCard = await (_db.select(_db.cards)
+          ..orderBy([
+            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    final newSortOrder = (minSortOrderCard?.sortOrder ?? 0) - 1;
+
     final id = await _db
         .into(_db.cards)
         .insert(
@@ -221,6 +246,7 @@ class DataService {
             rewardRate: card.rewardRate,
             colorHex: drift.Value(card.colorHex),
             isActive: drift.Value(card.isActive),
+            sortOrder: drift.Value(newSortOrder),
           ),
         );
     return id;
@@ -303,6 +329,14 @@ class DataService {
     final recurringInterval = int.tryParse(recurringIntervalText) ?? 1;
 
     if (isRecurring) {
+      final minSortOrderTx = await (_db.select(_db.recurringTransactions)
+            ..orderBy([
+              (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+            ])
+            ..limit(1))
+          .getSingleOrNull();
+      final newSortOrder = (minSortOrderTx?.sortOrder ?? 0) - 1;
+
       await _db
           .into(_db.recurringTransactions)
           .insert(
@@ -318,6 +352,7 @@ class DataService {
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
               cardId: drift.Value(cardId),
               rewardAmount: drift.Value(rewardAmount),
+              sortOrder: drift.Value(newSortOrder),
             ),
           );
     } else {
@@ -363,7 +398,11 @@ class DataService {
   }
 
   static Future<List<RecurringTransaction>> getRecurringTransactions() async {
-    final list = await _db.select(_db.recurringTransactions).get();
+    final list = await (_db.select(_db.recurringTransactions)
+          ..orderBy([
+            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
+          ]))
+        .get();
     return list.map(_mapRecurringTransaction).toList();
   }
 
@@ -447,9 +486,8 @@ class DataService {
 
   static Future<void> deleteRecurringTransaction(int id) async {
     final tx = await (_db.select(_db.recurringTransactions)..where((t) => t.id.equals(id))).getSingleOrNull();
-    await (_db.delete(
-      _db.recurringTransactions,
-    )..where((t) => t.id.equals(id))).go();
+    await (_db.delete(_db.recurringTransactions)..where((t) => t.id.equals(id)))
+        .go();
 
     if (tx != null) {
       final category = await (_db.select(_db.categories)..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
@@ -486,4 +524,39 @@ class DataService {
     return list.map(_mapTransaction).toList();
   }
 
+  static Future<void> updateCategoriesOrder(List<Category> categories) async {
+    await _db.batch((batch) {
+      for (final category in categories) {
+        batch.update(
+          _db.categories,
+          CategoriesCompanion(sortOrder: drift.Value(category.sortOrder)),
+          where: (c) => c.id.equals(category.id!),
+        );
+      }
+    });
+  }
+
+  static Future<void> updateCardsOrder(List<Card> cards) async {
+    await _db.batch((batch) {
+      for (final card in cards) {
+        batch.update(
+          _db.cards,
+          CardsCompanion(sortOrder: drift.Value(card.sortOrder)),
+          where: (c) => c.id.equals(card.id!),
+        );
+      }
+    });
+  }
+
+  static Future<void> updateRecurringTransactionsOrder(List<RecurringTransaction> transactions) async {
+    await _db.batch((batch) {
+      for (final tx in transactions) {
+        batch.update(
+          _db.recurringTransactions,
+          RecurringTransactionsCompanion(sortOrder: drift.Value(tx.sortOrder)),
+          where: (t) => t.id.equals(tx.id!),
+        );
+      }
+    });
+  }
 }

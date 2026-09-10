@@ -21,6 +21,8 @@ class Categories extends Table {
       boolean().named('isExpense').withDefault(const Constant(true))();
   BoolColumn get isIncome =>
       boolean().named('isIncome').withDefault(const Constant(false))();
+  IntColumn get sortOrder =>
+      integer().named('sortOrder').withDefault(const Constant(0))();
 }
 
 @DataClassName('TransactionTableData')
@@ -60,6 +62,8 @@ class Cards extends Table {
       text().named('colorHex').withDefault(const Constant('#9E9E9E'))();
   BoolColumn get isActive =>
       boolean().named('isActive').withDefault(const Constant(true))();
+  IntColumn get sortOrder =>
+      integer().named('sortOrder').withDefault(const Constant(0))();
 }
 
 @DataClassName('RecurringTransactionTableData')
@@ -85,6 +89,8 @@ class RecurringTransactions extends Table {
       .named('cardId')
       .nullable()
       .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
+  IntColumn get sortOrder =>
+      integer().named('sortOrder').withDefault(const Constant(0))();
 }
 
 LazyDatabase _openConnection() {
@@ -106,7 +112,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -288,6 +294,30 @@ class AppDatabase extends _$AppDatabase {
           } catch (e, stack) {
             AppLogger.error(
               'Data migration failed during schema upgrade to v10',
+              e,
+              stack,
+            );
+          }
+        }
+        if (from < 12) {
+          try {
+            await m.addColumn(categories, categories.sortOrder);
+            await customStatement('''
+              UPDATE categories SET sortOrder = id;
+            ''');
+
+            await m.addColumn(cards, cards.sortOrder);
+            await customStatement('''
+              UPDATE cards SET sortOrder = id;
+            ''');
+
+            await m.addColumn(recurringTransactions, recurringTransactions.sortOrder);
+            await customStatement('''
+              UPDATE recurring_transactions SET sortOrder = id;
+            ''');
+          } catch (e, stack) {
+            AppLogger.error(
+              'Data migration failed during schema upgrade to v12',
               e,
               stack,
             );

@@ -99,6 +99,18 @@ class $CategoriesTable extends Categories
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -108,6 +120,7 @@ class $CategoriesTable extends Categories
     isActive,
     isExpense,
     isIncome,
+    sortOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -162,6 +175,12 @@ class $CategoriesTable extends Categories
         isIncome.isAcceptableOrUnknown(data['isIncome']!, _isIncomeMeta),
       );
     }
+    if (data.containsKey('sortOrder')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
+    }
     return context;
   }
 
@@ -199,6 +218,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.bool,
         data['${effectivePrefix}isIncome'],
       )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
     );
   }
 
@@ -217,6 +240,7 @@ class CategoryTableData extends DataClass
   final bool isActive;
   final bool isExpense;
   final bool isIncome;
+  final int sortOrder;
   const CategoryTableData({
     required this.id,
     required this.name,
@@ -225,6 +249,7 @@ class CategoryTableData extends DataClass
     required this.isActive,
     required this.isExpense,
     required this.isIncome,
+    required this.sortOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -238,6 +263,7 @@ class CategoryTableData extends DataClass
     map['isActive'] = Variable<bool>(isActive);
     map['isExpense'] = Variable<bool>(isExpense);
     map['isIncome'] = Variable<bool>(isIncome);
+    map['sortOrder'] = Variable<int>(sortOrder);
     return map;
   }
 
@@ -252,6 +278,7 @@ class CategoryTableData extends DataClass
       isActive: Value(isActive),
       isExpense: Value(isExpense),
       isIncome: Value(isIncome),
+      sortOrder: Value(sortOrder),
     );
   }
 
@@ -268,6 +295,7 @@ class CategoryTableData extends DataClass
       isActive: serializer.fromJson<bool>(json['isActive']),
       isExpense: serializer.fromJson<bool>(json['isExpense']),
       isIncome: serializer.fromJson<bool>(json['isIncome']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
   @override
@@ -281,6 +309,7 @@ class CategoryTableData extends DataClass
       'isActive': serializer.toJson<bool>(isActive),
       'isExpense': serializer.toJson<bool>(isExpense),
       'isIncome': serializer.toJson<bool>(isIncome),
+      'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
 
@@ -292,6 +321,7 @@ class CategoryTableData extends DataClass
     bool? isActive,
     bool? isExpense,
     bool? isIncome,
+    int? sortOrder,
   }) => CategoryTableData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -300,6 +330,7 @@ class CategoryTableData extends DataClass
     isActive: isActive ?? this.isActive,
     isExpense: isExpense ?? this.isExpense,
     isIncome: isIncome ?? this.isIncome,
+    sortOrder: sortOrder ?? this.sortOrder,
   );
   CategoryTableData copyWithCompanion(CategoriesCompanion data) {
     return CategoryTableData(
@@ -312,6 +343,7 @@ class CategoryTableData extends DataClass
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       isExpense: data.isExpense.present ? data.isExpense.value : this.isExpense,
       isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
   }
 
@@ -324,7 +356,8 @@ class CategoryTableData extends DataClass
           ..write('iconString: $iconString, ')
           ..write('isActive: $isActive, ')
           ..write('isExpense: $isExpense, ')
-          ..write('isIncome: $isIncome')
+          ..write('isIncome: $isIncome, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
@@ -338,6 +371,7 @@ class CategoryTableData extends DataClass
     isActive,
     isExpense,
     isIncome,
+    sortOrder,
   );
   @override
   bool operator ==(Object other) =>
@@ -349,7 +383,8 @@ class CategoryTableData extends DataClass
           other.iconString == this.iconString &&
           other.isActive == this.isActive &&
           other.isExpense == this.isExpense &&
-          other.isIncome == this.isIncome);
+          other.isIncome == this.isIncome &&
+          other.sortOrder == this.sortOrder);
 }
 
 class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
@@ -360,6 +395,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
   final Value<bool> isActive;
   final Value<bool> isExpense;
   final Value<bool> isIncome;
+  final Value<int> sortOrder;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -368,6 +404,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     this.isActive = const Value.absent(),
     this.isExpense = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
@@ -377,6 +414,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     this.isActive = const Value.absent(),
     this.isExpense = const Value.absent(),
     this.isIncome = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   }) : name = Value(name);
   static Insertable<CategoryTableData> custom({
     Expression<int>? id,
@@ -386,6 +424,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     Expression<bool>? isActive,
     Expression<bool>? isExpense,
     Expression<bool>? isIncome,
+    Expression<int>? sortOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -395,6 +434,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
       if (isActive != null) 'isActive': isActive,
       if (isExpense != null) 'isExpense': isExpense,
       if (isIncome != null) 'isIncome': isIncome,
+      if (sortOrder != null) 'sortOrder': sortOrder,
     });
   }
 
@@ -406,6 +446,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     Value<bool>? isActive,
     Value<bool>? isExpense,
     Value<bool>? isIncome,
+    Value<int>? sortOrder,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -415,6 +456,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
       isActive: isActive ?? this.isActive,
       isExpense: isExpense ?? this.isExpense,
       isIncome: isIncome ?? this.isIncome,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -442,6 +484,9 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
     if (isIncome.present) {
       map['isIncome'] = Variable<bool>(isIncome.value);
     }
+    if (sortOrder.present) {
+      map['sortOrder'] = Variable<int>(sortOrder.value);
+    }
     return map;
   }
 
@@ -454,7 +499,8 @@ class CategoriesCompanion extends UpdateCompanion<CategoryTableData> {
           ..write('iconString: $iconString, ')
           ..write('isActive: $isActive, ')
           ..write('isExpense: $isExpense, ')
-          ..write('isIncome: $isIncome')
+          ..write('isIncome: $isIncome, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
@@ -536,6 +582,18 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -544,6 +602,7 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
     rewardRate,
     colorHex,
     isActive,
+    sortOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -596,6 +655,12 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
         isActive.isAcceptableOrUnknown(data['isActive']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('sortOrder')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
+    }
     return context;
   }
 
@@ -629,6 +694,10 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
         DriftSqlType.bool,
         data['${effectivePrefix}isActive'],
       )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
     );
   }
 
@@ -645,6 +714,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
   final double rewardRate;
   final String colorHex;
   final bool isActive;
+  final int sortOrder;
   const CardTableData({
     required this.id,
     required this.name,
@@ -652,6 +722,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     required this.rewardRate,
     required this.colorHex,
     required this.isActive,
+    required this.sortOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -662,6 +733,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     map['rewardRate'] = Variable<double>(rewardRate);
     map['colorHex'] = Variable<String>(colorHex);
     map['isActive'] = Variable<bool>(isActive);
+    map['sortOrder'] = Variable<int>(sortOrder);
     return map;
   }
 
@@ -673,6 +745,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       rewardRate: Value(rewardRate),
       colorHex: Value(colorHex),
       isActive: Value(isActive),
+      sortOrder: Value(sortOrder),
     );
   }
 
@@ -688,6 +761,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       rewardRate: serializer.fromJson<double>(json['rewardRate']),
       colorHex: serializer.fromJson<String>(json['colorHex']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
   @override
@@ -700,6 +774,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       'rewardRate': serializer.toJson<double>(rewardRate),
       'colorHex': serializer.toJson<String>(colorHex),
       'isActive': serializer.toJson<bool>(isActive),
+      'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
 
@@ -710,6 +785,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     double? rewardRate,
     String? colorHex,
     bool? isActive,
+    int? sortOrder,
   }) => CardTableData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -717,6 +793,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     rewardRate: rewardRate ?? this.rewardRate,
     colorHex: colorHex ?? this.colorHex,
     isActive: isActive ?? this.isActive,
+    sortOrder: sortOrder ?? this.sortOrder,
   );
   CardTableData copyWithCompanion(CardsCompanion data) {
     return CardTableData(
@@ -730,6 +807,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
           : this.rewardRate,
       colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
   }
 
@@ -741,14 +819,22 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
           ..write('rewardType: $rewardType, ')
           ..write('rewardRate: $rewardRate, ')
           ..write('colorHex: $colorHex, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, rewardType, rewardRate, colorHex, isActive);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    rewardType,
+    rewardRate,
+    colorHex,
+    isActive,
+    sortOrder,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -758,7 +844,8 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
           other.rewardType == this.rewardType &&
           other.rewardRate == this.rewardRate &&
           other.colorHex == this.colorHex &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.sortOrder == this.sortOrder);
 }
 
 class CardsCompanion extends UpdateCompanion<CardTableData> {
@@ -768,6 +855,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
   final Value<double> rewardRate;
   final Value<String> colorHex;
   final Value<bool> isActive;
+  final Value<int> sortOrder;
   const CardsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -775,6 +863,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     this.rewardRate = const Value.absent(),
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   });
   CardsCompanion.insert({
     this.id = const Value.absent(),
@@ -783,6 +872,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     required double rewardRate,
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   }) : name = Value(name),
        rewardType = Value(rewardType),
        rewardRate = Value(rewardRate);
@@ -793,6 +883,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     Expression<double>? rewardRate,
     Expression<String>? colorHex,
     Expression<bool>? isActive,
+    Expression<int>? sortOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -801,6 +892,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
       if (rewardRate != null) 'rewardRate': rewardRate,
       if (colorHex != null) 'colorHex': colorHex,
       if (isActive != null) 'isActive': isActive,
+      if (sortOrder != null) 'sortOrder': sortOrder,
     });
   }
 
@@ -811,6 +903,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     Value<double>? rewardRate,
     Value<String>? colorHex,
     Value<bool>? isActive,
+    Value<int>? sortOrder,
   }) {
     return CardsCompanion(
       id: id ?? this.id,
@@ -819,6 +912,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
       rewardRate: rewardRate ?? this.rewardRate,
       colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -843,6 +937,9 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     if (isActive.present) {
       map['isActive'] = Variable<bool>(isActive.value);
     }
+    if (sortOrder.present) {
+      map['sortOrder'] = Variable<int>(sortOrder.value);
+    }
     return map;
   }
 
@@ -854,7 +951,8 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
           ..write('rewardType: $rewardType, ')
           ..write('rewardRate: $rewardRate, ')
           ..write('colorHex: $colorHex, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
@@ -997,6 +1095,18 @@ class $RecurringTransactionsTable extends RecurringTransactions
     requiredDuringInsert: false,
     $customConstraints: 'REFERENCES cards(id) ON DELETE SET NULL',
   );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1011,6 +1121,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     startDate,
     nextDueDate,
     cardId,
+    sortOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1111,6 +1222,12 @@ class $RecurringTransactionsTable extends RecurringTransactions
         cardId.isAcceptableOrUnknown(data['cardId']!, _cardIdMeta),
       );
     }
+    if (data.containsKey('sortOrder')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
+    }
     return context;
   }
 
@@ -1171,6 +1288,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.int,
         data['${effectivePrefix}cardId'],
       ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
     );
   }
 
@@ -1194,6 +1315,7 @@ class RecurringTransactionTableData extends DataClass
   final String startDate;
   final String nextDueDate;
   final int? cardId;
+  final int sortOrder;
   const RecurringTransactionTableData({
     required this.id,
     required this.amount,
@@ -1207,6 +1329,7 @@ class RecurringTransactionTableData extends DataClass
     required this.startDate,
     required this.nextDueDate,
     this.cardId,
+    required this.sortOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1229,6 +1352,7 @@ class RecurringTransactionTableData extends DataClass
     if (!nullToAbsent || cardId != null) {
       map['cardId'] = Variable<int>(cardId);
     }
+    map['sortOrder'] = Variable<int>(sortOrder);
     return map;
   }
 
@@ -1250,6 +1374,7 @@ class RecurringTransactionTableData extends DataClass
       cardId: cardId == null && nullToAbsent
           ? const Value.absent()
           : Value(cardId),
+      sortOrder: Value(sortOrder),
     );
   }
 
@@ -1271,6 +1396,7 @@ class RecurringTransactionTableData extends DataClass
       startDate: serializer.fromJson<String>(json['startDate']),
       nextDueDate: serializer.fromJson<String>(json['nextDueDate']),
       cardId: serializer.fromJson<int?>(json['cardId']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
   @override
@@ -1289,6 +1415,7 @@ class RecurringTransactionTableData extends DataClass
       'startDate': serializer.toJson<String>(startDate),
       'nextDueDate': serializer.toJson<String>(nextDueDate),
       'cardId': serializer.toJson<int?>(cardId),
+      'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
 
@@ -1305,6 +1432,7 @@ class RecurringTransactionTableData extends DataClass
     String? startDate,
     String? nextDueDate,
     Value<int?> cardId = const Value.absent(),
+    int? sortOrder,
   }) => RecurringTransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -1318,6 +1446,7 @@ class RecurringTransactionTableData extends DataClass
     startDate: startDate ?? this.startDate,
     nextDueDate: nextDueDate ?? this.nextDueDate,
     cardId: cardId.present ? cardId.value : this.cardId,
+    sortOrder: sortOrder ?? this.sortOrder,
   );
   RecurringTransactionTableData copyWithCompanion(
     RecurringTransactionsCompanion data,
@@ -1341,6 +1470,7 @@ class RecurringTransactionTableData extends DataClass
           ? data.nextDueDate.value
           : this.nextDueDate,
       cardId: data.cardId.present ? data.cardId.value : this.cardId,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
   }
 
@@ -1358,7 +1488,8 @@ class RecurringTransactionTableData extends DataClass
           ..write('period: $period, ')
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('cardId: $cardId')
+          ..write('cardId: $cardId, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
@@ -1377,6 +1508,7 @@ class RecurringTransactionTableData extends DataClass
     startDate,
     nextDueDate,
     cardId,
+    sortOrder,
   );
   @override
   bool operator ==(Object other) =>
@@ -1393,7 +1525,8 @@ class RecurringTransactionTableData extends DataClass
           other.period == this.period &&
           other.startDate == this.startDate &&
           other.nextDueDate == this.nextDueDate &&
-          other.cardId == this.cardId);
+          other.cardId == this.cardId &&
+          other.sortOrder == this.sortOrder);
 }
 
 class RecurringTransactionsCompanion
@@ -1410,6 +1543,7 @@ class RecurringTransactionsCompanion
   final Value<String> startDate;
   final Value<String> nextDueDate;
   final Value<int?> cardId;
+  final Value<int> sortOrder;
   const RecurringTransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -1423,6 +1557,7 @@ class RecurringTransactionsCompanion
     this.startDate = const Value.absent(),
     this.nextDueDate = const Value.absent(),
     this.cardId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   });
   RecurringTransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -1437,6 +1572,7 @@ class RecurringTransactionsCompanion
     this.startDate = const Value.absent(),
     required String nextDueDate,
     this.cardId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        categoryId = Value(categoryId),
@@ -1456,6 +1592,7 @@ class RecurringTransactionsCompanion
     Expression<String>? startDate,
     Expression<String>? nextDueDate,
     Expression<int>? cardId,
+    Expression<int>? sortOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1470,6 +1607,7 @@ class RecurringTransactionsCompanion
       if (startDate != null) 'startDate': startDate,
       if (nextDueDate != null) 'nextDueDate': nextDueDate,
       if (cardId != null) 'cardId': cardId,
+      if (sortOrder != null) 'sortOrder': sortOrder,
     });
   }
 
@@ -1486,6 +1624,7 @@ class RecurringTransactionsCompanion
     Value<String>? startDate,
     Value<String>? nextDueDate,
     Value<int?>? cardId,
+    Value<int>? sortOrder,
   }) {
     return RecurringTransactionsCompanion(
       id: id ?? this.id,
@@ -1500,6 +1639,7 @@ class RecurringTransactionsCompanion
       startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       cardId: cardId ?? this.cardId,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -1542,6 +1682,9 @@ class RecurringTransactionsCompanion
     if (cardId.present) {
       map['cardId'] = Variable<int>(cardId.value);
     }
+    if (sortOrder.present) {
+      map['sortOrder'] = Variable<int>(sortOrder.value);
+    }
     return map;
   }
 
@@ -1559,7 +1702,8 @@ class RecurringTransactionsCompanion
           ..write('period: $period, ')
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('cardId: $cardId')
+          ..write('cardId: $cardId, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
@@ -2226,6 +2370,7 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       Value<bool> isActive,
       Value<bool> isExpense,
       Value<bool> isIncome,
+      Value<int> sortOrder,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
@@ -2236,6 +2381,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<bool> isActive,
       Value<bool> isExpense,
       Value<bool> isIncome,
+      Value<int> sortOrder,
     });
 
 final class $$CategoriesTableReferences
@@ -2327,6 +2473,11 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<bool> get isIncome => $composableBuilder(
     column: $table.isIncome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2425,6 +2576,11 @@ class $$CategoriesTableOrderingComposer
     column: $table.isIncome,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -2458,6 +2614,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get isIncome =>
       $composableBuilder(column: $table.isIncome, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
   Expression<T> recurringTransactionsRefs<T extends Object>(
     Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
@@ -2549,6 +2708,7 @@ class $$CategoriesTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isExpense = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
                 name: name,
@@ -2557,6 +2717,7 @@ class $$CategoriesTableTableManager
                 isActive: isActive,
                 isExpense: isExpense,
                 isIncome: isIncome,
+                sortOrder: sortOrder,
               ),
           createCompanionCallback:
               ({
@@ -2567,6 +2728,7 @@ class $$CategoriesTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> isExpense = const Value.absent(),
                 Value<bool> isIncome = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 name: name,
@@ -2575,6 +2737,7 @@ class $$CategoriesTableTableManager
                 isActive: isActive,
                 isExpense: isExpense,
                 isIncome: isIncome,
+                sortOrder: sortOrder,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -2670,6 +2833,7 @@ typedef $$CardsTableCreateCompanionBuilder =
       required double rewardRate,
       Value<String> colorHex,
       Value<bool> isActive,
+      Value<int> sortOrder,
     });
 typedef $$CardsTableUpdateCompanionBuilder =
     CardsCompanion Function({
@@ -2679,6 +2843,7 @@ typedef $$CardsTableUpdateCompanionBuilder =
       Value<double> rewardRate,
       Value<String> colorHex,
       Value<bool> isActive,
+      Value<int> sortOrder,
     });
 
 final class $$CardsTableReferences
@@ -2764,6 +2929,11 @@ class $$CardsTableFilterComposer extends Composer<_$AppDatabase, $CardsTable> {
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2857,6 +3027,11 @@ class $$CardsTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CardsTableAnnotationComposer
@@ -2889,6 +3064,9 @@ class $$CardsTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
   Expression<T> recurringTransactionsRefs<T extends Object>(
     Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
@@ -2979,6 +3157,7 @@ class $$CardsTableTableManager
                 Value<double> rewardRate = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => CardsCompanion(
                 id: id,
                 name: name,
@@ -2986,6 +3165,7 @@ class $$CardsTableTableManager
                 rewardRate: rewardRate,
                 colorHex: colorHex,
                 isActive: isActive,
+                sortOrder: sortOrder,
               ),
           createCompanionCallback:
               ({
@@ -2995,6 +3175,7 @@ class $$CardsTableTableManager
                 required double rewardRate,
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => CardsCompanion.insert(
                 id: id,
                 name: name,
@@ -3002,6 +3183,7 @@ class $$CardsTableTableManager
                 rewardRate: rewardRate,
                 colorHex: colorHex,
                 isActive: isActive,
+                sortOrder: sortOrder,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -3101,6 +3283,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       Value<String> startDate,
       required String nextDueDate,
       Value<int?> cardId,
+      Value<int> sortOrder,
     });
 typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
     RecurringTransactionsCompanion Function({
@@ -3116,6 +3299,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<String> startDate,
       Value<String> nextDueDate,
       Value<int?> cardId,
+      Value<int> sortOrder,
     });
 
 final class $$RecurringTransactionsTableReferences
@@ -3240,6 +3424,11 @@ class $$RecurringTransactionsTableFilterComposer
 
   ColumnFilters<String> get nextDueDate => $composableBuilder(
     column: $table.nextDueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3374,6 +3563,11 @@ class $$RecurringTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3463,6 +3657,9 @@ class $$RecurringTransactionsTableAnnotationComposer
     column: $table.nextDueDate,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -3594,6 +3791,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<String> startDate = const Value.absent(),
                 Value<String> nextDueDate = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => RecurringTransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -3607,6 +3805,7 @@ class $$RecurringTransactionsTableTableManager
                 startDate: startDate,
                 nextDueDate: nextDueDate,
                 cardId: cardId,
+                sortOrder: sortOrder,
               ),
           createCompanionCallback:
               ({
@@ -3622,6 +3821,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<String> startDate = const Value.absent(),
                 required String nextDueDate,
                 Value<int?> cardId = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
               }) => RecurringTransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -3635,6 +3835,7 @@ class $$RecurringTransactionsTableTableManager
                 startDate: startDate,
                 nextDueDate: nextDueDate,
                 cardId: cardId,
+                sortOrder: sortOrder,
               ),
           withReferenceMapper: (p0) => p0
               .map(

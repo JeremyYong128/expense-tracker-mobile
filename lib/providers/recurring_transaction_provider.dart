@@ -33,4 +33,15 @@ class RecurringTransactionProvider extends ChangeNotifier {
     await DataService.deleteRecurringTransaction(id);
     await fetchRecurringTransactions();
   }
+
+  void reorderTransaction(int oldIndex, int newIndex) {
+    final item = _transactions.removeAt(oldIndex);
+    _transactions.insert(newIndex, item);
+
+    for (int i = 0; i < _transactions.length; i++) {
+      _transactions[i] = _transactions[i].copyWith(sortOrder: i);
+    }
+    notifyListeners();
+    DataService.updateRecurringTransactionsOrder(_transactions);
+  }
 }

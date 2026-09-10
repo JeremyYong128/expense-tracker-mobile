@@ -5,6 +5,7 @@ class Card {
   final double rewardRate;
   final String colorHex;
   final bool isActive;
+  final int sortOrder;
 
   Card({
     this.id,
@@ -13,6 +14,7 @@ class Card {
     required this.rewardRate,
     required this.colorHex,
     this.isActive = true,
+    this.sortOrder = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class Card {
       'rewardRate': rewardRate,
       'colorHex': colorHex,
       'isActive': isActive,
+      'sortOrder': sortOrder,
     };
   }
 
@@ -33,6 +36,7 @@ class Card {
     double? rewardRate,
     String? colorHex,
     bool? isActive,
+    int? sortOrder,
   }) {
     return Card(
       id: id ?? this.id,
@@ -41,6 +45,7 @@ class Card {
       rewardRate: rewardRate ?? this.rewardRate,
       colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 

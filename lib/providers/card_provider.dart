@@ -52,4 +52,26 @@ class CardProvider extends ChangeNotifier {
     await fetchCards();
     return affected;
   }
+
+  void reorderCard(int oldIndex, int newIndex) {
+    List<Card> subset = List.from(activeCards);
+
+    final globalIndices = subset.map((c) => _cards.indexOf(c)).toList();
+    
+    final item = subset.removeAt(oldIndex);
+    subset.insert(newIndex, item);
+
+    for (int i = 0; i < globalIndices.length; i++) {
+      final idx = globalIndices[i];
+      if (idx != -1) {
+        _cards[idx] = subset[i];
+      }
+    }
+
+    for (int i = 0; i < _cards.length; i++) {
+      _cards[i] = _cards[i].copyWith(sortOrder: i);
+    }
+    notifyListeners();
+    DataService.updateCardsOrder(_cards);
+  }
 }

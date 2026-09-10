@@ -52,4 +52,34 @@ class CategoryProvider extends ChangeNotifier {
     await DataService.deleteCategory(id);
     await fetchCategories();
   }
+
+  void reorderCategory(int oldIndex, int newIndex, String currentFilter) {
+    List<Category> subset;
+    if (currentFilter == 'Expense') {
+      subset = List.from(activeExpenseCategories);
+    } else if (currentFilter == 'Income') {
+      subset = List.from(activeIncomeCategories);
+    } else {
+      subset = List.from(activeCategories);
+    }
+
+    final globalIndices = subset.map((c) => _categories.indexOf(c)).toList();
+    
+    final item = subset.removeAt(oldIndex);
+    subset.insert(newIndex, item);
+
+    for (int i = 0; i < globalIndices.length; i++) {
+      final idx = globalIndices[i];
+      if (idx != -1) {
+        _categories[idx] = subset[i];
+      }
+    }
+
+    for (int i = 0; i < _categories.length; i++) {
+      _categories[i] = _categories[i].copyWith(sortOrder: i);
+    }
+
+    notifyListeners();
+    DataService.updateCategoriesOrder(_categories);
+  }
 }
