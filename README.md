@@ -104,7 +104,6 @@ flutter run
 
 - Medium priority
     - Dashboard cashback section
-    - Rounding consistency for miles and points (card details, dashboard, forms)
     - Multicurrency support
 
 - Low priority

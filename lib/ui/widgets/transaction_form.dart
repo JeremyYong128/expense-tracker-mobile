@@ -224,7 +224,9 @@ class TransactionFormState extends State<TransactionForm> {
       reward = amt * _selectedCard!.rewardRate;
     }
 
-    _rewardAmountController.text = reward.toStringAsFixed(2);
+    _rewardAmountController.text = _selectedCard!.rewardType == 'Cashback'
+        ? reward.toStringAsFixed(2)
+        : reward.toStringAsFixed(0);
   }
 
   void _onRecurringSelected(RecurringTransaction? val) {
