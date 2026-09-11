@@ -5,6 +5,8 @@ import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
@@ -82,23 +84,47 @@ class _TransactionListState extends State<TransactionList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              const SizedBox(width: 60.0),
-              Icon(category.iconData, size: 16, color: AppColors.textSecondary),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: Text(
-                  category.name,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CategoryDetailsScreen(
+                      category: category,
+                    ),
                   ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 60.0),
+                    Icon(category.iconData, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 8.0),
+                    Expanded(
+                      child: Text(
+                        category.name,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 12.0),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-          SizedBox(height: recurring != null ? 4.0 : 8.0),
           if (recurring != null) ...[
             Material(
               color: Colors.transparent,
@@ -145,79 +171,106 @@ class _TransactionListState extends State<TransactionList> {
                 ),
               ),
             ),
-            const SizedBox(height: 4.0),
           ],
           if (card != null) ...[
-            Row(
-              children: [
-                const SizedBox(width: 60.0),
-                const Icon(
-                  Icons.credit_card,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    card.name,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CardDetailsScreen(
+                        card: card,
+                      ),
                     ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 60.0),
+                      const Icon(
+                        Icons.credit_card,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: Text(
+                          card.name,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 12.0),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 8.0),
           ],
           if (transaction.rewardAmount != null &&
               transaction.rewardAmount! > 0) ...[
-            Row(
-              children: [
-                const SizedBox(width: 60.0),
-                const Icon(
-                  Icons.stars,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    rewardText,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                children: [
+                  const SizedBox(width: 60.0),
+                  const Icon(
+                    Icons.stars,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                      rewardText,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 8.0),
           ],
           if (transaction.note != null &&
               transaction.note!.trim().isNotEmpty) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(width: 60.0),
-                const Icon(
-                  Icons.sticky_note_2,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    transaction.note!,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(width: 60.0),
+                  const Icon(
+                    Icons.sticky_note_2,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                      transaction.note!,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 8.0),
           ],
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
