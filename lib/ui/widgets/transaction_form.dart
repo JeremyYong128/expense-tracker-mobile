@@ -13,6 +13,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/services/validator_service.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/expandable_selection_list.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
@@ -71,6 +72,8 @@ class TransactionForm extends StatefulWidget {
   State<TransactionForm> createState() => TransactionFormState();
 }
 
+enum RecurringSelection { none, createNew, linkExisting }
+
 class TransactionFormState extends State<TransactionForm> {
   late bool _isIncome;
   Category? _selectedCategory;
@@ -80,6 +83,7 @@ class TransactionFormState extends State<TransactionForm> {
   late final TextEditingController _noteController;
 
   late bool _isRecurring;
+  late RecurringSelection _recurringSelection;
   late final TextEditingController _recurringIntervalController;
   late String _recurringPeriod;
   String? _formError;
@@ -183,6 +187,9 @@ class TransactionFormState extends State<TransactionForm> {
 
     _isRecurring =
         widget.recurringTransaction != null || widget.initialIsRecurring;
+    _recurringSelection = widget.initialIsRecurring
+        ? RecurringSelection.createNew
+        : RecurringSelection.none;
     _recurringIntervalController = TextEditingController(
       text: initialInterval.toString(),
     );
@@ -269,7 +276,6 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   void _loadCategories() {
-
     final recTxs = context.read<RecurringTransactionProvider>().transactions;
     setState(() {
       _recurringTransactions = recTxs;
@@ -358,7 +364,9 @@ class TransactionFormState extends State<TransactionForm> {
         isIncome: _isIncome,
         noteText: _noteController.text,
         cardId: _selectedCard?.id,
-        recurringId: !_isRecurring && _selectedRecurring != null ? _selectedRecurring!.id : null,
+        recurringId: !_isRecurring && _selectedRecurring != null
+            ? _selectedRecurring!.id
+            : null,
         isRecurring: _isRecurring,
         recurringIntervalText: _recurringIntervalController.text,
         recurringPeriod: _recurringPeriod,
@@ -408,11 +416,16 @@ class TransactionFormState extends State<TransactionForm> {
     );
   }
 
-  Widget _buildRecurringDropdown(BuildContext context) {
+  Widget _buildRecurringDropdown(
+    BuildContext context, {
+    bool showLabel = false,
+  }) {
     return CustomField(
       padding: EdgeInsets.zero,
       child: CustomDropdownField<RecurringTransaction?>(
-        label: 'Link to existing recurring transaction'.cased(context),
+        label: showLabel
+            ? 'Link to existing recurring transaction'.cased(context)
+            : '',
         items: [null, ..._recurringTransactions],
         selectedItem: _selectedRecurring,
         displayText: (r) => r?.title ?? 'None'.cased(context),
@@ -529,9 +542,7 @@ class TransactionFormState extends State<TransactionForm> {
               children: [
                 Expanded(
                   child: CustomDatePickerField(
-                    label: _isRecurring
-                        ? 'Start Date'.cased(context)
-                        : 'Date'.cased(context),
+                    label: 'Date'.cased(context),
                     selectedDate: _selectedDate,
                     onDateSelected: (newDate) =>
                         setState(() => _selectedDate = newDate),
@@ -687,72 +698,56 @@ class TransactionFormState extends State<TransactionForm> {
           if (!isEditMode) ...[
             // Add Mode: Unified Recurrence Section
             Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
+              padding: const EdgeInsets.only(
+                bottom: 16.0,
+              ), // 16.0 instead of 24.0 to compensate for list's internal 8.0 padding
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          'Save as new recurring transaction'.cased(context),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
+                  Text(
+                    'Repeat'.cased(context),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  // Removed SizedBox(height: 8.0) because ExpandableSelectionList has top padding of 8.0 internally
+                  ExpandableSelectionList<RecurringSelection>(
+                    items: [
+                      ExpandableSelectionItem(
+                        value: RecurringSelection.none,
+                        title: 'Does not repeat'.cased(context),
                       ),
-                      Positioned(
-                        right: 0,
-                        child: CustomSwitch(
-                          value: _isRecurring,
-                          onChanged: (val) => setState(() {
-                            _isRecurring = val;
-                            if (val) {
-                              _selectedRecurring =
-                                  null; // Cannot link if creating new template
-                            }
-                          }),
+                      ExpandableSelectionItem(
+                        value: RecurringSelection.createNew,
+                        title: 'Save as new recurring transaction'.cased(
+                          context,
                         ),
+                        expandedWidget: _buildRecurringInputs(context),
+                      ),
+                      ExpandableSelectionItem(
+                        value: RecurringSelection.linkExisting,
+                        title: 'Link to existing recurring transaction'.cased(
+                          context,
+                        ),
+                        expandedWidget: _buildRecurringDropdown(context),
                       ),
                     ],
-                  ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeInOut,
-                    switchOutCurve: Curves.easeInOut,
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return SizeTransition(
-                            sizeFactor: animation,
-                            alignment: const Alignment(-1.0, -1.0),
-                            child: child,
-                          );
-                        },
-                    child: _isRecurring
-                        ? SizedBox(
-                            key: const ValueKey('recurring_fields'),
-                            width: double.infinity,
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 16.0),
-                                _buildRecurringInputs(context),
-                              ],
-                            ),
-                          )
-                        : SizedBox(
-                            key: const ValueKey('empty_fields_or_link'),
-                            width: double.infinity,
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 24.0),
-                                _buildRecurringDropdown(context),
-                              ],
-                            ),
-                          ),
+                    selectedValue: _recurringSelection,
+                    onChanged: (val) {
+                      setState(() {
+                        _recurringSelection = val;
+                        if (val == RecurringSelection.createNew) {
+                          _isRecurring = true;
+                          _selectedRecurring = null;
+                        } else if (val == RecurringSelection.linkExisting) {
+                          _isRecurring = false;
+                        } else {
+                          _isRecurring = false;
+                          _selectedRecurring = null;
+                        }
+                      });
+                    },
                   ),
                 ],
               ),
@@ -761,7 +756,7 @@ class TransactionFormState extends State<TransactionForm> {
             // Edit Mode (Normal Transaction): Just show the dropdown
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
-              child: _buildRecurringDropdown(context),
+              child: _buildRecurringDropdown(context, showLabel: true),
             ),
           ] else if (widget.recurringTransaction != null) ...[
             // Edit Mode (Recurring): Show frequency without toggle

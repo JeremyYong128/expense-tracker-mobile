@@ -35,6 +35,10 @@ class ValidatorService {
       throw ValidationException('Title must be 50 characters or less.');
     }
 
+    if (isRecurring && title.toLowerCase() == 'none') {
+      throw ValidationException('Title cannot be "None".');
+    }
+
     final parsedNote = noteText.trim();
     if (parsedNote.length > 250) {
       throw ValidationException('Note must be 250 characters or less.');
