@@ -73,6 +73,15 @@ class AppStyles {
 
   // Standardized border radius for cards
   static const double cardRadius = 24.0;
+
+  // Standardized formatting for section headers
+  static const TextStyle sectionHeader = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+
+  static const double sectionHeaderSpacing = 16.0;
 }
 
 class AppTheme {

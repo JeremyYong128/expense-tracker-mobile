@@ -8,6 +8,8 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
+import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -133,11 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       'Expenses by Category'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: AppStyles.sectionHeader,
                     ),
                     if (stats.expenseBreakdown.length > 3)
                       TextButton(
@@ -161,101 +159,123 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppStyles.sectionHeaderSpacing),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                   alignment: Alignment.topCenter,
                   child: Column(
-                    children: (_isCategoriesExpanded
-                            ? stats.expenseBreakdown.entries
-                            : stats.expenseBreakdown.entries.take(3))
-                        .map((entry) {
-                  final category = entry.key;
-                  final amount = entry.value;
-                  final color = category.color;
-                  final percentage = stats.totalExpense > 0
-                      ? (amount / stats.totalExpense)
-                      : 0.0;
+                    children: () {
+                      final visibleEntries = (_isCategoriesExpanded
+                              ? stats.expenseBreakdown.entries
+                              : stats.expenseBreakdown.entries.take(3))
+                          .toList();
+                      final List<Widget> children = [];
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Icon(
-                            category.iconData,
-                            color: color,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    category.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
+                      for (int i = 0; i < visibleEntries.length; i++) {
+                        final entry = visibleEntries[i];
+                        final category = entry.key;
+                        final amount = entry.value;
+                        final color = category.color;
+                        final percentage = stats.totalExpense > 0
+                            ? (amount / stats.totalExpense)
+                            : 0.0;
+
+                        children.add(
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CategoryDetailsScreen(
+                                      category: category,
                                     ),
                                   ),
-                                  Text(
-                                    _currencyFormat.format(amount),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(12.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    decoration: BoxDecoration(
+                                      color: color.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    child: Icon(
+                                      category.iconData,
+                                      color: color,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              category.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            Text(
+                                              _currencyFormat.format(amount),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(4),
+                                          child: LinearProgressIndicator(
+                                            value: percentage,
+                                            backgroundColor: AppColors.grey.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              color,
+                                            ),
+                                            minHeight: 6,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: percentage,
-                                  backgroundColor: AppColors.grey.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    color,
-                                  ),
-                                  minHeight: 6,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 24),
+                        );
+
+                        if (i < visibleEntries.length - 1) {
+                          children.add(const SizedBox(height: 16));
+                        }
+                      }
+                      return children;
+                    }(),
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
 
               // REWARDS SECTION
               if (stats.monthlyRewards.isNotEmpty) ...[
                 Text(
                   'Rewards Earned'.cased(context),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppStyles.sectionHeader,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppStyles.sectionHeaderSpacing),
                 ...stats.monthlyRewards.entries.map((entry) {
                   final card = entry.key;
                   final reward = entry.value;
@@ -266,14 +286,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
+                    child: Material(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CardDetailsScreen(
+                                card: card,
+                              ),
+                            ),
+                          );
+                        },
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.1),
+                            ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -313,6 +347,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                         ],
+                          ),
+                        ),
                       ),
                     ),
                   );

@@ -108,13 +108,13 @@ flutter run
     - Multicurrency support
 
 - Low priority
+    - When navigating to a detail screen from somewhere not on the manage tab (eg dashboard), should the screen persist after switching to another tab and switching back? If no, implement, if yes, need to implement double tap for other tabs as well
     - List design for notifications screen and manage screen
     - Redesign modal for pending approvals
     - Tags for expenses
     - Custom dropdowns (including date and time pickers)
 
 - Possible changes to consider:
-    - Allow a user to navigate from an individual transaction to its associated recurring transaction
     - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?
     - Should cards support income transactions too? For things like refunds.
     - Add more credit card details and make the details screen look like a card.

@@ -179,12 +179,10 @@ class _RecurringTransactionDetailsScreenState
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Transactions'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppStyles.sectionHeader,
                     ),
                   ),
+                  const SizedBox(height: AppStyles.sectionHeaderSpacing),
                 ],
                 if (transactionsList.isEmpty)
                   Padding(
@@ -198,10 +196,7 @@ class _RecurringTransactionDetailsScreenState
                     ),
                   )
                 else
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: TransactionList(transactions: transactionsList),
-                  ),
+                  TransactionList(transactions: transactionsList),
               ],
             ],
           ),

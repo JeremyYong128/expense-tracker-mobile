@@ -223,12 +223,10 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Expenses'.cased(context),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppStyles.sectionHeader,
                     ),
                   ),
+                  const SizedBox(height: AppStyles.sectionHeaderSpacing),
                 ],
                 if (transactionsList.isEmpty)
                   Padding(
@@ -242,10 +240,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                     ),
                   )
                 else
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: TransactionList(transactions: transactionsList),
-                  ),
+                  TransactionList(transactions: transactionsList),
               ],
             ],
           ),
