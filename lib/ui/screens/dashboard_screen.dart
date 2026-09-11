@@ -54,6 +54,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
     final stats = analyticsProvider.getDashboardStats(_currentMonth);
 
+    final oldestMonth = transactionProvider.oldestTransactionMonth;
+    final newestMonth = transactionProvider.newestTransactionMonth;
+
+    final canGoBack = _currentMonth.isAfter(oldestMonth);
+    final canGoForward = _currentMonth.isBefore(newestMonth);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'.cased(context)),
@@ -71,7 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left),
-                    onPressed: () => _navigateMonth(-1),
+                    onPressed: canGoBack ? () => _navigateMonth(-1) : null,
                     padding: EdgeInsets.zero,
                   ),
                   Expanded(
@@ -89,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.chevron_right),
-                    onPressed: () => _navigateMonth(1),
+                    onPressed: canGoForward ? () => _navigateMonth(1) : null,
                     padding: EdgeInsets.zero,
                   ),
                 ],

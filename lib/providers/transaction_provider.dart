@@ -13,6 +13,38 @@ class TransactionProvider extends ChangeNotifier {
     fetchTransactions();
   }
 
+  DateTime get oldestTransactionMonth {
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month);
+    if (_transactions.isEmpty) return currentMonth;
+
+    DateTime oldest = _transactions.first.date;
+    for (var tx in _transactions) {
+      if (tx.date.isBefore(oldest)) {
+        oldest = tx.date;
+      }
+    }
+
+    final oldestMonth = DateTime(oldest.year, oldest.month);
+    return oldestMonth.isBefore(currentMonth) ? oldestMonth : currentMonth;
+  }
+
+  DateTime get newestTransactionMonth {
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month);
+    if (_transactions.isEmpty) return currentMonth;
+
+    DateTime newest = _transactions.first.date;
+    for (var tx in _transactions) {
+      if (tx.date.isAfter(newest)) {
+        newest = tx.date;
+      }
+    }
+
+    final newestMonth = DateTime(newest.year, newest.month);
+    return newestMonth.isAfter(currentMonth) ? newestMonth : currentMonth;
+  }
+
   Future<void> fetchTransactions() async {
     _transactions = await DataService.getTransactions();
     _isLoading = false;
