@@ -298,10 +298,7 @@ class TransactionFormState extends State<TransactionForm> {
       if (catId != null) {
         _selectedCategory = categoryProvider.getCategoryById(catId);
       } else if (_categories.isNotEmpty) {
-        _selectedCategory = _categories.firstWhere(
-          (c) => c.name.toLowerCase() == 'groceries',
-          orElse: () => _categories.first,
-        );
+        _selectedCategory = _categories.first;
       }
 
       if (ccId != null) {
