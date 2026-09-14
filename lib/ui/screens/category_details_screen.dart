@@ -94,8 +94,8 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
 
-    final latestCategory = categoryProvider.getCategoryById(widget.category.id) 
-        ?? widget.category;
+    final latestCategory =
+        categoryProvider.getCategoryById(widget.category.id) ?? widget.category;
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
@@ -105,7 +105,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     }
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
-    final stats = analyticsProvider.getCategoryStats(latestCategory.id!, _selectedMonth);
+    final stats = analyticsProvider.getCategoryStats(
+      latestCategory.id!,
+      _selectedMonth,
+    );
 
     final allTransactions = stats.allCategoryTransactions;
     final transactionsList = stats.currentMonthTransactions;
@@ -157,22 +160,25 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                 const SizedBox(height: 16),
                 _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
                 const SizedBox(height: 24),
-                if (transactionsList.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
-                    child: Text(
-                      'No transactions for this month.'.cased(context),
-                      style: const TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
-                else
-                  PageContentCard(
-                    title: 'Transactions'.cased(context),
-                    child: TransactionList(transactions: transactionsList),
-                  ),
+                PageContentCard(
+                  title: 'Transactions'.cased(context),
+                  child: transactionsList.isEmpty
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0),
+                            child: Text(
+                              'No transactions for this month.'.cased(context),
+                              style: const TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : TransactionList(transactions: transactionsList),
+                ),
               ],
             ],
           ),
@@ -191,7 +197,10 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final isNegative = balance < 0;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
 
-    final diff = BusinessLogic.calculateAbsoluteDifference(balance, prevBalance);
+    final diff = BusinessLogic.calculateAbsoluteDifference(
+      balance,
+      prevBalance,
+    );
     final isGood = diff >= 0;
     final changeColor = isGood ? AppColors.income : AppColors.expense;
 

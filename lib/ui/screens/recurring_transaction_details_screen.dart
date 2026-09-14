@@ -175,22 +175,25 @@ class _RecurringTransactionDetailsScreenState
                 const SizedBox(height: 16),
                 _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
                 const SizedBox(height: 24),
-                if (transactionsList.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
-                    child: Text(
-                      'No transactions for this month.'.cased(context),
-                      style: const TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
-                else
-                  PageContentCard(
-                    title: 'Transactions'.cased(context),
-                    child: TransactionList(transactions: transactionsList),
-                  ),
+                PageContentCard(
+                  title: 'Transactions'.cased(context),
+                  child: transactionsList.isEmpty
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 32.0),
+                            child: Text(
+                              'No transactions for this month.'.cased(context),
+                              style: const TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : TransactionList(transactions: transactionsList),
+                ),
               ],
             ],
           ),

@@ -219,22 +219,25 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 const SizedBox(height: 16),
                 _buildMonthlySummary(latestCard, totalExpense, totalRewardsAmount, prevExpense, prevRewardsAmount),
                 const SizedBox(height: 24),
-                if (transactionsList.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
-                    child: Text(
-                      'No expenses tagged to this card for this month.'.cased(context),
-                      style: const TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
-                else
-                  PageContentCard(
-                    title: 'Expenses'.cased(context),
-                    child: TransactionList(transactions: transactionsList),
-                  ),
+                PageContentCard(
+                  title: 'Expenses'.cased(context),
+                  child: transactionsList.isEmpty
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 32.0),
+                            child: Text(
+                              'No expenses tagged to this card for this month.'.cased(context),
+                              style: const TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : TransactionList(transactions: transactionsList),
+                ),
               ],
             ],
           ),

@@ -343,15 +343,8 @@ class _TransactionListState extends State<TransactionList> {
     final cardProvider = context.watch<CardProvider>();
     final recurringProvider = context.watch<RecurringTransactionProvider>();
 
-    Widget emptyWidget = Center(
-      child: Text(
-        'No transactions yet.'.cased(context),
-        style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
-      ),
-    );
-
     if (widget.transactions.isEmpty) {
-      return emptyWidget;
+      return const SizedBox.shrink();
     }
 
     final stats = HistoryStats.fromTransactions(
@@ -520,7 +513,7 @@ class _TransactionListState extends State<TransactionList> {
                     const Divider(
                       height: 1,
                       thickness: 1,
-                      color: AppColors.divider,
+                      color: AppColors.border,
                     ),
                 ],
               );

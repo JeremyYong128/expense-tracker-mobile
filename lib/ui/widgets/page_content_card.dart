@@ -6,11 +6,7 @@ class PageContentCard extends StatelessWidget {
   final String? title;
   final Widget child;
 
-  const PageContentCard({
-    super.key,
-    this.title,
-    required this.child,
-  });
+  const PageContentCard({super.key, this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +29,7 @@ class PageContentCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (title != null && title!.isNotEmpty) ...[
-              Text(
-                title!.cased(context),
-                style: AppStyles.sectionHeader,
-              ),
+              Text(title!.cased(context), style: AppStyles.sectionHeader),
               const SizedBox(height: AppStyles.sectionHeaderSpacing),
             ],
             child,
