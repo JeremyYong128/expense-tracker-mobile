@@ -13,6 +13,7 @@ import 'package:expense_tracker_mobile/ui/widgets/card_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
+import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
@@ -218,16 +219,6 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 const SizedBox(height: 16),
                 _buildMonthlySummary(latestCard, totalExpense, totalRewardsAmount, prevExpense, prevRewardsAmount),
                 const SizedBox(height: 24),
-                if (transactionsList.isNotEmpty) ...[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Expenses'.cased(context),
-                      style: AppStyles.sectionHeader,
-                    ),
-                  ),
-                  const SizedBox(height: AppStyles.sectionHeaderSpacing),
-                ],
                 if (transactionsList.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
@@ -240,7 +231,10 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                     ),
                   )
                 else
-                  TransactionList(transactions: transactionsList),
+                  PageContentCard(
+                    title: 'Expenses'.cased(context),
+                    child: TransactionList(transactions: transactionsList),
+                  ),
               ],
             ],
           ),

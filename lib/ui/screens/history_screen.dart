@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
+import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
@@ -75,15 +76,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           top: 8.0,
                           bottom: AppStyles.screenPadding.bottom,
                         ),
-                        child: TransactionList(transactions: filteredTransactions),
+                        child: PageContentCard(
+                          child: TransactionList(transactions: filteredTransactions),
+                        ),
                       )
                     : SingleChildScrollView(
                         padding: EdgeInsets.only(
                           top: 8.0,
                           bottom: AppStyles.screenPadding.bottom,
                         ),
-                        child: TransactionList(
-                          transactions: filteredTransactions,
+                        child: PageContentCard(
+                          child: TransactionList(
+                            transactions: filteredTransactions,
+                          ),
                         ),
                       ),
               ),

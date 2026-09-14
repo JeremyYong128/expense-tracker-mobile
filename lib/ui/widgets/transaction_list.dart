@@ -52,7 +52,9 @@ class _TransactionListState extends State<TransactionList> {
     RecurringTransactionProvider recurringProvider,
   ) {
     final card = cardProvider.getCardById(transaction.cardId);
-    final recurring = recurringProvider.getRecurringTransactionById(transaction.recurringId);
+    final recurring = recurringProvider.getRecurringTransactionById(
+      transaction.recurringId,
+    );
 
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
@@ -80,7 +82,7 @@ class _TransactionListState extends State<TransactionList> {
           bottomRight: Radius.circular(AppStyles.cardRadius),
         ),
       ),
-      padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -91,9 +93,8 @@ class _TransactionListState extends State<TransactionList> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CategoryDetailsScreen(
-                      category: category,
-                    ),
+                    builder: (context) =>
+                        CategoryDetailsScreen(category: category),
                   ),
                 );
               },
@@ -180,9 +181,7 @@ class _TransactionListState extends State<TransactionList> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CardDetailsScreen(
-                        card: card,
-                      ),
+                      builder: (context) => CardDetailsScreen(card: card),
                     ),
                   );
                 },
@@ -299,13 +298,17 @@ class _TransactionListState extends State<TransactionList> {
                 onPressed: () async {
                   if (transaction.id != null) {
                     try {
-                      await context.read<TransactionProvider>().deleteTransaction(
-                        transaction.id!,
+                      await context
+                          .read<TransactionProvider>()
+                          .deleteTransaction(transaction.id!);
+                      SnackBarService.showSuccess(
+                        'Transaction deleted successfully',
                       );
-                      SnackBarService.showSuccess('Transaction deleted successfully');
                     } catch (e, stack) {
                       AppLogger.error('Failed to delete transaction', e, stack);
-                      SnackBarService.showError('An unexpected error occurred.');
+                      SnackBarService.showError(
+                        'An unexpected error occurred.',
+                      );
                     }
                   }
                 },
@@ -363,15 +366,14 @@ class _TransactionListState extends State<TransactionList> {
         final date = entry.key;
         final dayTransactions = entry.value;
         final index = grouped.keys.toList().indexOf(date);
-        final isLastGroup = index == grouped.length - 1;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: EdgeInsets.only(
-                top: index == 0 ? 0.0 : 8.0,
-                bottom: 12.0,
+                top: index == 0 ? 0.0 : 12.0,
+                bottom: 0.0,
               ),
               child: Text(
                 DateFormat('EEEE, d MMMM yyyy').format(date).cased(context),
@@ -392,133 +394,135 @@ class _TransactionListState extends State<TransactionList> {
                 transaction.categoryId,
               );
               final color = category.color;
-              final isLastItem =
-                  isLastGroup && txIndex == dayTransactions.length - 1;
               final isExpanded =
                   transaction.id != null &&
                   _expandedTransactionIds.contains(transaction.id);
 
-              return Container(
-                margin: EdgeInsets.only(bottom: isLastItem ? 0.0 : 12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                    onTap: () {
-                      if (transaction.id == null) return;
-                      setState(() {
-                        if (_expandedTransactionIds.contains(transaction.id)) {
-                          _expandedTransactionIds.remove(transaction.id);
-                        } else {
-                          _expandedTransactionIds.add(transaction.id!);
-                        }
-                      });
-                    },
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.topCenter,
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        decoration: BoxDecoration(
-                                          color: color.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(
-                                            12.0,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          category.iconData,
-                                          color: color,
-                                          size: 24,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 16.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+              return Column(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        if (transaction.id == null) return;
+                        setState(() {
+                          if (_expandedTransactionIds.contains(
+                            transaction.id,
+                          )) {
+                            _expandedTransactionIds.remove(transaction.id);
+                          } else {
+                            _expandedTransactionIds.add(transaction.id!);
+                          }
+                        });
+                      },
+                      child: AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12.0,
+                              ),
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          transaction.title,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 16,
+                                        Container(
+                                          padding: const EdgeInsets.all(10.0),
+                                          decoration: BoxDecoration(
+                                            color: color.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12.0,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 2.0),
-                                        Text(
-                                          DateFormat.jm()
-                                              .format(transaction.date)
-                                              .cased(context),
-                                          style: const TextStyle(
-                                            color: AppColors.textSecondary,
-                                            fontSize: 13,
+                                          child: Icon(
+                                            category.iconData,
+                                            color: color,
+                                            size: 24,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  const SizedBox(width: 16.0),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        transaction.isIncome
-                                            ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                                            : '-\$${transaction.amount.toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          color: transaction.isIncome
-                                              ? AppColors.income
-                                              : AppColors.expense,
-                                        ),
+                                    const SizedBox(width: 16.0),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            transaction.title,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2.0),
+                                          Text(
+                                            DateFormat.jm()
+                                                .format(transaction.date)
+                                                .cased(context),
+                                            style: const TextStyle(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                    const SizedBox(width: 16.0),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          transaction.isIncome
+                                              ? '+\$${transaction.amount.toStringAsFixed(2)}'
+                                              : '-\$${transaction.amount.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                            color: transaction.isIncome
+                                                ? AppColors.income
+                                                : AppColors.expense,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          if (isExpanded)
-                            _buildExpandedSection(
-                              context,
-                              transaction,
-                              category,
-                              cardProvider,
-                              recurringProvider,
-                            ),
-                        ],
+                            if (isExpanded)
+                              _buildExpandedSection(
+                                context,
+                                transaction,
+                                category,
+                                cardProvider,
+                                recurringProvider,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  if (txIndex != dayTransactions.length - 1)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.divider,
+                    ),
+                ],
               );
             }),
           ],
