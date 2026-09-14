@@ -7,6 +7,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
@@ -60,7 +61,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final newestMonth = transactionProvider.newestTransactionMonth;
 
     final canGoBack = _currentMonth.isAfter(oldestMonth);
-    final canGoForward = _currentMonth.isBefore(newestMonth);
+    final currentPhysicalMonth = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      1,
+    );
+    final canGoForward =
+        _currentMonth.isBefore(newestMonth) ||
+        _currentMonth.isBefore(currentPhysicalMonth);
 
     return Scaffold(
       appBar: AppBar(
@@ -75,32 +83,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: canGoBack ? () => _navigateMonth(-1) : null,
-                    padding: EdgeInsets.zero,
-                  ),
-                  Expanded(
-                    child: Text(
-                      DateFormat(
-                        'MMMM yyyy',
-                      ).format(_currentMonth).cased(context),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: canGoForward ? () => _navigateMonth(1) : null,
-                    padding: EdgeInsets.zero,
-                  ),
-                ],
+              MonthNavigator(
+                currentMonth: _currentMonth,
+                canGoBack: canGoBack,
+                canGoForward: canGoForward,
+                onPrevious: () => _navigateMonth(-1),
+                onNext: () => _navigateMonth(1),
               ),
               const SizedBox(height: 24),
               // SUMMARY CARDS
@@ -166,10 +154,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   alignment: Alignment.topCenter,
                   child: Column(
                     children: () {
-                      final visibleEntries = (_isCategoriesExpanded
-                              ? stats.expenseBreakdown.entries
-                              : stats.expenseBreakdown.entries.take(3))
-                          .toList();
+                      final visibleEntries =
+                          (_isCategoriesExpanded
+                                  ? stats.expenseBreakdown.entries
+                                  : stats.expenseBreakdown.entries.take(3))
+                              .toList();
                       final List<Widget> children = [];
 
                       for (int i = 0; i < visibleEntries.length; i++) {
@@ -213,7 +202,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           mainAxisAlignment:
@@ -237,15 +227,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         ClipRRect(
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                           child: LinearProgressIndicator(
                                             value: percentage,
-                                            backgroundColor: AppColors.grey.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              color,
-                                            ),
+                                            backgroundColor: AppColors.grey
+                                                .withValues(alpha: 0.3),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  color,
+                                                ),
                                             minHeight: 6,
                                           ),
                                         ),
@@ -294,9 +286,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CardDetailsScreen(
-                                card: card,
-                              ),
+                              builder: (context) =>
+                                  CardDetailsScreen(card: card),
                             ),
                           );
                         },
@@ -308,45 +299,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             border: Border.all(
                               color: Colors.grey.withValues(alpha: 0.1),
                             ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.15,
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.stars,
+                                      color: AppColors.primary,
+                                      size: 20,
+                                    ),
                                   ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.stars,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    card.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
                               Text(
-                                card.name,
+                                '+$rewardText ${card.rewardType}',
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.income,
                                   fontSize: 15,
                                 ),
                               ),
                             ],
-                          ),
-                          Text(
-                            '+$rewardText ${card.rewardType}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.income,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
                           ),
                         ),
                       ),

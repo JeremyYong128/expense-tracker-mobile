@@ -73,11 +73,14 @@ class DataService {
 
   // Get all categories
   static Future<List<Category>> getCategories() async {
-    final list = await (_db.select(_db.categories)
-          ..orderBy([
-            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-          ]))
-        .get();
+    final list =
+        await (_db.select(_db.categories)..orderBy([
+              (t) => drift.OrderingTerm(
+                expression: t.sortOrder,
+                mode: drift.OrderingMode.asc,
+              ),
+            ]))
+            .get();
     return list.map(_mapCategory).toList();
   }
 
@@ -105,12 +108,16 @@ class DataService {
       return existing.id;
     }
 
-    final minSortOrderCat = await (_db.select(_db.categories)
-          ..orderBy([
-            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final minSortOrderCat =
+        await (_db.select(_db.categories)
+              ..orderBy([
+                (t) => drift.OrderingTerm(
+                  expression: t.sortOrder,
+                  mode: drift.OrderingMode.asc,
+                ),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
     final newSortOrder = (minSortOrderCat?.sortOrder ?? 0) - 1;
 
     final newId = await _db
@@ -161,6 +168,9 @@ class DataService {
         RecurringTransactionsCompanion(categoryId: drift.Value(existing.id)),
       );
 
+      // Merge budgets using point-by-point summation to preserve accurate budget capacity
+      await _mergeBudgets(category.id!, existing.id);
+
       await (_db.delete(
         _db.categories,
       )..where((c) => c.id.equals(category.id!))).go();
@@ -192,8 +202,11 @@ class DataService {
     final recCount = await (_db.select(
       _db.recurringTransactions,
     )..where((r) => r.categoryId.equals(id))).get();
+    final budgetCount = await (_db.select(
+      _db.budgets,
+    )..where((b) => b.categoryId.equals(id))).get();
 
-    if (txCount.isNotEmpty || recCount.isNotEmpty) {
+    if (txCount.isNotEmpty || recCount.isNotEmpty || budgetCount.isNotEmpty) {
       await (_db.update(_db.categories)..where((c) => c.id.equals(id))).write(
         const CategoriesCompanion(isActive: drift.Value(false)),
       );
@@ -206,11 +219,14 @@ class DataService {
 
   // Get all cards
   static Future<List<Card>> getCards() async {
-    final list = await (_db.select(_db.cards)
-          ..orderBy([
-            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-          ]))
-        .get();
+    final list =
+        await (_db.select(_db.cards)..orderBy([
+              (t) => drift.OrderingTerm(
+                expression: t.sortOrder,
+                mode: drift.OrderingMode.asc,
+              ),
+            ]))
+            .get();
     return list.map(_mapCard).toList();
   }
 
@@ -224,17 +240,19 @@ class DataService {
             .getSingleOrNull();
 
     if (existing != null) {
-      throw ValidationException(
-        'A card with this name already exists.',
-      );
+      throw ValidationException('A card with this name already exists.');
     }
 
-    final minSortOrderCard = await (_db.select(_db.cards)
-          ..orderBy([
-            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final minSortOrderCard =
+        await (_db.select(_db.cards)
+              ..orderBy([
+                (t) => drift.OrderingTerm(
+                  expression: t.sortOrder,
+                  mode: drift.OrderingMode.asc,
+                ),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
     final newSortOrder = (minSortOrderCard?.sortOrder ?? 0) - 1;
 
     final id = await _db
@@ -263,14 +281,10 @@ class DataService {
             .getSingleOrNull();
 
     if (existing != null) {
-      throw ValidationException(
-        'A card with this name already exists.',
-      );
+      throw ValidationException('A card with this name already exists.');
     }
 
-    await (_db.update(
-      _db.cards,
-    )..where((c) => c.id.equals(card.id!))).write(
+    await (_db.update(_db.cards)..where((c) => c.id.equals(card.id!))).write(
       CardsCompanion(
         name: drift.Value(card.name),
         rewardType: drift.Value(card.rewardType),
@@ -290,10 +304,17 @@ class DataService {
     final recCount = await (_db.select(
       _db.recurringTransactions,
     )..where((r) => r.cardId.equals(id))).get();
-    
-    final hasTransactions = txCount.isNotEmpty || recCount.isNotEmpty;
+    final budgetCount = await (_db.select(
+      _db.budgets,
+    )..where((b) => b.cardId.equals(id))).get();
+
+    final hasTransactions =
+        txCount.isNotEmpty || recCount.isNotEmpty || budgetCount.isNotEmpty;
 
     if (forceHardDelete) {
+      // Delete budgets tied to this card
+      await (_db.delete(_db.budgets)..where((b) => b.cardId.equals(id))).go();
+
       await (_db.delete(_db.cards)..where((c) => c.id.equals(id))).go();
       return hasTransactions;
     }
@@ -329,12 +350,16 @@ class DataService {
     final recurringInterval = int.tryParse(recurringIntervalText) ?? 1;
 
     if (isRecurring) {
-      final minSortOrderTx = await (_db.select(_db.recurringTransactions)
-            ..orderBy([
-              (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-            ])
-            ..limit(1))
-          .getSingleOrNull();
+      final minSortOrderTx =
+          await (_db.select(_db.recurringTransactions)
+                ..orderBy([
+                  (t) => drift.OrderingTerm(
+                    expression: t.sortOrder,
+                    mode: drift.OrderingMode.asc,
+                  ),
+                ])
+                ..limit(1))
+              .getSingleOrNull();
       final newSortOrder = (minSortOrderTx?.sortOrder ?? 0) - 1;
 
       await _db
@@ -398,11 +423,14 @@ class DataService {
   }
 
   static Future<List<RecurringTransaction>> getRecurringTransactions() async {
-    final list = await (_db.select(_db.recurringTransactions)
-          ..orderBy([
-            (t) => drift.OrderingTerm(expression: t.sortOrder, mode: drift.OrderingMode.asc)
-          ]))
-        .get();
+    final list =
+        await (_db.select(_db.recurringTransactions)..orderBy([
+              (t) => drift.OrderingTerm(
+                expression: t.sortOrder,
+                mode: drift.OrderingMode.asc,
+              ),
+            ]))
+            .get();
     return list.map(_mapRecurringTransaction).toList();
   }
 
@@ -462,7 +490,10 @@ class DataService {
     );
   }
 
-  static Future<void> updateRecurringTransactionNextDueDate(int id, DateTime nextDueDate) async {
+  static Future<void> updateRecurringTransactionNextDueDate(
+    int id,
+    DateTime nextDueDate,
+  ) async {
     await (_db.update(
       _db.recurringTransactions,
     )..where((t) => t.id.equals(id))).write(
@@ -473,11 +504,15 @@ class DataService {
   }
 
   static Future<void> deleteTransaction(int id) async {
-    final tx = await (_db.select(_db.transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+    final tx = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
 
     if (tx != null) {
-      final category = await (_db.select(_db.categories)..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
+      final category = await (_db.select(
+        _db.categories,
+      )..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
       if (category != null && !category.isActive) {
         await deleteCategory(category.id);
       }
@@ -485,12 +520,17 @@ class DataService {
   }
 
   static Future<void> deleteRecurringTransaction(int id) async {
-    final tx = await (_db.select(_db.recurringTransactions)..where((t) => t.id.equals(id))).getSingleOrNull();
-    await (_db.delete(_db.recurringTransactions)..where((t) => t.id.equals(id)))
-        .go();
+    final tx = await (_db.select(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    await (_db.delete(
+      _db.recurringTransactions,
+    )..where((t) => t.id.equals(id))).go();
 
     if (tx != null) {
-      final category = await (_db.select(_db.categories)..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
+      final category = await (_db.select(
+        _db.categories,
+      )..where((c) => c.id.equals(tx.categoryId))).getSingleOrNull();
       if (category != null && !category.isActive) {
         await deleteCategory(category.id);
       }
@@ -515,9 +555,7 @@ class DataService {
         );
   }
 
-  static Future<List<Transaction>> getTransactionsForCard(
-    int cardId,
-  ) async {
+  static Future<List<Transaction>> getTransactionsForCard(int cardId) async {
     final list = await (_db.select(
       _db.transactions,
     )..where((t) => t.cardId.equals(cardId))).get();
@@ -548,7 +586,9 @@ class DataService {
     });
   }
 
-  static Future<void> updateRecurringTransactionsOrder(List<RecurringTransaction> transactions) async {
+  static Future<void> updateRecurringTransactionsOrder(
+    List<RecurringTransaction> transactions,
+  ) async {
     await _db.batch((batch) {
       for (final tx in transactions) {
         batch.update(
@@ -557,6 +597,134 @@ class DataService {
           where: (t) => t.id.equals(tx.id!),
         );
       }
+    });
+  }
+
+  // --- Budget Methods ---
+  static Future<List<Budget>> getAllBudgets() async {
+    return await _db.select(_db.budgets).get();
+  }
+
+  static Future<Budget?> getBudget({
+    required int month,
+    required int year,
+    required String type,
+    int? categoryId,
+    int? cardId,
+  }) async {
+    final query = _db.select(_db.budgets)
+      ..where((b) => b.month.equals(month))
+      ..where((b) => b.year.equals(year))
+      ..where((b) => b.type.equals(type));
+    
+    if (categoryId != null) {
+      query.where((b) => b.categoryId.equals(categoryId));
+    } else {
+      query.where((b) => b.categoryId.isNull());
+    }
+
+    if (cardId != null) {
+      query.where((b) => b.cardId.equals(cardId));
+    } else {
+      query.where((b) => b.cardId.isNull());
+    }
+
+    query.limit(1);
+    final results = await query.get();
+    return results.isEmpty ? null : results.first;
+  }
+
+  static Future<void> upsertBudget(BudgetsCompanion budget) async {
+    await _db.into(_db.budgets).insertOnConflictUpdate(budget);
+  }
+
+  static Future<void> _mergeBudgets(int sourceId, int targetId) async {
+    // 1. Fetch budgets for both categories
+    final sourceBudgets =
+        await (_db.select(_db.budgets)
+              ..where((b) => b.categoryId.equals(sourceId))
+              ..where((b) => b.type.equals('category')))
+            .get();
+    final targetBudgets =
+        await (_db.select(_db.budgets)
+              ..where((b) => b.categoryId.equals(targetId))
+              ..where((b) => b.type.equals('category')))
+            .get();
+
+    if (sourceBudgets.isEmpty && targetBudgets.isEmpty) return;
+
+    // If source has budgets but target has none, we can just move them (fast path)
+    if (targetBudgets.isEmpty) {
+      await (_db.update(_db.budgets)
+            ..where((b) => b.categoryId.equals(sourceId)))
+          .write(BudgetsCompanion(categoryId: drift.Value(targetId)));
+      return;
+    }
+
+    // If target has budgets but source has none, we do nothing (fast path)
+    if (sourceBudgets.isEmpty) return;
+
+    // Both have budgets. Perform point-by-point summation.
+    final sourceMap = {for (final b in sourceBudgets) '${b.year}-${b.month.toString().padLeft(2, '0')}': b};
+    final targetMap = {for (final b in targetBudgets) '${b.year}-${b.month.toString().padLeft(2, '0')}': b};
+    
+    // Sort keys chronologically
+    final allKeys = {...sourceMap.keys, ...targetMap.keys}.toList()
+      ..sort();
+
+    final newBudgets = <BudgetsCompanion>[];
+    bool wasLastTombstone = false;
+
+    for (final key in allKeys) {
+      final s = sourceMap[key];
+      final t = targetMap[key];
+
+      final sAmt = s?.amount;
+      final tAmt = t?.amount;
+
+      final sNoValue = s == null || sAmt == null;
+      final tNoValue = t == null || tAmt == null;
+
+      double? summedAmount;
+      if (sNoValue && tNoValue) {
+        summedAmount = null; // Either missing or tombstone for both
+      } else {
+        summedAmount = (sAmt ?? 0.0) + (tAmt ?? 0.0);
+      }
+
+      // Prevent multiple consecutive tombstones
+      if (summedAmount == null) {
+        if (wasLastTombstone) {
+          continue;
+        }
+        wasLastTombstone = true;
+      } else {
+        wasLastTombstone = false;
+      }
+
+      final year = s?.year ?? t!.year;
+      final month = s?.month ?? t!.month;
+
+      newBudgets.add(
+        BudgetsCompanion.insert(
+          month: month,
+          year: year,
+          type: 'category',
+          categoryId: drift.Value(targetId),
+          amount: drift.Value(summedAmount),
+        ),
+      );
+    }
+
+    // Delete old budgets for both
+    await (_db.delete(_db.budgets)
+          ..where((b) => b.categoryId.isIn([sourceId, targetId]))
+          ..where((b) => b.type.equals('category')))
+        .go();
+
+    // Insert new combined budgets
+    await _db.batch((batch) {
+      batch.insertAll(_db.budgets, newBudgets);
     });
   }
 }

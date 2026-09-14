@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/cards_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/categories_screen.dart';
+import 'package:expense_tracker_mobile/ui/screens/budget_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -64,6 +65,21 @@ class ManageScreen extends StatelessWidget {
                   context,
                   CupertinoPageRoute(
                     builder: (context) => const CardsScreen(),
+                  ),
+                );
+              },
+            ),
+            Divider(height: 1, color: Colors.grey.withValues(alpha: 0.5)),
+            _buildManageListItem(
+              context,
+              title: 'Budget',
+              icon: Icons.account_balance_wallet,
+              color: Colors.teal,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const BudgetScreen(),
                   ),
                 );
               },

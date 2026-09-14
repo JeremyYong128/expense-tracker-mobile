@@ -13,13 +13,15 @@ import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart'
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/budget_provider.dart';
+import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
+import 'package:expense_tracker_mobile/services/budget_rollover_service.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
 import 'package:expense_tracker_mobile/providers/notification_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/global_notification_banner.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
-import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/pending_approvals_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
@@ -30,7 +32,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -66,9 +68,17 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
         ChangeNotifierProvider(create: (_) => CardProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
-        ChangeNotifierProxyProvider4<TransactionProvider, CategoryProvider, CardProvider, RecurringTransactionProvider, AnalyticsProvider>(
+        ChangeNotifierProvider(create: (_) => BudgetProvider()),
+        ChangeNotifierProxyProvider4<
+          TransactionProvider,
+          CategoryProvider,
+          CardProvider,
+          RecurringTransactionProvider,
+          AnalyticsProvider
+        >(
           create: (_) => AnalyticsProvider(),
-          update: (_, tx, cat, card, rec, prev) => (prev ?? AnalyticsProvider())..update(tx, cat, card, rec),
+          update: (_, tx, cat, card, rec, prev) =>
+              (prev ?? AnalyticsProvider())..update(tx, cat, card, rec),
         ),
       ],
       child: const MainApp(),
@@ -159,6 +169,16 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         listen: false,
       );
+      
+      // Run budget rollover proactively on app launch
+      BudgetRolloverService.checkAndRolloverBudgets().then((_) {
+        if (!mounted) return;
+        // Optionally, force BudgetProvider to refresh if it was already loaded
+        final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+        final now = DateTime.now();
+        budgetProvider.loadBudgetsForMonth(now.month, now.year);
+      });
+
       _checkPendingRecurringTransactions();
       _recurringProvider.addListener(_checkPendingRecurringTransactions);
     });
@@ -178,15 +198,19 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final pending = await RecurringProcessingService.getPendingApprovals();
       if (!mounted) return;
-      
-      final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
+
+      final notifProvider = Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      );
 
       if (pending.isNotEmpty) {
         notifProvider.addNotification(
           AppNotification(
             id: 'pending_approvals',
             title: 'Pending Approvals',
-            message: 'You have ${pending.length} recurring transactions awaiting approval.',
+            message:
+                'You have ${pending.length} recurring transactions awaiting approval.',
             icon: Icons.access_time,
             color: AppColors.expense,
             showAsBanner: true,
@@ -206,79 +230,88 @@ class _HomeScreenState extends State<HomeScreen> {
     return GlobalNotificationBanner(
       child: CupertinoTabScaffold(
         controller: _tabController,
-      tabBar: CupertinoTabBar(
-        onTap: (index) {
-          if (index == 2) {
-            SlideUpModal.showCustom(
-              context: context,
-              builder: (context) => const TransactionModal(),
-            );
-            _tabController.index = _lastTappedIndex;
-            return;
-          }
+        tabBar: CupertinoTabBar(
+          onTap: (index) {
+            if (index == 2) {
+              SlideUpModal.showCustom(
+                context: context,
+                builder: (context) => const TransactionModal(),
+              );
+              _tabController.index = _lastTappedIndex;
+              return;
+            }
 
-          if (_lastTappedIndex == index) {
-            _navigatorKeys[index].currentState?.popUntil(
-              (route) => route.isFirst,
-            );
-          }
-          _lastTappedIndex = index;
-        },
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: 'Home'.cased(context),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.history),
-            label: 'History'.cased(context),
-          ),
-          BottomNavigationBarItem(
-            icon: Transform.translate(
-              offset: const Offset(0, 6),
-              child: Container(
-                width: 44,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: const Icon(Icons.add, color: AppColors.white, size: 24),
-              ),
-            ),
-            activeIcon: Transform.translate(
-              offset: const Offset(0, 6),
-              child: Container(
-                width: 44,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: const Icon(Icons.add, color: AppColors.white, size: 24),
-              ),
-            ),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.apps),
-            label: 'Manage'.cased(context),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: 'Settings'.cased(context),
-          ),
-        ],
-        activeColor: AppColors.primary,
-      ),
-      tabBuilder: (BuildContext context, int index) {
-        return CupertinoTabView(
-          navigatorKey: _navigatorKeys[index],
-          builder: (BuildContext context) {
-            return _widgetOptions[index];
+            if (_lastTappedIndex == index) {
+              _navigatorKeys[index].currentState?.popUntil(
+                (route) => route.isFirst,
+              );
+            }
+            _lastTappedIndex = index;
           },
-        );
-      },
-    ));
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Home'.cased(context),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.history),
+              label: 'History'.cased(context),
+            ),
+            BottomNavigationBarItem(
+              icon: Transform.translate(
+                offset: const Offset(0, 6),
+                child: Container(
+                  width: 44,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: AppColors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+              activeIcon: Transform.translate(
+                offset: const Offset(0, 6),
+                child: Container(
+                  width: 44,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: AppColors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.apps),
+              label: 'Manage'.cased(context),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: 'Settings'.cased(context),
+            ),
+          ],
+          activeColor: AppColors.primary,
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return CupertinoTabView(
+            navigatorKey: _navigatorKeys[index],
+            builder: (BuildContext context) {
+              return _widgetOptions[index];
+            },
+          );
+        },
+      ),
+    );
   }
 }

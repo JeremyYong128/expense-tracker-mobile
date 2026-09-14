@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
-class CustomDropdownField<T> extends StatelessWidget {
+class CustomMonthYearPicker extends StatelessWidget {
   final String? label;
-  final List<T> items;
-  final T selectedItem;
-  final ValueChanged<T> onChanged;
-  final String Function(T) displayText;
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onChanged;
   final bool enabled;
 
-  const CustomDropdownField({
+  const CustomMonthYearPicker({
     super.key,
     this.label,
-    required this.items,
-    required this.selectedItem,
+    required this.selectedDate,
     required this.onChanged,
-    required this.displayText,
     this.enabled = true,
   });
 
   void _showPicker(BuildContext context) {
-    if (!enabled || items.isEmpty) return;
+    if (!enabled) return;
 
-    int selectedIndex = items.indexOf(selectedItem);
-    if (selectedIndex == -1) selectedIndex = 0;
+    // Use a temporary variable to hold the date while scrolling
+    DateTime tempDate = selectedDate;
 
     showCupertinoModalPopup(
       context: context,
@@ -69,32 +66,21 @@ class CustomDropdownField<T> extends StatelessWidget {
                           'Done'.cased(context),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          onChanged(tempDate);
+                          Navigator.of(context).pop();
+                        },
                       ),
                     ],
                   ),
                 ),
                 Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 40.0,
-                    scrollController: FixedExtentScrollController(
-                      initialItem: selectedIndex,
-                    ),
-                    onSelectedItemChanged: (int index) {
-                      onChanged(items[index]);
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.monthYear,
+                    initialDateTime: selectedDate,
+                    onDateTimeChanged: (DateTime newDateTime) {
+                      tempDate = newDateTime;
                     },
-                    children: items.map((T value) {
-                      return Center(
-                        child: Text(
-                          displayText(value),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: AppColors.textPrimary,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ),
                 ),
               ],
@@ -141,7 +127,7 @@ class CustomDropdownField<T> extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    displayText(selectedItem),
+                    DateFormat('MMMM yyyy').format(selectedDate),
                     style: TextStyle(
                       fontSize: 16,
                       color: enabled

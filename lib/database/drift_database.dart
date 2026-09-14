@@ -93,6 +93,26 @@ class RecurringTransactions extends Table {
       integer().named('sortOrder').withDefault(const Constant(0))();
 }
 
+class Budgets extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  
+  IntColumn get month => integer()();
+  IntColumn get year => integer()();
+  TextColumn get type => text()();
+
+  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  IntColumn get cardId => integer().nullable().references(Cards, #id)();
+  
+  RealColumn get amount => real().nullable()();
+  
+  BoolColumn get enableRollover => boolean().withDefault(const Constant(false))();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {month, year, type, categoryId, cardId}
+  ];
+}
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
@@ -106,13 +126,13 @@ LazyDatabase _openConnection() {
 }
 
 @DriftDatabase(
-  tables: [Categories, Transactions, RecurringTransactions, Cards],
+  tables: [Categories, Transactions, RecurringTransactions, Cards, Budgets],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {

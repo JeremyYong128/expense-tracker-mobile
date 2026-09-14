@@ -95,3 +95,21 @@ class HistoryStats {
     return HistoryStats(groupedTransactions: grouped, categories: categories);
   }
 }
+
+class MonthlyBudgetPacing {
+  final int month;
+  final int year;
+  final double? budgetAmount;
+  final double spentAmount;
+
+  MonthlyBudgetPacing({
+    required this.month,
+    required this.year,
+    this.budgetAmount,
+    required this.spentAmount,
+  });
+
+  bool get isOverBudget => budgetAmount != null && spentAmount > budgetAmount!;
+  double get percentageUsed =>
+      budgetAmount != null && budgetAmount! > 0 ? spentAmount / budgetAmount! : 0.0;
+}

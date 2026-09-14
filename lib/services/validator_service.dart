@@ -9,7 +9,37 @@ import 'package:expense_tracker_mobile/ui/widgets/transaction_form.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 
+import 'package:expense_tracker_mobile/services/data_service.dart';
+
 class ValidatorService {
+  static Future<void> validateBudget({
+    required String amountText,
+    required Category? category,
+    required int selectedMonth,
+    required int selectedYear,
+  }) async {
+    if (category == null) {
+      throw ValidationException('Please select a category.');
+    }
+
+    if (!Validators.amount(amountText)) {
+      throw ValidationException(
+        'Amount must be a valid number greater than 0.',
+      );
+    }
+
+    final existingBudget = await DataService.getBudget(
+      month: selectedMonth,
+      year: selectedYear,
+      type: 'category',
+      categoryId: category.id,
+    );
+    
+    if (existingBudget != null) {
+      throw ValidationException('A budget for this category already exists for this month.');
+    }
+  }
+
   static Future<TransactionFormData> validateTransaction({
     required BuildContext context,
     required String titleText,
@@ -192,11 +222,13 @@ class ValidatorService {
       throw ValidationException('Card name must be 50 characters or less.');
     }
 
-    final existingCards = cardProvider.cards.where(
+    final existingCards = cardProvider.activeCards.where(
       (c) => c.name.toLowerCase() == parsedName.toLowerCase() && c.id != id,
     );
     if (existingCards.isNotEmpty) {
-      throw ValidationException('A card with this name already exists.');
+      throw ValidationException(
+        'An active card with this name already exists.',
+      );
     }
 
     double rate = 0.0;

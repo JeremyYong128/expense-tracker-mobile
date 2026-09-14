@@ -3,16 +3,18 @@ import 'package:expense_tracker_mobile/models/analytics_stats.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
+import 'package:expense_tracker_mobile/database/drift_database.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/utils/business_logic.dart';
+
 class AnalyticsProvider extends ChangeNotifier {
   List<Transaction> _transactions = [];
   List<Category> _categories = [];
   List<Card> _cards = [];
-  
+
   // Memoization caches
   final Map<String, DashboardStats> _dashboardStatsCache = {};
   final Map<String, CardMonthlyStats> _cardStatsCache = {};
@@ -28,13 +30,13 @@ class AnalyticsProvider extends ChangeNotifier {
     _transactions = txProvider.transactions;
     _categories = catProvider.categories;
     _cards = cardProvider.cards;
-    
+
     // Invalidate caches when data updates
     _dashboardStatsCache.clear();
     _cardStatsCache.clear();
     _categoryStatsCache.clear();
     _recurringStatsCache.clear();
-    
+
     notifyListeners();
   }
 
@@ -54,9 +56,7 @@ class AnalyticsProvider extends ChangeNotifier {
       // Filter to current month
       final currentMonthTransactions = _transactions
           .where(
-            (t) =>
-                t.date.year == month.year &&
-                t.date.month == month.month,
+            (t) => t.date.year == month.year && t.date.month == month.month,
           )
           .toList();
 
@@ -65,7 +65,8 @@ class AnalyticsProvider extends ChangeNotifier {
       final pastMonthTransactions = _transactions
           .where(
             (t) =>
-                t.date.year == pastMonth.year && t.date.month == pastMonth.month,
+                t.date.year == pastMonth.year &&
+                t.date.month == pastMonth.month,
           )
           .toList();
 
@@ -93,8 +94,14 @@ class AnalyticsProvider extends ChangeNotifier {
         }
       }
 
-      final incomePercentageChange = BusinessLogic.calculatePercentageChange(income, pastIncome);
-      final expensePercentageChange = BusinessLogic.calculatePercentageChange(expense, pastExpense);
+      final incomePercentageChange = BusinessLogic.calculatePercentageChange(
+        income,
+        pastIncome,
+      );
+      final expensePercentageChange = BusinessLogic.calculatePercentageChange(
+        expense,
+        pastExpense,
+      );
 
       // Sort category spending to get top ones
       final sortedCategories = categorySpending.entries.toList()
@@ -105,7 +112,12 @@ class AnalyticsProvider extends ChangeNotifier {
       for (var entry in sortedCategories) {
         final category = _categories.firstWhere(
           (c) => c.id == entry.key,
-          orElse: () => Category(id: -1, name: 'Unknown', colorHex: '#9E9E9E', isActive: false),
+          orElse: () => Category(
+            id: -1,
+            name: 'Unknown',
+            colorHex: '#9E9E9E',
+            isActive: false,
+          ),
         );
         expenseBreakdownMap[category] = entry.value;
       }
@@ -142,7 +154,9 @@ class AnalyticsProvider extends ChangeNotifier {
   CardMonthlyStats getCardStats(int cardId, DateTime month) {
     final key = '${cardId}_${_formatMonthKey(month)}';
     if (!_cardStatsCache.containsKey(key)) {
-      final allCardTransactions = _transactions.where((t) => t.cardId == cardId).toList();
+      final allCardTransactions = _transactions
+          .where((t) => t.cardId == cardId)
+          .toList();
       allCardTransactions.sort((a, b) => b.date.compareTo(a.date));
 
       final currentMonthTransactions = allCardTransactions.where((t) {
@@ -191,7 +205,9 @@ class AnalyticsProvider extends ChangeNotifier {
   CategoryMonthlyStats getCategoryStats(int categoryId, DateTime month) {
     final key = '${categoryId}_${_formatMonthKey(month)}';
     if (!_categoryStatsCache.containsKey(key)) {
-      final allCategoryTransactions = _transactions.where((t) => t.categoryId == categoryId).toList();
+      final allCategoryTransactions = _transactions
+          .where((t) => t.categoryId == categoryId)
+          .toList();
       allCategoryTransactions.sort((a, b) => b.date.compareTo(a.date));
 
       final currentMonthTransactions = allCategoryTransactions.where((t) {
@@ -237,7 +253,9 @@ class AnalyticsProvider extends ChangeNotifier {
   RecurringMonthlyStats getRecurringStats(int recurringId, DateTime month) {
     final key = '${recurringId}_${_formatMonthKey(month)}';
     if (!_recurringStatsCache.containsKey(key)) {
-      final allRecurringTransactions = _transactions.where((t) => t.recurringId == recurringId).toList();
+      final allRecurringTransactions = _transactions
+          .where((t) => t.recurringId == recurringId)
+          .toList();
       allRecurringTransactions.sort((a, b) => b.date.compareTo(a.date));
 
       final currentMonthTransactions = allRecurringTransactions.where((t) {
@@ -278,5 +296,49 @@ class AnalyticsProvider extends ChangeNotifier {
       );
     }
     return _recurringStatsCache[key]!;
+  }
+
+  List<MonthlyBudgetPacing> calculateCategoryBudgetHistory(
+    int categoryId,
+    List<Budget> categoryBudgets, {
+    int monthsBack = 6,
+    DateTime? endDate,
+  }) {
+    final List<MonthlyBudgetPacing> history = [];
+    final end = endDate ?? DateTime.now();
+
+    for (int i = 0; i < monthsBack; i++) {
+      final targetDate = DateTime(end.year, end.month - i);
+      final targetMonth = targetDate.month;
+      final targetYear = targetDate.year;
+
+      double? applicableAmount;
+      for (var budget in categoryBudgets) {
+        if (budget.year < targetYear ||
+            (budget.year == targetYear && budget.month <= targetMonth)) {
+          applicableAmount = budget.amount;
+          break;
+        }
+      }
+
+      final monthTransactions = getTransactionsForMonth(targetDate);
+      double spent = 0;
+      for (var tx in monthTransactions) {
+        if (!tx.isIncome && tx.categoryId == categoryId) {
+          spent += tx.amount;
+        }
+      }
+
+      history.add(
+        MonthlyBudgetPacing(
+          month: targetMonth,
+          year: targetYear,
+          budgetAmount: applicableAmount,
+          spentAmount: spent,
+        ),
+      );
+    }
+
+    return history;
   }
 }
