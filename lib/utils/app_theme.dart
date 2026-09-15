@@ -9,7 +9,6 @@ class AppColors {
   // Vibrant accent and brand color (Deep Blue)
   static const Color primary = Color(0xFF245F73);
 
-
   // Grey for unselected states
   static const Color grey = Color(0xFFBBBDBC); // Original light grey
 
@@ -21,7 +20,7 @@ class AppColors {
   static const Color error = Color(0xFFD32F2F); // Semantic error
   static const Color white = Color(0xFFFFFFFF);
   static const Color transparent = Color(0x00000000);
-  
+
   // Grey-scale variables
   static const Color surfaceLight = Color(0xFFFAFAFA); // Replaces grey.shade50
   static const Color divider = Color(0xFFEEEEEE); // Replaces grey.shade200
@@ -66,8 +65,8 @@ class AppColors {
 
 class AppStyles {
   // Standardized padding for the main body of screens
-  static const EdgeInsets screenPadding = EdgeInsets.all(24.0);
-  
+  static const EdgeInsets screenPadding = EdgeInsets.all(16.0);
+
   // Standardized padding for slide-up modals
   static const EdgeInsets modalPadding = EdgeInsets.all(16.0);
 
@@ -107,12 +106,15 @@ class AppTheme {
       ),
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: 48,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          color: Colors.white,
+          color: AppColors.textPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,

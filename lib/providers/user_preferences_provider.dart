@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferencesProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
-  
+
   bool _isLowerCaps = true;
   bool _useUsEnglish = false;
 
@@ -22,7 +22,7 @@ class UserPreferencesProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   void toggleUsEnglish(bool value) {
     if (_useUsEnglish != value) {
       _useUsEnglish = value;

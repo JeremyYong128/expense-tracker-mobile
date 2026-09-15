@@ -32,11 +32,7 @@ class ColorPicker extends StatelessWidget {
                   : null,
             ),
             child: isSelected
-                ? const Icon(
-                    Icons.check,
-                    color: AppColors.white,
-                    size: 20,
-                  )
+                ? const Icon(Icons.check, color: AppColors.white, size: 20)
                 : null,
           ),
         );

@@ -66,75 +66,75 @@ class SlideUpModal extends StatelessWidget {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Container(
         height: MediaQuery.of(context).size.height * heightFraction,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24.0),
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
               ),
-              border: Border(bottom: BorderSide(color: AppColors.divider)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (title != null) ...[
-                  Text(
-                    title!.cased(context),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      decoration: TextDecoration.none,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24.0),
+                ),
+                border: Border(bottom: BorderSide(color: AppColors.divider)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (title != null) ...[
+                    Text(
+                      title!.cased(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ] else ...[
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: onLeftButtonPressed,
-                    child: Text(
-                      (leftButtonTitle ?? '').cased(context),
-                      style: const TextStyle(fontWeight: FontWeight.normal),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: onRightButtonPressed,
-                    child: Text(
-                      (rightButtonTitle ?? '').cased(context),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  ] else ...[
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: onLeftButtonPressed,
+                      child: Text(
+                        (leftButtonTitle ?? '').cased(context),
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
                     ),
-                  ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: onRightButtonPressed,
+                      child: Text(
+                        (rightButtonTitle ?? '').cased(context),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
 
-          // Content
-          Expanded(
-            child: SafeArea(
-              bottom: true,
-              top: false,
-              child: Padding(padding: AppStyles.modalPadding, child: child),
+            // Content
+            Expanded(
+              child: SafeArea(
+                bottom: true,
+                top: false,
+                child: Padding(padding: AppStyles.modalPadding, child: child),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }

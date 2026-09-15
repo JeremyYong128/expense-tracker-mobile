@@ -27,17 +27,11 @@ class CustomField extends StatelessWidget {
           if (label != null) ...[
             Text(
               label!,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             const SizedBox(height: 8.0),
           ],
-          if (height != null)
-            SizedBox(height: height, child: child)
-          else
-            child,
+          if (height != null) SizedBox(height: height, child: child) else child,
           if (infoText != null)
             Padding(
               padding: const EdgeInsets.only(top: 8.0, left: 4.0, right: 4.0),

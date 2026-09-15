@@ -18,6 +18,7 @@ import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class CardDetailsScreen extends StatefulWidget {
   final Card card;
@@ -152,19 +153,21 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
 
-    final latestCard = cardProvider.getCardById(widget.card.id) 
-        ?? widget.card;
+    final latestCard = cardProvider.getCardById(widget.card.id) ?? widget.card;
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(latestCard.name)),
+        appBar: CustomAppBar(title: Text(latestCard.name)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
-    final stats = analyticsProvider.getCardStats(latestCard.id!, _selectedMonth);
-    
+    final stats = analyticsProvider.getCardStats(
+      latestCard.id!,
+      _selectedMonth,
+    );
+
     final allTransactions = stats.allCardTransactions;
     final transactionsList = stats.currentMonthTransactions;
     final totalExpense = stats.totalExpense;
@@ -173,7 +176,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final prevRewardsAmount = stats.prevRewardsAmount;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text(latestCard.name),
         actions: [
           IconButton(
@@ -199,10 +202,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
                   child: Text(
                     'No expenses tagged to this card.'.cased(context),
-                    style: const TextStyle(
-                      color: AppColors.grey,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: AppColors.grey, fontSize: 16),
                   ),
                 )
               else ...[
@@ -217,7 +217,13 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildMonthlySummary(latestCard, totalExpense, totalRewardsAmount, prevExpense, prevRewardsAmount),
+                _buildMonthlySummary(
+                  latestCard,
+                  totalExpense,
+                  totalRewardsAmount,
+                  prevExpense,
+                  prevRewardsAmount,
+                ),
                 const SizedBox(height: 24),
                 PageContentCard(
                   title: 'Expenses'.cased(context),
@@ -228,7 +234,8 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 32.0),
                             child: Text(
-                              'No expenses tagged to this card for this month.'.cased(context),
+                              'No expenses tagged to this card for this month.'
+                                  .cased(context),
                               style: const TextStyle(
                                 color: AppColors.grey,
                                 fontSize: 16,
@@ -339,9 +346,14 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
         : NumberFormat('#,##0.##').format(totalRewardsAmount);
 
-    final expenseDiff = BusinessLogic.calculateAbsoluteDifference(totalExpense, prevExpense);
+    final expenseDiff = BusinessLogic.calculateAbsoluteDifference(
+      totalExpense,
+      prevExpense,
+    );
     final isExpenseGood = expenseDiff <= 0;
-    final expenseChangeColor = isExpenseGood ? AppColors.income : AppColors.expense;
+    final expenseChangeColor = isExpenseGood
+        ? AppColors.income
+        : AppColors.expense;
 
     return Container(
       width: double.infinity,
@@ -381,7 +393,9 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        expenseDiff > 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                        expenseDiff > 0
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
                         size: 16,
                         color: expenseChangeColor,
                       ),

@@ -115,6 +115,7 @@ flutter run
         - Dashboard cashback section
     - Change form design: form field titles should be placeholders instead of text fields on top
     - Month navigator: add month and year selector dropdown when clicking the displayed month
+    - Auto-focus onto the first field when a form is opened
 
 - Medium priority
     - Multicurrency support

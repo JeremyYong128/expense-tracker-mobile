@@ -57,7 +57,7 @@ class CardProvider extends ChangeNotifier {
     List<Card> subset = List.from(activeCards);
 
     final globalIndices = subset.map((c) => _cards.indexOf(c)).toList();
-    
+
     final item = subset.removeAt(oldIndex);
     subset.insert(newIndex, item);
 

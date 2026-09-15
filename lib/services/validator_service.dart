@@ -34,9 +34,11 @@ class ValidatorService {
       type: 'category',
       categoryId: category.id,
     );
-    
+
     if (existingBudget != null) {
-      throw ValidationException('A budget for this category already exists for this month.');
+      throw ValidationException(
+        'A budget for this category already exists for this month.',
+      );
     }
   }
 

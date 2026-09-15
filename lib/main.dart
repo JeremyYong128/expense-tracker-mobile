@@ -169,12 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         listen: false,
       );
-      
+
       // Run budget rollover proactively on app launch
       BudgetRolloverService.checkAndRolloverBudgets().then((_) {
         if (!mounted) return;
         // Optionally, force BudgetProvider to refresh if it was already loaded
-        final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+        final budgetProvider = Provider.of<BudgetProvider>(
+          context,
+          listen: false,
+        );
         final now = DateTime.now();
         budgetProvider.loadBudgetsForMonth(now.month, now.year);
       });

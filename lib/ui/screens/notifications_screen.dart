@@ -4,6 +4,7 @@ import 'package:expense_tracker_mobile/providers/notification_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -21,7 +22,7 @@ class NotificationsScreen extends StatelessWidget {
 
     if (notifications.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('Notifications'.cased(context))),
+        appBar: CustomAppBar(title: Text('Notifications'.cased(context))),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -43,7 +44,7 @@ class NotificationsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Notifications'.cased(context))),
+      appBar: CustomAppBar(title: Text('Notifications'.cased(context))),
       body: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
         itemCount: notifications.length + 1,

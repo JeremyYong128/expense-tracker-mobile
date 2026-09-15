@@ -50,7 +50,8 @@ class AnalyticsProvider extends ChangeNotifier {
     }).toList();
   }
 
-  DashboardStats getDashboardStats(DateTime month) {
+  DashboardStats getDashboardStats() {
+    final month = DateTime(DateTime.now().year, DateTime.now().month);
     final key = _formatMonthKey(month);
     if (!_dashboardStatsCache.containsKey(key)) {
       // Filter to current month

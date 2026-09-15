@@ -7,13 +7,18 @@ class CategoryProvider extends ChangeNotifier {
   bool _isLoading = true;
 
   List<Category> get categories => _categories;
-  List<Category> get activeCategories => _categories.where((c) => c.isActive).toList();
-  List<Category> get activeExpenseCategories => _categories.where((c) => c.isActive && c.isExpense).toList();
-  List<Category> get activeIncomeCategories => _categories.where((c) => c.isActive && c.isIncome).toList();
+  List<Category> get activeCategories =>
+      _categories.where((c) => c.isActive).toList();
+  List<Category> get activeExpenseCategories =>
+      _categories.where((c) => c.isActive && c.isExpense).toList();
+  List<Category> get activeIncomeCategories =>
+      _categories.where((c) => c.isActive && c.isIncome).toList();
   bool get isLoading => _isLoading;
 
-  List<Category> get incomeCategories => _categories.where((c) => c.isIncome).toList();
-  List<Category> get expenseCategories => _categories.where((c) => c.isExpense).toList();
+  List<Category> get incomeCategories =>
+      _categories.where((c) => c.isIncome).toList();
+  List<Category> get expenseCategories =>
+      _categories.where((c) => c.isExpense).toList();
 
   Category? getCategoryById(int? id) {
     if (id == null) return null;
@@ -64,7 +69,7 @@ class CategoryProvider extends ChangeNotifier {
     }
 
     final globalIndices = subset.map((c) => _categories.indexOf(c)).toList();
-    
+
     final item = subset.removeAt(oldIndex);
     subset.insert(newIndex, item);
 

@@ -12,6 +12,7 @@ import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -190,7 +191,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
     if (cardProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text('Cards'.cased(context))),
+        appBar: CustomAppBar(title: Text('Cards'.cased(context))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -199,7 +200,7 @@ class _CardsScreenState extends State<CardsScreen> {
     final archivedCards = cardProvider.archivedCards;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('Cards'.cased(context)),
         actions: [
           IconButton(

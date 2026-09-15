@@ -7,10 +7,10 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
-import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,22 +20,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
   bool _isCategoriesExpanded = false;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   void initState() {
     super.initState();
-  }
-
-  void _navigateMonth(int monthOffset) {
-    setState(() {
-      _currentMonth = DateTime(
-        _currentMonth.year,
-        _currentMonth.month + monthOffset,
-      );
-    });
   }
 
   @override
@@ -49,31 +39,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
         categoryProvider.isLoading ||
         cardProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text('Home'.cased(context))),
+        appBar: CustomAppBar(title: Text('Home'.cased(context))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
-    final stats = analyticsProvider.getDashboardStats(_currentMonth);
-
-    final oldestMonth = transactionProvider.oldestTransactionMonth;
-    final newestMonth = transactionProvider.newestTransactionMonth;
-
-    final canGoBack = _currentMonth.isAfter(oldestMonth);
-    final currentPhysicalMonth = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      1,
-    );
-    final canGoForward =
-        _currentMonth.isBefore(newestMonth) ||
-        _currentMonth.isBefore(currentPhysicalMonth);
+    final stats = analyticsProvider.getDashboardStats();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('Home'.cased(context)),
-        actions: [const NotificationButton()],
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: AppStyles.screenPadding.right),
+            child: const NotificationButton(),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -83,14 +65,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MonthNavigator(
-                currentMonth: _currentMonth,
-                canGoBack: canGoBack,
-                canGoForward: canGoForward,
-                onPrevious: () => _navigateMonth(-1),
-                onNext: () => _navigateMonth(1),
-              ),
-              const SizedBox(height: 24),
               // SUMMARY CARDS
               Row(
                 children: [

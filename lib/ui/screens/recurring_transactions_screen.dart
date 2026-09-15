@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/main.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class RecurringTransactionsScreen extends StatefulWidget {
   final bool showAppBar;
@@ -29,7 +30,7 @@ class _RecurringTransactionsScreenState
     if (recurringProvider.isLoading || categoryProvider.isLoading) {
       return widget.showAppBar
           ? Scaffold(
-              appBar: AppBar(
+              appBar: CustomAppBar(
                 title: Text('Recurring Transactions'.cased(context)),
                 actions: [
                   IconButton(

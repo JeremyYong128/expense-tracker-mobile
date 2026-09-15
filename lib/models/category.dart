@@ -96,7 +96,7 @@ class Category {
 
   static IconData getIconData(String? iconString) {
     if (iconString == null) return Icons.category;
-    
+
     final lower = iconString.toLowerCase();
     switch (lower) {
       case 'shopping_cart':

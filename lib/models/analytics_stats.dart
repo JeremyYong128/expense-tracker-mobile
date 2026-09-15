@@ -110,6 +110,7 @@ class MonthlyBudgetPacing {
   });
 
   bool get isOverBudget => budgetAmount != null && spentAmount > budgetAmount!;
-  double get percentageUsed =>
-      budgetAmount != null && budgetAmount! > 0 ? spentAmount / budgetAmount! : 0.0;
+  double get percentageUsed => budgetAmount != null && budgetAmount! > 0
+      ? spentAmount / budgetAmount!
+      : 0.0;
 }

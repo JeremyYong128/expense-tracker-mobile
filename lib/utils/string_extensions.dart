@@ -33,7 +33,10 @@ const Map<String, String> _ukToUsDictionary = {
 extension StringCasing on String {
   String cased(BuildContext context, {bool listen = true}) {
     try {
-      final isLower = Provider.of<UserPreferencesProvider>(context, listen: listen).isLowerCaps;
+      final isLower = Provider.of<UserPreferencesProvider>(
+        context,
+        listen: listen,
+      ).isLowerCaps;
       return isLower ? toLowerCase() : this;
     } catch (e) {
       // Fallback in case provider is not found

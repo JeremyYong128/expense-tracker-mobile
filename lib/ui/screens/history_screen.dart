@@ -6,10 +6,10 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
-import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -31,44 +31,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
 
+    Widget bodyContent;
+
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('History'.cased(context)),
-          actions: const [NotificationButton()],
-        ),
-        body: const Center(child: CircularProgressIndicator()),
+      bodyContent = const Center(child: CircularProgressIndicator());
+    } else {
+      final analyticsProvider = context.watch<AnalyticsProvider>();
+      final filteredTransactions = analyticsProvider.getTransactionsForMonth(
+        _selectedMonth,
       );
-    }
 
-    final analyticsProvider = context.watch<AnalyticsProvider>();
-    final filteredTransactions = analyticsProvider.getTransactionsForMonth(
-      _selectedMonth,
-    );
+      final availableMonths = MonthSelectorToggle.getAvailableMonths(
+        transactionProvider.transactions,
+      );
+      final earliestMonth = availableMonths.first;
+      final latestMonth = availableMonths.last;
 
-    final availableMonths = MonthSelectorToggle.getAvailableMonths(
-      transactionProvider.transactions,
-    );
-    final earliestMonth = availableMonths.first;
-    final latestMonth = availableMonths.last;
+      final canGoBack = _selectedMonth.isAfter(earliestMonth);
+      final canGoForward = _selectedMonth.isBefore(latestMonth);
 
-    final canGoBack = _selectedMonth.isAfter(earliestMonth);
-    final canGoForward = _selectedMonth.isBefore(latestMonth);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('History'.cased(context)),
-        actions: const [NotificationButton()],
-      ),
-      body: SafeArea(
+      bodyContent = SafeArea(
         top: false,
         bottom: true,
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: AppStyles.screenPadding.left,
-            right: AppStyles.screenPadding.right,
-            top: AppStyles.screenPadding.top,
-          ),
+        child: SingleChildScrollView(
+          padding: AppStyles.screenPadding,
           child: Column(
             children: [
               MonthNavigator(
@@ -92,51 +78,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: filteredTransactions.isEmpty
-                    ? Padding(
-                        padding: EdgeInsets.only(
-                          top: 8.0,
-                          bottom: AppStyles.screenPadding.bottom,
+              const SizedBox(height: 16),
+              if (filteredTransactions.isEmpty)
+                PageContentCard(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: Text(
+                        'No transactions for this month.'.cased(context),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.grey,
                         ),
-                        child: PageContentCard(
-                          child: Expanded(
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Center(
-                                child: Text(
-                                  'No transactions for this month.'.cased(
-                                    context,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: AppColors.grey,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        padding: EdgeInsets.only(
-                          top: 8.0,
-                          bottom: AppStyles.screenPadding.bottom,
-                        ),
-                        child: PageContentCard(
-                          paddingBottom: 12.0,
-                          child: TransactionList(
-                            transactions: filteredTransactions,
-                          ),
-                        ),
+                        textAlign: TextAlign.center,
                       ),
-              ),
+                    ),
+                  ),
+                )
+              else
+                PageContentCard(
+                  paddingBottom: 12.0,
+                  child: TransactionList(transactions: filteredTransactions),
+                ),
             ],
           ),
         ),
-      ),
+      );
+    }
+
+    return Scaffold(
+      appBar: CustomAppBar(title: Text('History'.cased(context))),
+      body: bodyContent,
     );
   }
 }

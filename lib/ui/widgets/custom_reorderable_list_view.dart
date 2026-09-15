@@ -30,8 +30,13 @@ class CustomReorderableListView extends StatelessWidget {
         return AnimatedBuilder(
           animation: animation,
           builder: (BuildContext context, Widget? child) {
-            final double animValue = Curves.easeInOut.transform(animation.value);
-            final double scale = Tween<double>(begin: 1.0, end: 1.02).transform(animValue);
+            final double animValue = Curves.easeInOut.transform(
+              animation.value,
+            );
+            final double scale = Tween<double>(
+              begin: 1.0,
+              end: 1.02,
+            ).transform(animValue);
             return Transform.scale(
               scale: scale,
               child: Stack(
@@ -46,7 +51,9 @@ class CustomReorderableListView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12 * animValue),
+                            color: Colors.black.withValues(
+                              alpha: 0.12 * animValue,
+                            ),
                             blurRadius: 24 * animValue,
                             offset: Offset(0, 8 * animValue),
                           ),

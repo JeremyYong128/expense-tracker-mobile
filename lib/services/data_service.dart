@@ -616,7 +616,7 @@ class DataService {
       ..where((b) => b.month.equals(month))
       ..where((b) => b.year.equals(year))
       ..where((b) => b.type.equals(type));
-    
+
     if (categoryId != null) {
       query.where((b) => b.categoryId.equals(categoryId));
     } else {
@@ -665,12 +665,17 @@ class DataService {
     if (sourceBudgets.isEmpty) return;
 
     // Both have budgets. Perform point-by-point summation.
-    final sourceMap = {for (final b in sourceBudgets) '${b.year}-${b.month.toString().padLeft(2, '0')}': b};
-    final targetMap = {for (final b in targetBudgets) '${b.year}-${b.month.toString().padLeft(2, '0')}': b};
-    
+    final sourceMap = {
+      for (final b in sourceBudgets)
+        '${b.year}-${b.month.toString().padLeft(2, '0')}': b,
+    };
+    final targetMap = {
+      for (final b in targetBudgets)
+        '${b.year}-${b.month.toString().padLeft(2, '0')}': b,
+    };
+
     // Sort keys chronologically
-    final allKeys = {...sourceMap.keys, ...targetMap.keys}.toList()
-      ..sort();
+    final allKeys = {...sourceMap.keys, ...targetMap.keys}.toList()..sort();
 
     final newBudgets = <BudgetsCompanion>[];
     bool wasLastTombstone = false;

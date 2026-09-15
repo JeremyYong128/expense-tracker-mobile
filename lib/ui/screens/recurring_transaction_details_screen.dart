@@ -19,6 +19,7 @@ import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class RecurringTransactionDetailsScreen extends StatefulWidget {
   final RecurringTransaction recurringTransaction;
@@ -64,7 +65,9 @@ class _RecurringTransactionDetailsScreenState
 
           try {
             await provider.deleteRecurringTransaction(tx.id!);
-            SnackBarService.showSuccess('Recurring transaction deleted successfully');
+            SnackBarService.showSuccess(
+              'Recurring transaction deleted successfully',
+            );
           } catch (e, stack) {
             AppLogger.error('Failed to delete recurring transaction', e, stack);
             SnackBarService.showError('An unexpected error occurred.');
@@ -81,7 +84,9 @@ class _RecurringTransactionDetailsScreenState
 
       try {
         await provider.deleteRecurringTransaction(tx.id!);
-        SnackBarService.showSuccess('Recurring transaction deleted successfully');
+        SnackBarService.showSuccess(
+          'Recurring transaction deleted successfully',
+        );
         if (mounted) {
           navigator.pop();
         }
@@ -99,31 +104,41 @@ class _RecurringTransactionDetailsScreenState
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
 
-    final latestTx = recurringProvider.getRecurringTransactionById(widget.recurringTransaction.id) 
-        ?? widget.recurringTransaction;
+    final latestTx =
+        recurringProvider.getRecurringTransactionById(
+          widget.recurringTransaction.id,
+        ) ??
+        widget.recurringTransaction;
 
     if (transactionProvider.isLoading ||
         recurringProvider.isLoading ||
         categoryProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(latestTx.title)),
+        appBar: CustomAppBar(title: Text(latestTx.title)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    final category = categoryProvider.getCategoryById(widget.recurringTransaction.categoryId) ?? Category(
-        name: 'Unknown',
-        colorHex: '#9E9E9E',
-        iconString: null,
-        isActive: true,
-      );
+    final category =
+        categoryProvider.getCategoryById(
+          widget.recurringTransaction.categoryId,
+        ) ??
+        Category(
+          name: 'Unknown',
+          colorHex: '#9E9E9E',
+          iconString: null,
+          isActive: true,
+        );
 
     final latestCard = latestTx.cardId != null
         ? cardProvider.getCardById(latestTx.cardId)
         : null;
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
-    final stats = analyticsProvider.getRecurringStats(latestTx.id!, _selectedMonth);
+    final stats = analyticsProvider.getRecurringStats(
+      latestTx.id!,
+      _selectedMonth,
+    );
 
     final allTransactions = stats.allRecurringTransactions;
     final transactionsList = stats.currentMonthTransactions;
@@ -132,7 +147,7 @@ class _RecurringTransactionDetailsScreenState
     final prevBalance = stats.prevBalance;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text(latestTx.title),
         actions: [
           IconButton(
@@ -213,7 +228,10 @@ class _RecurringTransactionDetailsScreenState
     final isNegative = balance < 0;
     final sign = isPositive ? '+' : (isNegative ? '-' : '');
 
-    final diff = BusinessLogic.calculateAbsoluteDifference(balance, prevBalance);
+    final diff = BusinessLogic.calculateAbsoluteDifference(
+      balance,
+      prevBalance,
+    );
     final isGood = diff >= 0;
     final changeColor = isGood ? AppColors.income : AppColors.expense;
 

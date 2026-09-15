@@ -18,10 +18,15 @@ class BudgetProvider extends ChangeNotifier {
     final allBudgets = await DataService.getAllBudgets();
 
     // With the copy-forward pattern, we strictly load only the requested month's budgets
-    _activeBudgets = allBudgets.where((b) => 
-      b.year == targetYear && b.month == targetMonth && b.amount != null
-    ).toList();
-    
+    _activeBudgets = allBudgets
+        .where(
+          (b) =>
+              b.year == targetYear &&
+              b.month == targetMonth &&
+              b.amount != null,
+        )
+        .toList();
+
     notifyListeners();
   }
 
@@ -46,7 +51,9 @@ class BudgetProvider extends ChangeNotifier {
 
     // Upsert the primary budget row
     final companion = BudgetsCompanion(
-      id: existing != null ? drift.Value(existing.id) : const drift.Value.absent(),
+      id: existing != null
+          ? drift.Value(existing.id)
+          : const drift.Value.absent(),
       month: drift.Value(targetMonth),
       year: drift.Value(targetYear),
       type: drift.Value(type),
@@ -56,7 +63,6 @@ class BudgetProvider extends ChangeNotifier {
     );
     await DataService.upsertBudget(companion);
 
-
     // Reload active budgets for the current view
     final now = DateTime.now();
     await loadBudgetsForMonth(now.month, now.year);
@@ -64,7 +70,7 @@ class BudgetProvider extends ChangeNotifier {
 
   Future<List<Budget>> getBudgetHistoryForCategory(int categoryId) async {
     final allBudgets = await DataService.getAllBudgets();
-    
+
     allBudgets.sort((a, b) {
       if (a.year != b.year) return b.year.compareTo(a.year);
       return b.month.compareTo(a.month);

@@ -16,6 +16,7 @@ import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class CategoryDetailsScreen extends StatefulWidget {
   final Category category;
@@ -99,7 +100,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
     if (transactionProvider.isLoading || categoryProvider.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(latestCategory.name)),
+        appBar: CustomAppBar(title: Text(latestCategory.name)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -117,7 +118,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final prevBalance = stats.prevBalance;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text(latestCategory.name),
         actions: [
           IconButton(

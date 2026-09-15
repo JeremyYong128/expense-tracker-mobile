@@ -95,21 +95,23 @@ class RecurringTransactions extends Table {
 
 class Budgets extends Table {
   IntColumn get id => integer().autoIncrement()();
-  
+
   IntColumn get month => integer()();
   IntColumn get year => integer()();
   TextColumn get type => text()();
 
-  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  IntColumn get categoryId =>
+      integer().nullable().references(Categories, #id)();
   IntColumn get cardId => integer().nullable().references(Cards, #id)();
-  
+
   RealColumn get amount => real().nullable()();
-  
-  BoolColumn get enableRollover => boolean().withDefault(const Constant(false))();
+
+  BoolColumn get enableRollover =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {month, year, type, categoryId, cardId}
+    {month, year, type, categoryId, cardId},
   ];
 }
 
@@ -229,8 +231,12 @@ class AppDatabase extends _$AppDatabase {
         if (from < 11) {
           try {
             await customStatement('ALTER TABLE credit_cards RENAME TO cards;');
-            await customStatement('ALTER TABLE transactions RENAME COLUMN creditCardId TO cardId;');
-            await customStatement('ALTER TABLE recurring_transactions RENAME COLUMN creditCardId TO cardId;');
+            await customStatement(
+              'ALTER TABLE transactions RENAME COLUMN creditCardId TO cardId;',
+            );
+            await customStatement(
+              'ALTER TABLE recurring_transactions RENAME COLUMN creditCardId TO cardId;',
+            );
           } catch (e, stack) {
             AppLogger.error(
               'Failed to rename credit_cards table and columns',
@@ -331,7 +337,10 @@ class AppDatabase extends _$AppDatabase {
               UPDATE cards SET sortOrder = id;
             ''');
 
-            await m.addColumn(recurringTransactions, recurringTransactions.sortOrder);
+            await m.addColumn(
+              recurringTransactions,
+              recurringTransactions.sortOrder,
+            );
             await customStatement('''
               UPDATE recurring_transactions SET sortOrder = id;
             ''');

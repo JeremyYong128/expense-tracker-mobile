@@ -7,6 +7,7 @@ import 'package:expense_tracker_mobile/ui/screens/budget_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
@@ -14,7 +15,7 @@ class ManageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('Manage'.cased(context)),
         actions: const [NotificationButton()],
       ),
@@ -63,9 +64,7 @@ class ManageScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  CupertinoPageRoute(
-                    builder: (context) => const CardsScreen(),
-                  ),
+                  CupertinoPageRoute(builder: (context) => const CardsScreen()),
                 );
               },
             ),

@@ -5,6 +5,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
     ).isLowerCaps;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('Settings'.cased(context)),
         actions: const [NotificationButton()],
       ),

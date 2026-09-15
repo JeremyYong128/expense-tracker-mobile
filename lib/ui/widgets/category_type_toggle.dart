@@ -19,7 +19,7 @@ class CategoryTypeToggle extends StatelessWidget {
     // Determine alignment and color based on selection
     Alignment alignment;
     Color activeColor;
-    
+
     switch (selection) {
       case CategoryTypeSelection.expense:
         alignment = Alignment.centerLeft;

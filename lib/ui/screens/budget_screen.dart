@@ -8,6 +8,7 @@ import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/budget_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -66,7 +67,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final categories = context.watch<CategoryProvider>().categories;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('Budget'.cased(context)),
         actions: [
           IconButton(

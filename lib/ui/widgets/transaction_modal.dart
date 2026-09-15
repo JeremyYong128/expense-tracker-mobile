@@ -60,7 +60,7 @@ class _TransactionModalState extends State<TransactionModal> {
         rewardAmount: data.rewardAmount,
       );
       SnackBarService.showSuccess('Transaction added successfully');
-      
+
       if (data.isRecurring) {
         recurringProvider.fetchRecurringTransactions();
       }

@@ -20,7 +20,7 @@ class BudgetRolloverService {
       AppLogger.info('Running budget rollover for ${now.month}/${now.year}');
 
       final allBudgets = await DataService.getAllBudgets();
-      
+
       // Separate budgets into "current month" and "past months"
       final currentMonthBudgets = <Budget>[];
       final pastBudgets = <Budget>[];
@@ -28,7 +28,8 @@ class BudgetRolloverService {
       for (var budget in allBudgets) {
         if (budget.year == now.year && budget.month == now.month) {
           currentMonthBudgets.add(budget);
-        } else if (budget.year < now.year || (budget.year == now.year && budget.month < now.month)) {
+        } else if (budget.year < now.year ||
+            (budget.year == now.year && budget.month < now.month)) {
           pastBudgets.add(budget);
         }
       }
@@ -45,18 +46,21 @@ class BudgetRolloverService {
         final mostRecentMonth = pastBudgets.first.month;
 
         // Get all budgets from that specific most recent month
-        final budgetsToRollover = pastBudgets.where((b) => 
-          b.year == mostRecentYear && b.month == mostRecentMonth
-        ).toList();
+        final budgetsToRollover = pastBudgets
+            .where(
+              (b) => b.year == mostRecentYear && b.month == mostRecentMonth,
+            )
+            .toList();
 
         int rolloverCount = 0;
 
         for (var pastBudget in budgetsToRollover) {
           // Check if it already exists in the current month to avoid overwriting
-          final existsInCurrent = currentMonthBudgets.any((b) => 
-            b.type == pastBudget.type && 
-            b.categoryId == pastBudget.categoryId && 
-            b.cardId == pastBudget.cardId
+          final existsInCurrent = currentMonthBudgets.any(
+            (b) =>
+                b.type == pastBudget.type &&
+                b.categoryId == pastBudget.categoryId &&
+                b.cardId == pastBudget.cardId,
           );
 
           if (!existsInCurrent && pastBudget.amount != null) {
@@ -73,8 +77,10 @@ class BudgetRolloverService {
             rolloverCount++;
           }
         }
-        
-        AppLogger.info('Successfully rolled over $rolloverCount budgets from $mostRecentMonth/$mostRecentYear.');
+
+        AppLogger.info(
+          'Successfully rolled over $rolloverCount budgets from $mostRecentMonth/$mostRecentYear.',
+        );
       } else {
         AppLogger.info('No past budgets found to rollover.');
       }

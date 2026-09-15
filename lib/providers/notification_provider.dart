@@ -46,8 +46,8 @@ class NotificationProvider extends ChangeNotifier {
 
   List<AppNotification> get notifications => _notifications.values.toList();
   bool get hasUnread => _notifications.isNotEmpty;
-  
-  List<AppNotification> get bannerNotifications => 
+
+  List<AppNotification> get bannerNotifications =>
       _notifications.values.where((n) => n.showAsBanner).toList();
 
   void addNotification(AppNotification notification) {

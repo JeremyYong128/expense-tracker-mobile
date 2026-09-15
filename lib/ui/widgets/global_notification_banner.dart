@@ -24,7 +24,10 @@ class GlobalNotificationBanner extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Material(
                   elevation: 6,
                   shadowColor: Colors.black.withValues(alpha: 0.2),
@@ -45,7 +48,8 @@ class GlobalNotificationBanner extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundColor: bannerNotifications.first.color.withValues(alpha: 0.15),
+                            backgroundColor: bannerNotifications.first.color
+                                .withValues(alpha: 0.15),
                             child: Icon(
                               bannerNotifications.first.icon,
                               color: bannerNotifications.first.color,
@@ -77,11 +81,17 @@ class GlobalNotificationBanner extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close, size: 20, color: AppColors.textSecondary),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: AppColors.textSecondary,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () {
-                              notificationProvider.dismissBanner(bannerNotifications.first.id);
+                              notificationProvider.dismissBanner(
+                                bannerNotifications.first.id,
+                              );
                             },
                           ),
                         ],
