@@ -106,7 +106,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               width: double.infinity,
                               child: Center(
                                 child: Text(
-                                  'No transactions found.'.cased(context),
+                                  'No transactions for this month.'.cased(
+                                    context,
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     color: AppColors.grey,
@@ -124,6 +126,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           bottom: AppStyles.screenPadding.bottom,
                         ),
                         child: PageContentCard(
+                          paddingBottom: 12.0,
                           child: TransactionList(
                             transactions: filteredTransactions,
                           ),

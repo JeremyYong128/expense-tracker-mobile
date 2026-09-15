@@ -221,6 +221,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 const SizedBox(height: 24),
                 PageContentCard(
                   title: 'Expenses'.cased(context),
+                  paddingBottom: transactionsList.isEmpty ? null : 12.0,
                   child: transactionsList.isEmpty
                       ? SizedBox(
                           width: double.infinity,

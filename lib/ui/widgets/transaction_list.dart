@@ -378,8 +378,8 @@ class _TransactionListState extends State<TransactionList> {
                 ),
               ),
             ),
+            const SizedBox(height: 4.0),
             ...dayTransactions.asMap().entries.map((txEntry) {
-              final txIndex = txEntry.key;
               final transaction = txEntry.value;
 
               final category = _getCategory(
@@ -416,7 +416,7 @@ class _TransactionListState extends State<TransactionList> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                vertical: 12.0,
+                                vertical: 8.0,
                               ),
                               child: IntrinsicHeight(
                                 child: Row(
@@ -509,12 +509,6 @@ class _TransactionListState extends State<TransactionList> {
                       ),
                     ),
                   ),
-                  if (txIndex != dayTransactions.length - 1)
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: AppColors.border,
-                    ),
                 ],
               );
             }),

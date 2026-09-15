@@ -1,3 +1,4 @@
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
@@ -29,10 +30,10 @@ class MonthSelectorToggle extends StatefulWidget {
     DateTime latest = txs
         .map((t) => t.date)
         .reduce((a, b) => a.isAfter(b) ? a : b);
-        
+
     DateTime earliestMonth = DateTime(earliest.year, earliest.month);
     DateTime latestMonth = DateTime(latest.year, latest.month);
-    
+
     if (currentMonth.isBefore(earliestMonth)) {
       earliestMonth = currentMonth;
     }
@@ -42,8 +43,7 @@ class MonthSelectorToggle extends StatefulWidget {
 
     List<DateTime> months = [];
     DateTime iter = earliestMonth;
-    while (iter.isBefore(latestMonth) ||
-        iter.isAtSameMomentAs(latestMonth)) {
+    while (iter.isBefore(latestMonth) || iter.isAtSameMomentAs(latestMonth)) {
       months.add(iter);
       iter = DateTime(
         iter.year,
@@ -79,10 +79,13 @@ class _MonthSelectorToggleState extends State<MonthSelectorToggle> {
     return SharedFilterToggle<DateTime>(
       items: months,
       selectedItem: months.firstWhere(
-        (m) => m.year == widget.selectedMonth.year && m.month == widget.selectedMonth.month,
+        (m) =>
+            m.year == widget.selectedMonth.year &&
+            m.month == widget.selectedMonth.month,
         orElse: () => widget.selectedMonth,
       ),
-      labelBuilder: (month) => DateFormat('MMM yyyy').format(month),
+      labelBuilder: (month) =>
+          DateFormat('MMM yyyy').format(month).cased(context),
       onSelected: widget.onMonthChanged,
       scrollController: _scrollController,
     );

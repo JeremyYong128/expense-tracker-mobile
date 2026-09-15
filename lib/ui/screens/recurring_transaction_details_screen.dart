@@ -177,6 +177,7 @@ class _RecurringTransactionDetailsScreenState
                 const SizedBox(height: 24),
                 PageContentCard(
                   title: 'Transactions'.cased(context),
+                  paddingBottom: transactionsList.isEmpty ? null : 12.0,
                   child: transactionsList.isEmpty
                       ? SizedBox(
                           width: double.infinity,

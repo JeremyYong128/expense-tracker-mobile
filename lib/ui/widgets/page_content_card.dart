@@ -5,8 +5,20 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 class PageContentCard extends StatelessWidget {
   final String? title;
   final Widget child;
+  final double? paddingTop;
+  final double? paddingBottom;
+  final double? paddingLeft;
+  final double? paddingRight;
 
-  const PageContentCard({super.key, this.title, required this.child});
+  const PageContentCard({
+    super.key,
+    this.title,
+    this.paddingTop,
+    this.paddingBottom,
+    this.paddingLeft,
+    this.paddingRight,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +35,12 @@ class PageContentCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.only(
+          top: paddingTop ?? 20.0,
+          bottom: paddingBottom ?? 20.0,
+          left: paddingLeft ?? 20.0,
+          right: paddingRight ?? 20.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
