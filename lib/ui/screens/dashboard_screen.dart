@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
+import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,6 +22,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isCategoriesExpanded = false;
+  bool _isRewardsExpanded = false;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
@@ -66,170 +68,171 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SUMMARY CARDS
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSummaryCard(
-                      'Income',
-                      stats.totalIncome,
-                      AppColors.primary,
-                      percentageChange: stats.incomePercentageChange,
+              PageContentCard(
+                paddingTop: 16.0,
+                paddingBottom: 16.0,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildSummaryCard(
+                        'Income',
+                        stats.totalIncome,
+                        AppColors.primary,
+                        percentageChange: stats.incomePercentageChange,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildSummaryCard(
-                      'Expense',
-                      stats.totalExpense,
-                      AppColors.primary,
-                      percentageChange: stats.expensePercentageChange,
+                    Container(height: 60, width: 1, color: AppColors.divider),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        'Expense',
+                        stats.totalExpense,
+                        AppColors.primary,
+                        percentageChange: stats.expensePercentageChange,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const SizedBox(height: 32),
 
               // EXPENSES BY CATEGORY
               if (stats.expenseBreakdown.isNotEmpty) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Expenses by Category'.cased(context),
-                      style: AppStyles.sectionHeader,
-                    ),
-                    if (stats.expenseBreakdown.length > 3)
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _isCategoriesExpanded = !_isCategoriesExpanded;
-                          });
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          _isCategoriesExpanded
-                              ? 'Less'.cased(context)
-                              : 'More'.cased(context),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppStyles.sectionHeaderSpacing),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    children: () {
-                      final visibleEntries =
-                          (_isCategoriesExpanded
-                                  ? stats.expenseBreakdown.entries
-                                  : stats.expenseBreakdown.entries.take(3))
-                              .toList();
-                      final List<Widget> children = [];
+                PageContentCard(
+                  title: 'Expenses by Category',
+                  titleTrailing: stats.expenseBreakdown.length > 3
+                      ? TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isCategoriesExpanded = !_isCategoriesExpanded;
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            _isCategoriesExpanded
+                                ? 'Less'.cased(context)
+                                : 'More'.cased(context),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        )
+                      : null,
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      children: () {
+                        final visibleEntries =
+                            (_isCategoriesExpanded
+                                    ? stats.expenseBreakdown.entries
+                                    : stats.expenseBreakdown.entries.take(3))
+                                .toList();
+                        final List<Widget> children = [];
 
-                      for (int i = 0; i < visibleEntries.length; i++) {
-                        final entry = visibleEntries[i];
-                        final category = entry.key;
-                        final amount = entry.value;
-                        final color = category.color;
-                        final percentage = stats.totalExpense > 0
-                            ? (amount / stats.totalExpense)
-                            : 0.0;
+                        for (int i = 0; i < visibleEntries.length; i++) {
+                          final entry = visibleEntries[i];
+                          final category = entry.key;
+                          final amount = entry.value;
+                          final color = category.color;
+                          final percentage = stats.totalExpense > 0
+                              ? (amount / stats.totalExpense)
+                              : 0.0;
 
-                        children.add(
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CategoryDetailsScreen(
-                                      category: category,
-                                    ),
-                                  ),
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10.0),
-                                    decoration: BoxDecoration(
-                                      color: color.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Icon(
-                                      category.iconData,
-                                      color: color,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              category.name,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                            Text(
-                                              _currencyFormat.format(amount),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                          children.add(
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CategoryDetailsScreen(
+                                            category: category,
                                           ),
-                                          child: LinearProgressIndicator(
-                                            value: percentage,
-                                            backgroundColor: AppColors.grey
-                                                .withValues(alpha: 0.3),
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  color,
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(12.0),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10.0),
+                                      decoration: BoxDecoration(
+                                        color: color.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(
+                                          12.0,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        category.iconData,
+                                        color: color,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                category.name,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
                                                 ),
-                                            minHeight: 6,
+                                              ),
+                                              Text(
+                                                _currencyFormat.format(amount),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 8),
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            child: LinearProgressIndicator(
+                                              value: percentage,
+                                              backgroundColor: AppColors.grey
+                                                  .withValues(alpha: 0.3),
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    color,
+                                                  ),
+                                              minHeight: 6,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
+                          );
 
-                        if (i < visibleEntries.length - 1) {
-                          children.add(const SizedBox(height: 16));
+                          if (i < visibleEntries.length - 1) {
+                            children.add(const SizedBox(height: 16));
+                          }
                         }
-                      }
-                      return children;
-                    }(),
+                        return children;
+                      }(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -237,87 +240,125 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // REWARDS SECTION
               if (stats.monthlyRewards.isNotEmpty) ...[
-                Text(
-                  'Rewards Earned'.cased(context),
-                  style: AppStyles.sectionHeader,
-                ),
-                const SizedBox(height: AppStyles.sectionHeaderSpacing),
-                ...stats.monthlyRewards.entries.map((entry) {
-                  final card = entry.key;
-                  final reward = entry.value;
-                  final isCashback = card.rewardType == 'Cashback';
-                  final rewardText = isCashback
-                      ? '\$${reward.toStringAsFixed(2)}'
-                      : NumberFormat.decimalPattern().format(reward.toInt());
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Material(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CardDetailsScreen(card: card),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                            ),
+                PageContentCard(
+                  title: 'Rewards Earned',
+                  titleTrailing: stats.monthlyRewards.length > 3
+                      ? TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isRewardsExpanded = !_isRewardsExpanded;
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.15,
+                          child: Text(
+                            _isRewardsExpanded
+                                ? 'Less'.cased(context)
+                                : 'More'.cased(context),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        )
+                      : null,
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      children: () {
+                        final visibleEntries =
+                            (_isRewardsExpanded
+                                    ? stats.monthlyRewards.entries
+                                    : stats.monthlyRewards.entries.take(3))
+                                .toList();
+                        final List<Widget> children = [];
+
+                        for (int i = 0; i < visibleEntries.length; i++) {
+                          final entry = visibleEntries[i];
+                          final card = entry.key;
+                          final reward = entry.value;
+                          final isCashback = card.rewardType == 'Cashback';
+                          final rewardText = isCashback
+                              ? '\$${reward.toStringAsFixed(2)}'
+                              : NumberFormat.decimalPattern().format(
+                                  reward.toInt(),
+                                );
+
+                          children.add(
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CardDetailsScreen(card: card),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(12.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: const Icon(
+                                              Icons.stars,
+                                              color: AppColors.primary,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            card.name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.stars,
-                                      color: AppColors.primary,
-                                      size: 20,
-                                    ),
+                                      Text(
+                                        '+$rewardText ${card.rewardType}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.income,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    card.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                '+$rewardText ${card.rewardType}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.income,
-                                  fontSize: 15,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
+                            ),
+                          );
+
+                          if (i < visibleEntries.length - 1) {
+                            children.add(const SizedBox(height: 12));
+                          }
+                        }
+                        return children;
+                      }(),
                     ),
-                  );
-                }),
+                  ),
+                ),
                 const SizedBox(height: 24),
               ],
             ],
@@ -344,11 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color changeColor = isGood ? AppColors.income : AppColors.expense;
 
     return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(24.0),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -180,11 +180,11 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         title: Text(latestCard.name),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.white),
+            icon: const Icon(Icons.edit, color: AppColors.appBarIconColor),
             onPressed: () => _showAddEditDialog(latestCard),
           ),
           IconButton(
-            icon: const Icon(Icons.delete, color: AppColors.white),
+            icon: const Icon(Icons.delete, color: AppColors.appBarIconColor),
             onPressed: () => _confirmDelete(latestCard),
           ),
         ],

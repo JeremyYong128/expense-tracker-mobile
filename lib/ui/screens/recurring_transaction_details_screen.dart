@@ -151,11 +151,11 @@ class _RecurringTransactionDetailsScreenState
         title: Text(latestTx.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.white),
+            icon: const Icon(Icons.edit, color: AppColors.appBarIconColor),
             onPressed: () => _showAddEditDialog(latestTx),
           ),
           IconButton(
-            icon: const Icon(Icons.delete, color: AppColors.white),
+            icon: const Icon(Icons.delete, color: AppColors.appBarIconColor),
             onPressed: () => _confirmDelete(latestTx),
           ),
         ],

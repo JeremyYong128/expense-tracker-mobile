@@ -10,6 +10,8 @@ class PageContentCard extends StatelessWidget {
   final double? paddingLeft;
   final double? paddingRight;
 
+  final Widget? titleTrailing;
+
   const PageContentCard({
     super.key,
     this.title,
@@ -17,6 +19,7 @@ class PageContentCard extends StatelessWidget {
     this.paddingBottom,
     this.paddingLeft,
     this.paddingRight,
+    this.titleTrailing,
     required this.child,
   });
 
@@ -46,7 +49,13 @@ class PageContentCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (title != null && title!.isNotEmpty) ...[
-              Text(title!.cased(context), style: AppStyles.sectionHeader),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(title!.cased(context), style: AppStyles.sectionHeader),
+                  ?titleTrailing,
+                ],
+              ),
               const SizedBox(height: AppStyles.sectionHeaderSpacing),
             ],
             child,

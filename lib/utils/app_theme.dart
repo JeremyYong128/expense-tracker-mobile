@@ -20,6 +20,7 @@ class AppColors {
   static const Color error = Color(0xFFD32F2F); // Semantic error
   static const Color white = Color(0xFFFFFFFF);
   static const Color transparent = Color(0x00000000);
+  static const Color appBarIconColor = textPrimary;
 
   // Grey-scale variables
   static const Color surfaceLight = Color(0xFFFAFAFA); // Replaces grey.shade50
@@ -113,6 +114,8 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         toolbarHeight: 48,
         centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.appBarIconColor),
+        actionsIconTheme: IconThemeData(color: AppColors.appBarIconColor),
         titleTextStyle: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 20,
