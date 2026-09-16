@@ -14,6 +14,7 @@ import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.da
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
@@ -117,6 +118,15 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final totalExpense = stats.totalExpense;
     final prevBalance = stats.prevBalance;
 
+    final availableMonths = MonthSelectorToggle.getAvailableMonths(
+      allTransactions,
+    );
+    final earliestMonth = availableMonths.first;
+    final latestMonth = availableMonths.last;
+
+    final canGoBack = _selectedMonth.isAfter(earliestMonth);
+    final canGoForward = _selectedMonth.isBefore(latestMonth);
+
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(latestCategory.name),
@@ -149,12 +159,24 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                 )
               else ...[
                 const SizedBox(height: 16),
-                MonthSelectorToggle(
-                  selectedMonth: _selectedMonth,
-                  transactions: allTransactions,
-                  onMonthChanged: (newMonth) {
+                MonthNavigator(
+                  currentMonth: _selectedMonth,
+                  canGoBack: canGoBack,
+                  canGoForward: canGoForward,
+                  onPrevious: () {
                     setState(() {
-                      _selectedMonth = newMonth;
+                      _selectedMonth = DateTime(
+                        _selectedMonth.year,
+                        _selectedMonth.month - 1,
+                      );
+                    });
+                  },
+                  onNext: () {
+                    setState(() {
+                      _selectedMonth = DateTime(
+                        _selectedMonth.year,
+                        _selectedMonth.month + 1,
+                      );
                     });
                   },
                 ),
