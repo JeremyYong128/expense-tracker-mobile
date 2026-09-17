@@ -1,4 +1,5 @@
 import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_list_view.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -70,7 +71,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: SharedFilterToggle<String>(
                     items: const ['All', 'Expense', 'Income'],
                     selectedItem: _filter,
-                    labelBuilder: (item) => item,
+                    labelBuilder: (item) => item.cased(context),
                     onSelected: (value) {
                       setState(() {
                         _filter = value;
@@ -124,7 +125,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     borderRadius: BorderRadius.circular(24.0),
                                     onTap: () {
                                       Navigator.of(context).push(
-                                        MaterialPageRoute(
+                                        CupertinoPageRoute(
                                           builder: (context) =>
                                               CategoryDetailsScreen(
                                                 category: category,

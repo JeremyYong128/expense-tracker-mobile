@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -160,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(
+                                        CupertinoPageRoute(
                                           builder: (context) =>
                                               CategoryDetailsScreen(
                                                 category: category,
@@ -244,7 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               );
 
                               if (i < visibleEntries.length - 1) {
-                                children.add(const SizedBox(height: 16));
+                                children.add(const SizedBox(height: AppStyles.listItemSpacing));
                               }
                             }
                             return children;
@@ -320,7 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(
+                                        CupertinoPageRoute(
                                           builder: (context) =>
                                               CardDetailsScreen(card: card),
                                         ),

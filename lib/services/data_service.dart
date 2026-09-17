@@ -640,6 +640,38 @@ class DataService {
     return results.isEmpty ? null : results.first;
   }
 
+  static Future<List<Budget>> getBudgetsForEntity({
+    required String type,
+    int? categoryId,
+    int? cardId,
+  }) async {
+    final query = _db.select(_db.budgets)
+      ..where((b) => b.type.equals(type));
+
+    if (categoryId != null) {
+      query.where((b) => b.categoryId.equals(categoryId));
+    } else {
+      query.where((b) => b.categoryId.isNull());
+    }
+
+    if (cardId != null) {
+      query.where((b) => b.cardId.equals(cardId));
+    } else {
+      query.where((b) => b.cardId.isNull());
+    }
+
+    query.orderBy([
+      (b) => drift.OrderingTerm(expression: b.year),
+      (b) => drift.OrderingTerm(expression: b.month),
+    ]);
+
+    return await query.get();
+  }
+
+  static Future<void> deleteBudgetRow(int id) async {
+    await (_db.delete(_db.budgets)..where((b) => b.id.equals(id))).go();
+  }
+
   static Future<void> upsertBudget(BudgetsCompanion budget) async {
     await _db.into(_db.budgets).insertOnConflictUpdate(budget);
   }

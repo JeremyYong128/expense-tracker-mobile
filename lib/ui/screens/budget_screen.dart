@@ -4,14 +4,16 @@ import 'package:expense_tracker_mobile/providers/budget_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
-import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/budget_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
+import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 
 class BudgetScreen extends StatefulWidget {
+  const BudgetScreen({super.key});
+
   @override
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
@@ -74,7 +76,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
             icon: const Icon(Icons.add),
             onPressed: () => _showAddBudgetForm(context),
           ),
-          const NotificationButton(),
         ],
       ),
       body: SafeArea(
@@ -104,76 +105,102 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               )
             else
-              ...activeBudgets.map((budget) {
-                // Find corresponding category
-                final category = categories.firstWhere(
-                  (c) => c.id == budget.categoryId,
-                  orElse: () => categories.first, // Fallback
-                );
+              ContentCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Budget by Category'.cased(context),
+                      style: AppStyles.sectionHeader,
+                    ),
+                    const SizedBox(height: AppStyles.sectionHeaderSpacing),
+                    ...activeBudgets.asMap().entries.expand((entry) {
+                    final index = entry.key;
+                    final budget = entry.value;
 
-                final stats = analyticsProvider.getCategoryStats(
-                  budget.categoryId!,
-                  DateTime(budget.year, budget.month),
-                );
-                final spent = stats.totalExpense;
+                    // Find corresponding category
+                    final category = categories.firstWhere(
+                      (c) => c.id == budget.categoryId,
+                      orElse: () => categories.first, // Fallback
+                    );
 
-                final budgetAmount = budget.amount ?? 0.0;
-                final percentage = budgetAmount > 0
-                    ? (spent / budgetAmount).clamp(0.0, 1.0)
-                    : 0.0;
+                    final stats = analyticsProvider.getCategoryStats(
+                      budget.categoryId!,
+                      DateTime(budget.year, budget.month),
+                    );
+                    final spent = stats.totalExpense;
 
-                final isExceeded = budgetAmount > 0 && spent > budgetAmount;
+                    final budgetAmount = budget.amount ?? 0.0;
+                    final percentage = budgetAmount > 0
+                        ? (spent / budgetAmount)
+                        : 0.0;
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: category.color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Icon(
-                            category.iconData,
-                            color: category.color,
-                            size: 24.0,
-                          ),
-                        ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    final isExceeded = budgetAmount > 0 && spent > budgetAmount;
+
+                    return [
+                      Column(
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Expanded(
-                                    child: Text(
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: category.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: Icon(
+                                  category.iconData,
+                                  color: category.color,
+                                  size: 24.0,
+                                ),
+                              ),
+                              const SizedBox(width: 12.0),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
                                       category.name,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 15,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 4),
+                                    const SizedBox(height: 2.0),
+                                    Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: '\$${spent.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: isExceeded
+                                                  ? AppColors.error
+                                                  : AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                ' / \$${budgetAmount.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16.0),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
                                   Text.rich(
                                     TextSpan(
                                       children: [
@@ -193,21 +220,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                             ),
                                           ),
                                         TextSpan(
-                                          text: '\$${spent.toStringAsFixed(2)}',
+                                          text: '${(percentage * 100).round()}%',
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
                                             color: isExceeded
                                                 ? AppColors.error
                                                 : null,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text:
-                                              ' / \$${budgetAmount.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: AppColors.textSecondary,
                                           ),
                                         ),
                                       ],
@@ -215,28 +234,29 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: percentage,
-                                  backgroundColor: AppColors.grey.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    category.color,
-                                  ),
-                                  minHeight: 6,
-                                ),
-                              ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+                          const SizedBox(height: 8.0),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: percentage.clamp(0.0, 1.0),
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                category.color,
+                              ),
+                              minHeight: 4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (index < activeBudgets.length - 1)
+                        const SizedBox(height: AppStyles.listItemSpacing),
+                    ];
+                  }),
+                ],
+              ),
+            ),
           ],
         ),
       ),

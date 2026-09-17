@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' hide Card;
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -118,7 +119,7 @@ class _CardsScreenState extends State<CardsScreen> {
               } else {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  CupertinoPageRoute(
                     builder: (context) => CardDetailsScreen(card: card),
                   ),
                 );

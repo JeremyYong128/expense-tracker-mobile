@@ -1,4 +1,5 @@
 import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_list_view.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transaction_details_screen.dart';
 import 'package:intl/intl.dart';
@@ -115,7 +116,7 @@ class _RecurringTransactionsScreenState
                             if (tx.id == null) return;
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              CupertinoPageRoute(
                                 builder: (context) =>
                                     RecurringTransactionDetailsScreen(
                                       recurringTransaction: tx,
@@ -164,7 +165,8 @@ class _RecurringTransactionsScreenState
                                         ),
                                         const SizedBox(height: 2.0),
                                         Text(
-                                          'Due ${DateFormat('d MMMM y').format(tx.nextDueDate).cased(context)}',
+                                          '${'Due'} ${DateFormat('d MMMM y').format(tx.nextDueDate)}'
+                                              .cased(context),
                                           style: const TextStyle(
                                             color: AppColors.textSecondary,
                                             fontSize: 13,

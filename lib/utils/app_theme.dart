@@ -85,6 +85,7 @@ class AppStyles {
   static const double cardInternalPadding = 20.0;
   static const double sectionContentSpacing = 20.0;
   static const double cardSpacing = 20.0;
+  static const double listItemSpacing = 16.0;
 }
 
 class AppTheme {

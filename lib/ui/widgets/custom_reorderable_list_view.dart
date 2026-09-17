@@ -26,6 +26,7 @@ class CustomReorderableListView extends StatelessWidget {
       physics: physics,
       itemCount: itemCount,
       onReorderItem: onReorderItem,
+      buildDefaultDragHandles: false,
       proxyDecorator: (Widget child, int index, Animation<double> animation) {
         return AnimatedBuilder(
           animation: animation,
@@ -69,7 +70,14 @@ class CustomReorderableListView extends StatelessWidget {
           child: child,
         );
       },
-      itemBuilder: itemBuilder,
+      itemBuilder: (context, index) {
+        final Widget child = itemBuilder(context, index);
+        return ReorderableDelayedDragStartListener(
+          key: child.key,
+          index: index,
+          child: child,
+        );
+      },
     );
   }
 }

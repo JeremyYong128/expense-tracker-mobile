@@ -505,7 +505,7 @@ class _TransactionListState extends State<TransactionList> {
                       ),
                     ),
                   ),
-                  if (index < dayTransactions.length - 1) const SizedBox(height: 16.0),
+                  if (index < dayTransactions.length - 1) const SizedBox(height: AppStyles.listItemSpacing),
                 ],
               );
             }),
