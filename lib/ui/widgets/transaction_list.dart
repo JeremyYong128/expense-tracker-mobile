@@ -365,7 +365,7 @@ class _TransactionListState extends State<TransactionList> {
           children: [
             Padding(
               padding: EdgeInsets.only(
-                top: index == 0 ? 0.0 : 12.0,
+                top: index == 0 ? 0.0 : 24.0,
                 bottom: 0.0,
               ),
               child: Text(
@@ -378,8 +378,9 @@ class _TransactionListState extends State<TransactionList> {
                 ),
               ),
             ),
-            const SizedBox(height: 4.0),
+            const SizedBox(height: 12.0),
             ...dayTransactions.asMap().entries.map((txEntry) {
+              final index = txEntry.key;
               final transaction = txEntry.value;
 
               final category = _getCategory(
@@ -414,11 +415,7 @@ class _TransactionListState extends State<TransactionList> {
                         alignment: Alignment.topCenter,
                         child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8.0,
-                              ),
-                              child: IntrinsicHeight(
+                            IntrinsicHeight(
                                 child: Row(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -495,7 +492,6 @@ class _TransactionListState extends State<TransactionList> {
                                   ],
                                 ),
                               ),
-                            ),
                             if (isExpanded)
                               _buildExpandedSection(
                                 context,
@@ -509,6 +505,7 @@ class _TransactionListState extends State<TransactionList> {
                       ),
                     ),
                   ),
+                  if (index < dayTransactions.length - 1) const SizedBox(height: 16.0),
                 ],
               );
             }),

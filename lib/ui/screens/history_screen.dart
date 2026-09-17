@@ -5,7 +5,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
-import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
+import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -80,7 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 16),
               if (filteredTransactions.isEmpty)
-                PageContentCard(
+                ContentCard(
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 40),
@@ -97,8 +97,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 )
               else
-                PageContentCard(
-                  paddingBottom: 12.0,
+                ContentCard(
                   child: TransactionList(transactions: filteredTransactions),
                 ),
             ],

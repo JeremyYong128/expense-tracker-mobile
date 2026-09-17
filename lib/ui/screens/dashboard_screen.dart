@@ -11,7 +11,8 @@ import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
-import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
+import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
+import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -68,9 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SUMMARY CARDS
-              PageContentCard(
-                paddingTop: 16.0,
-                paddingBottom: 16.0,
+              ContentCard(
                 child: Row(
                   children: [
                     Expanded(
@@ -98,30 +97,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // EXPENSES BY CATEGORY
               if (stats.expenseBreakdown.isNotEmpty) ...[
-                PageContentCard(
-                  title: 'Expenses by Category',
-                  titleTrailing: stats.expenseBreakdown.length > 3
-                      ? TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isCategoriesExpanded = !_isCategoriesExpanded;
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            _isCategoriesExpanded
-                                ? 'Less'.cased(context)
-                                : 'More'.cased(context),
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        )
-                      : null,
-                  child: AnimatedSize(
+                ContentCard(
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: 'Expenses by Category',
+                        action: stats.expenseBreakdown.length > 3
+                            ? TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isCategoriesExpanded = !_isCategoriesExpanded;
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  _isCategoriesExpanded
+                                      ? 'Less'.cased(context)
+                                      : 'More'.cased(context),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              )
+                            : null,
+                      ),
+                      AnimatedSize(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                     alignment: Alignment.topCenter,
@@ -234,36 +237,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }(),
                     ),
                   ),
-                ),
+                ],
+              ),
+            ),
                 const SizedBox(height: 24),
               ],
 
               // REWARDS SECTION
               if (stats.monthlyRewards.isNotEmpty) ...[
-                PageContentCard(
-                  title: 'Rewards Earned',
-                  titleTrailing: stats.monthlyRewards.length > 3
-                      ? TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isRewardsExpanded = !_isRewardsExpanded;
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            _isRewardsExpanded
-                                ? 'Less'.cased(context)
-                                : 'More'.cased(context),
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        )
-                      : null,
-                  child: AnimatedSize(
+                ContentCard(
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: 'Rewards Earned',
+                        action: stats.monthlyRewards.length > 3
+                            ? TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isRewardsExpanded = !_isRewardsExpanded;
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  _isRewardsExpanded
+                                      ? 'Less'.cased(context)
+                                      : 'More'.cased(context),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              )
+                            : null,
+                      ),
+                      AnimatedSize(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                     alignment: Alignment.topCenter,
@@ -358,7 +367,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }(),
                     ),
                   ),
-                ),
+                ],
+              ),
+            ),
                 const SizedBox(height: 24),
               ],
             ],

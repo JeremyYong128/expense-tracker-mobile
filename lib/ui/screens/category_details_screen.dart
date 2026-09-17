@@ -12,7 +12,8 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
-import 'package:expense_tracker_mobile/ui/widgets/page_content_card.dart';
+import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
+import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
@@ -180,28 +181,31 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 16),
-                _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
                 const SizedBox(height: 24),
-                PageContentCard(
-                  title: 'Transactions'.cased(context),
-                  paddingBottom: transactionsList.isEmpty ? null : 12.0,
-                  child: transactionsList.isEmpty
-                      ? SizedBox(
-                          width: double.infinity,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20.0),
-                            child: Text(
-                              'No transactions for this month.'.cased(context),
-                              style: const TextStyle(
-                                color: AppColors.grey,
-                                fontSize: 16,
+                ContentCard(
+                  child: Column(
+                    children: [
+                      SectionHeader(title: 'Transactions'.cased(context)),
+                      _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
+                      const SizedBox(height: 16),
+                      transactionsList.isEmpty
+                          ? SizedBox(
+                              width: double.infinity,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                                child: Text(
+                                  'No transactions for this month.'.cased(context),
+                                  style: const TextStyle(
+                                    color: AppColors.grey,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      : TransactionList(transactions: transactionsList),
+                            )
+                          : TransactionList(transactions: transactionsList),
+                    ],
+                  ),
                 ),
               ],
             ],
