@@ -2397,21 +2397,6 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _enableRolloverMeta = const VerificationMeta(
-    'enableRollover',
-  );
-  @override
-  late final GeneratedColumn<bool> enableRollover = GeneratedColumn<bool>(
-    'enable_rollover',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("enable_rollover" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2421,7 +2406,6 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     categoryId,
     cardId,
     amount,
-    enableRollover,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2480,15 +2464,6 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
         amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
       );
     }
-    if (data.containsKey('enable_rollover')) {
-      context.handle(
-        _enableRolloverMeta,
-        enableRollover.isAcceptableOrUnknown(
-          data['enable_rollover']!,
-          _enableRolloverMeta,
-        ),
-      );
-    }
     return context;
   }
 
@@ -2530,10 +2505,6 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       ),
-      enableRollover: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}enable_rollover'],
-      )!,
     );
   }
 
@@ -2551,7 +2522,6 @@ class Budget extends DataClass implements Insertable<Budget> {
   final int? categoryId;
   final int? cardId;
   final double? amount;
-  final bool enableRollover;
   const Budget({
     required this.id,
     required this.month,
@@ -2560,7 +2530,6 @@ class Budget extends DataClass implements Insertable<Budget> {
     this.categoryId,
     this.cardId,
     this.amount,
-    required this.enableRollover,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2578,7 +2547,6 @@ class Budget extends DataClass implements Insertable<Budget> {
     if (!nullToAbsent || amount != null) {
       map['amount'] = Variable<double>(amount);
     }
-    map['enable_rollover'] = Variable<bool>(enableRollover);
     return map;
   }
 
@@ -2597,7 +2565,6 @@ class Budget extends DataClass implements Insertable<Budget> {
       amount: amount == null && nullToAbsent
           ? const Value.absent()
           : Value(amount),
-      enableRollover: Value(enableRollover),
     );
   }
 
@@ -2614,7 +2581,6 @@ class Budget extends DataClass implements Insertable<Budget> {
       categoryId: serializer.fromJson<int?>(json['categoryId']),
       cardId: serializer.fromJson<int?>(json['cardId']),
       amount: serializer.fromJson<double?>(json['amount']),
-      enableRollover: serializer.fromJson<bool>(json['enableRollover']),
     );
   }
   @override
@@ -2628,7 +2594,6 @@ class Budget extends DataClass implements Insertable<Budget> {
       'categoryId': serializer.toJson<int?>(categoryId),
       'cardId': serializer.toJson<int?>(cardId),
       'amount': serializer.toJson<double?>(amount),
-      'enableRollover': serializer.toJson<bool>(enableRollover),
     };
   }
 
@@ -2640,7 +2605,6 @@ class Budget extends DataClass implements Insertable<Budget> {
     Value<int?> categoryId = const Value.absent(),
     Value<int?> cardId = const Value.absent(),
     Value<double?> amount = const Value.absent(),
-    bool? enableRollover,
   }) => Budget(
     id: id ?? this.id,
     month: month ?? this.month,
@@ -2649,7 +2613,6 @@ class Budget extends DataClass implements Insertable<Budget> {
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     cardId: cardId.present ? cardId.value : this.cardId,
     amount: amount.present ? amount.value : this.amount,
-    enableRollover: enableRollover ?? this.enableRollover,
   );
   Budget copyWithCompanion(BudgetsCompanion data) {
     return Budget(
@@ -2662,9 +2625,6 @@ class Budget extends DataClass implements Insertable<Budget> {
           : this.categoryId,
       cardId: data.cardId.present ? data.cardId.value : this.cardId,
       amount: data.amount.present ? data.amount.value : this.amount,
-      enableRollover: data.enableRollover.present
-          ? data.enableRollover.value
-          : this.enableRollover,
     );
   }
 
@@ -2677,23 +2637,14 @@ class Budget extends DataClass implements Insertable<Budget> {
           ..write('type: $type, ')
           ..write('categoryId: $categoryId, ')
           ..write('cardId: $cardId, ')
-          ..write('amount: $amount, ')
-          ..write('enableRollover: $enableRollover')
+          ..write('amount: $amount')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    month,
-    year,
-    type,
-    categoryId,
-    cardId,
-    amount,
-    enableRollover,
-  );
+  int get hashCode =>
+      Object.hash(id, month, year, type, categoryId, cardId, amount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2704,8 +2655,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           other.type == this.type &&
           other.categoryId == this.categoryId &&
           other.cardId == this.cardId &&
-          other.amount == this.amount &&
-          other.enableRollover == this.enableRollover);
+          other.amount == this.amount);
 }
 
 class BudgetsCompanion extends UpdateCompanion<Budget> {
@@ -2716,7 +2666,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   final Value<int?> categoryId;
   final Value<int?> cardId;
   final Value<double?> amount;
-  final Value<bool> enableRollover;
   const BudgetsCompanion({
     this.id = const Value.absent(),
     this.month = const Value.absent(),
@@ -2725,7 +2674,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     this.categoryId = const Value.absent(),
     this.cardId = const Value.absent(),
     this.amount = const Value.absent(),
-    this.enableRollover = const Value.absent(),
   });
   BudgetsCompanion.insert({
     this.id = const Value.absent(),
@@ -2735,7 +2683,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     this.categoryId = const Value.absent(),
     this.cardId = const Value.absent(),
     this.amount = const Value.absent(),
-    this.enableRollover = const Value.absent(),
   }) : month = Value(month),
        year = Value(year),
        type = Value(type);
@@ -2747,7 +2694,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Expression<int>? categoryId,
     Expression<int>? cardId,
     Expression<double>? amount,
-    Expression<bool>? enableRollover,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2757,7 +2703,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       if (categoryId != null) 'category_id': categoryId,
       if (cardId != null) 'card_id': cardId,
       if (amount != null) 'amount': amount,
-      if (enableRollover != null) 'enable_rollover': enableRollover,
     });
   }
 
@@ -2769,7 +2714,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Value<int?>? categoryId,
     Value<int?>? cardId,
     Value<double?>? amount,
-    Value<bool>? enableRollover,
   }) {
     return BudgetsCompanion(
       id: id ?? this.id,
@@ -2779,7 +2723,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       categoryId: categoryId ?? this.categoryId,
       cardId: cardId ?? this.cardId,
       amount: amount ?? this.amount,
-      enableRollover: enableRollover ?? this.enableRollover,
     );
   }
 
@@ -2807,9 +2750,6 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
     }
-    if (enableRollover.present) {
-      map['enable_rollover'] = Variable<bool>(enableRollover.value);
-    }
     return map;
   }
 
@@ -2822,8 +2762,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
           ..write('type: $type, ')
           ..write('categoryId: $categoryId, ')
           ..write('cardId: $cardId, ')
-          ..write('amount: $amount, ')
-          ..write('enableRollover: $enableRollover')
+          ..write('amount: $amount')
           ..write(')'))
         .toString();
   }
@@ -5264,7 +5203,6 @@ typedef $$BudgetsTableCreateCompanionBuilder =
       Value<int?> categoryId,
       Value<int?> cardId,
       Value<double?> amount,
-      Value<bool> enableRollover,
     });
 typedef $$BudgetsTableUpdateCompanionBuilder =
     BudgetsCompanion Function({
@@ -5275,7 +5213,6 @@ typedef $$BudgetsTableUpdateCompanionBuilder =
       Value<int?> categoryId,
       Value<int?> cardId,
       Value<double?> amount,
-      Value<bool> enableRollover,
     });
 
 final class $$BudgetsTableReferences
@@ -5348,11 +5285,6 @@ class $$BudgetsTableFilterComposer
 
   ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get enableRollover => $composableBuilder(
-    column: $table.enableRollover,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5437,11 +5369,6 @@ class $$BudgetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get enableRollover => $composableBuilder(
-    column: $table.enableRollover,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5512,11 +5439,6 @@ class $$BudgetsTableAnnotationComposer
 
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
-
-  GeneratedColumn<bool> get enableRollover => $composableBuilder(
-    column: $table.enableRollover,
-    builder: (column) => column,
-  );
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -5600,7 +5522,6 @@ class $$BudgetsTableTableManager
                 Value<int?> categoryId = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
                 Value<double?> amount = const Value.absent(),
-                Value<bool> enableRollover = const Value.absent(),
               }) => BudgetsCompanion(
                 id: id,
                 month: month,
@@ -5609,7 +5530,6 @@ class $$BudgetsTableTableManager
                 categoryId: categoryId,
                 cardId: cardId,
                 amount: amount,
-                enableRollover: enableRollover,
               ),
           createCompanionCallback:
               ({
@@ -5620,7 +5540,6 @@ class $$BudgetsTableTableManager
                 Value<int?> categoryId = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
                 Value<double?> amount = const Value.absent(),
-                Value<bool> enableRollover = const Value.absent(),
               }) => BudgetsCompanion.insert(
                 id: id,
                 month: month,
@@ -5629,7 +5548,6 @@ class $$BudgetsTableTableManager
                 categoryId: categoryId,
                 cardId: cardId,
                 amount: amount,
-                enableRollover: enableRollover,
               ),
           withReferenceMapper: (p0) => p0
               .map(

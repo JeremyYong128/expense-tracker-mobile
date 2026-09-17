@@ -15,7 +15,7 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/budget_provider.dart';
 import 'package:expense_tracker_mobile/services/recurring_processing_service.dart';
-import 'package:expense_tracker_mobile/services/budget_rollover_service.dart';
+import 'package:expense_tracker_mobile/services/budget_copy_forward_service.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/screens/recurring_transactions_screen.dart';
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // Run budget rollover proactively on app launch
-      BudgetRolloverService.checkAndRolloverBudgets().then((_) {
+      BudgetCopyForwardService.checkAndCopyBudgets().then((_) {
         if (!mounted) return;
         // Optionally, force BudgetProvider to refresh if it was already loaded
         final budgetProvider = Provider.of<BudgetProvider>(

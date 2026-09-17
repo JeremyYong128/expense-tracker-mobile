@@ -364,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ],
                                           ),
                                           Text(
-                                            '+$rewardText ${card.rewardType}',
+                                            '+$rewardText ${card.rewardType.cased(context)}',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: AppColors.income,

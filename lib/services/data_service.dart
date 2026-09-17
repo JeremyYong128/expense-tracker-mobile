@@ -605,6 +605,12 @@ class DataService {
     return await _db.select(_db.budgets).get();
   }
 
+  static Future<List<Budget>> getBudgetsForMonth(int month, int year) async {
+    return await (_db.select(_db.budgets)
+          ..where((b) => b.month.equals(month) & b.year.equals(year) & b.amount.isNotNull()))
+        .get();
+  }
+
   static Future<Budget?> getBudget({
     required int month,
     required int year,

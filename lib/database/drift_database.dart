@@ -106,8 +106,7 @@ class Budgets extends Table {
 
   RealColumn get amount => real().nullable()();
 
-  BoolColumn get enableRollover =>
-      boolean().withDefault(const Constant(false))();
+
 
   @override
   List<Set<Column>> get uniqueKeys => [

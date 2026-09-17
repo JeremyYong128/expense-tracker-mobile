@@ -15,17 +15,8 @@ class BudgetProvider extends ChangeNotifier {
   }
 
   Future<void> loadBudgetsForMonth(int targetMonth, int targetYear) async {
-    final allBudgets = await DataService.getAllBudgets();
-
-    // With the copy-forward pattern, we strictly load only the requested month's budgets
-    _activeBudgets = allBudgets
-        .where(
-          (b) =>
-              b.year == targetYear &&
-              b.month == targetMonth &&
-              b.amount != null,
-        )
-        .toList();
+    // Fetch only the requested month's budgets directly from SQLite (ignoring tombstones)
+    _activeBudgets = await DataService.getBudgetsForMonth(targetMonth, targetYear);
 
     notifyListeners();
   }
@@ -64,8 +55,7 @@ class BudgetProvider extends ChangeNotifier {
     await DataService.upsertBudget(companion);
 
     // Reload active budgets for the current view
-    final now = DateTime.now();
-    await loadBudgetsForMonth(now.month, now.year);
+    await loadBudgetsForMonth(targetMonth, targetYear);
   }
 
   Future<List<Budget>> getBudgetHistoryForCategory(int categoryId) async {
