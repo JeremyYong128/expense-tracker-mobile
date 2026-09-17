@@ -153,7 +153,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                             size: 24.0,
                           ),
                         ),
-                        const SizedBox(width: 16.0),
+                        const SizedBox(width: 12.0),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,9 +179,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                       children: [
                                         if (isExceeded)
                                           const WidgetSpan(
-                                            alignment: PlaceholderAlignment.middle,
+                                            alignment:
+                                                PlaceholderAlignment.middle,
                                             child: Padding(
-                                              padding: EdgeInsets.only(right: 4.0),
+                                              padding: EdgeInsets.only(
+                                                right: 4.0,
+                                              ),
                                               child: Icon(
                                                 Icons.warning_amber_rounded,
                                                 color: AppColors.error,
@@ -194,11 +197,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 15,
-                                            color: isExceeded ? AppColors.error : null,
+                                            color: isExceeded
+                                                ? AppColors.error
+                                                : null,
                                           ),
                                         ),
                                         TextSpan(
-                                          text: ' / \$${budgetAmount.toStringAsFixed(2)}',
+                                          text:
+                                              ' / \$${budgetAmount.toStringAsFixed(2)}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             color: AppColors.textSecondary,
