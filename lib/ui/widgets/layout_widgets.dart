@@ -23,7 +23,7 @@ class ContentCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppStyles.smallSpacing),
+        padding: const EdgeInsets.all(AppStyles.cardInternalPadding),
         child: child,
       ),
     );

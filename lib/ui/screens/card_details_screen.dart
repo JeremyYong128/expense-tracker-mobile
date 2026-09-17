@@ -217,7 +217,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                   ),
                 )
               else ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 MonthNavigator(
                   currentMonth: _selectedMonth,
                   canGoBack: canGoBack,
@@ -250,7 +250,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                         prevExpense,
                         prevRewardsAmount,
                       ),
-                      const SizedBox(height: AppStyles.smallSpacing),
+                      const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Expenses'.cased(context)),
                       transactionsList.isEmpty
                           ? SizedBox(

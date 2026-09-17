@@ -159,7 +159,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                   ),
                 )
               else ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 MonthNavigator(
                   currentMonth: _selectedMonth,
                   canGoBack: canGoBack,
@@ -190,7 +190,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                         totalExpense,
                         prevBalance,
                       ),
-                      const SizedBox(height: AppStyles.smallSpacing),
+                      const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Transactions'.cased(context)),
                       transactionsList.isEmpty
                           ? SizedBox(

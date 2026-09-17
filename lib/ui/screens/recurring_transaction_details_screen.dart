@@ -188,7 +188,7 @@ class _RecurringTransactionDetailsScreenState
                   ),
                 )
               else ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 MonthNavigator(
                   currentMonth: _selectedMonth,
                   canGoBack: canGoBack,
@@ -219,7 +219,7 @@ class _RecurringTransactionDetailsScreenState
                         totalExpense,
                         prevBalance,
                       ),
-                      const SizedBox(height: AppStyles.smallSpacing),
+                      const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Transactions'.cased(context)),
                       transactionsList.isEmpty
                           ? SizedBox(
@@ -399,7 +399,7 @@ class _RecurringTransactionDetailsScreenState
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Text(
             'Amount'.cased(context).toUpperCase(),
             style: const TextStyle(
