@@ -9,10 +9,9 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/budget_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 
 class BudgetScreen extends StatefulWidget {
-  const BudgetScreen({super.key});
-
   @override
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
@@ -65,6 +64,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     final activeBudgets = context.watch<BudgetProvider>().activeBudgets;
     final categories = context.watch<CategoryProvider>().categories;
+    final analyticsProvider = context.watch<AnalyticsProvider>();
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -111,6 +111,19 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   orElse: () => categories.first, // Fallback
                 );
 
+                final stats = analyticsProvider.getCategoryStats(
+                  budget.categoryId!,
+                  DateTime(budget.year, budget.month),
+                );
+                final spent = stats.totalExpense;
+
+                final budgetAmount = budget.amount ?? 0.0;
+                final percentage = budgetAmount > 0
+                    ? (spent / budgetAmount).clamp(0.0, 1.0)
+                    : 0.0;
+
+                final isExceeded = budgetAmount > 0 && spent > budgetAmount;
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12.0),
                   decoration: BoxDecoration(
@@ -142,22 +155,75 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         ),
                         const SizedBox(width: 16.0),
                         Expanded(
-                          child: Text(
-                            category.name.cased(context),
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8.0),
-                        Text(
-                          '\$${budget.amount!.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      category.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        if (isExceeded)
+                                          const WidgetSpan(
+                                            alignment: PlaceholderAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(right: 4.0),
+                                              child: Icon(
+                                                Icons.warning_amber_rounded,
+                                                color: AppColors.error,
+                                                size: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        TextSpan(
+                                          text: '\$${spent.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color: isExceeded ? AppColors.error : null,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: ' / \$${budgetAmount.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: percentage,
+                                  backgroundColor: AppColors.grey.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    category.color,
+                                  ),
+                                  minHeight: 6,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

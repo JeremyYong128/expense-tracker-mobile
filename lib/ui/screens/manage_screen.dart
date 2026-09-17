@@ -78,7 +78,7 @@ class ManageScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (context) => const BudgetScreen(),
+                    builder: (context) => BudgetScreen(),
                   ),
                 );
               },
