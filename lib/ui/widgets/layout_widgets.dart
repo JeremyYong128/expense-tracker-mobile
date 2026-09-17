@@ -5,11 +5,7 @@ class ContentCard extends StatelessWidget {
   final Widget child;
   final Color? backgroundColor;
 
-  const ContentCard({
-    super.key,
-    required this.child,
-    this.backgroundColor,
-  });
+  const ContentCard({super.key, required this.child, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +23,7 @@ class ContentCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(AppStyles.smallSpacing),
         child: child,
       ),
     );

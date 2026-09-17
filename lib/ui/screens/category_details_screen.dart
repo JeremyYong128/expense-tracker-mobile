@@ -185,16 +185,24 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                 ContentCard(
                   child: Column(
                     children: [
+                      _buildMonthlySummary(
+                        totalIncome,
+                        totalExpense,
+                        prevBalance,
+                      ),
+                      const SizedBox(height: AppStyles.smallSpacing),
                       SectionHeader(title: 'Transactions'.cased(context)),
-                      _buildMonthlySummary(totalIncome, totalExpense, prevBalance),
-                      const SizedBox(height: 16),
                       transactionsList.isEmpty
                           ? SizedBox(
                               width: double.infinity,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20.0,
+                                ),
                                 child: Text(
-                                  'No transactions for this month.'.cased(context),
+                                  'No transactions for this month.'.cased(
+                                    context,
+                                  ),
                                   style: const TextStyle(
                                     color: AppColors.grey,
                                     fontSize: 16,
@@ -232,13 +240,8 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final isGood = diff >= 0;
     final changeColor = isGood ? AppColors.income : AppColors.expense;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -311,7 +314,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 8, bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: gradient,

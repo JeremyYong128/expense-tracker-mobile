@@ -243,7 +243,6 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 ContentCard(
                   child: Column(
                     children: [
-                      SectionHeader(title: 'Expenses'.cased(context)),
                       _buildMonthlySummary(
                         latestCard,
                         totalExpense,
@@ -251,12 +250,15 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                         prevExpense,
                         prevRewardsAmount,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppStyles.smallSpacing),
+                      SectionHeader(title: 'Expenses'.cased(context)),
                       transactionsList.isEmpty
                           ? SizedBox(
                               width: double.infinity,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 32.0,
+                                ),
                                 child: Text(
                                   'No expenses tagged to this card for this month.'
                                       .cased(context),
@@ -313,7 +315,6 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 8, bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: color,
@@ -381,13 +382,8 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
         ? AppColors.income
         : AppColors.expense;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
