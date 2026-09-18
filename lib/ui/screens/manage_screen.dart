@@ -71,7 +71,7 @@ class ManageScreen extends StatelessWidget {
             Divider(height: 1, color: Colors.grey.withValues(alpha: 0.5)),
             _buildManageListItem(
               context,
-              title: 'Budget',
+              title: 'Budgets',
               icon: Icons.account_balance_wallet,
               color: Colors.teal,
               onTap: () {

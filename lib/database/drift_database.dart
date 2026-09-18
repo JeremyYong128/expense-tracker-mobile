@@ -101,8 +101,8 @@ class Budgets extends Table {
   TextColumn get type => text()();
 
   IntColumn get categoryId =>
-      integer().nullable().references(Categories, #id)();
-  IntColumn get cardId => integer().nullable().references(Cards, #id)();
+      integer().nullable().references(Categories, #id, onDelete: KeyAction.cascade)();
+  IntColumn get cardId => integer().nullable().references(Cards, #id, onDelete: KeyAction.cascade)();
 
   RealColumn get amount => real().nullable()();
 
@@ -133,7 +133,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -346,6 +346,17 @@ class AppDatabase extends _$AppDatabase {
           } catch (e, stack) {
             AppLogger.error(
               'Data migration failed during schema upgrade to v12',
+              e,
+              stack,
+            );
+          }
+        }
+        if (from < 14) {
+          try {
+            await m.alterTable(TableMigration(budgets));
+          } catch (e, stack) {
+            AppLogger.error(
+              'Data migration failed during schema upgrade to v14',
               e,
               stack,
             );

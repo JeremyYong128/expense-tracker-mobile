@@ -312,9 +312,6 @@ class DataService {
         txCount.isNotEmpty || recCount.isNotEmpty || budgetCount.isNotEmpty;
 
     if (forceHardDelete) {
-      // Delete budgets tied to this card
-      await (_db.delete(_db.budgets)..where((b) => b.cardId.equals(id))).go();
-
       await (_db.delete(_db.cards)..where((c) => c.id.equals(id))).go();
       return hasTransactions;
     }

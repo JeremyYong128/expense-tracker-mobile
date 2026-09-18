@@ -30,7 +30,7 @@ class BudgetProvider extends ChangeNotifier {
     required String type,
     int? categoryId,
     int? cardId,
-    required double? amount,
+    required double amount,
   }) async {
     final existing = await DataService.getBudget(
       month: targetMonth,
@@ -40,24 +40,18 @@ class BudgetProvider extends ChangeNotifier {
       cardId: cardId,
     );
 
-    if (amount == null) {
-      if (existing != null) {
-        await DataService.deleteBudgetRow(existing.id);
-      }
-    } else {
-      final companion = BudgetsCompanion(
-        id: existing != null
-            ? drift.Value(existing.id)
-            : const drift.Value.absent(),
-        month: drift.Value(targetMonth),
-        year: drift.Value(targetYear),
-        type: drift.Value(type),
-        categoryId: drift.Value(categoryId),
-        cardId: drift.Value(cardId),
-        amount: drift.Value(amount),
-      );
-      await DataService.upsertBudget(companion);
-    }
+    final companion = BudgetsCompanion(
+      id: existing != null
+          ? drift.Value(existing.id)
+          : const drift.Value.absent(),
+      month: drift.Value(targetMonth),
+      year: drift.Value(targetYear),
+      type: drift.Value(type),
+      categoryId: drift.Value(categoryId),
+      cardId: drift.Value(cardId),
+      amount: drift.Value(amount),
+    );
+    await DataService.upsertBudget(companion);
 
     await _maintainTombstones(type, categoryId, cardId);
 
@@ -133,5 +127,22 @@ class BudgetProvider extends ChangeNotifier {
     });
 
     return allBudgets.where((b) => b.categoryId == categoryId).toList();
+  }
+
+  Future<List<Budget>> getBudgetHistoryForCard(int cardId) async {
+    final allBudgets = await DataService.getAllBudgets();
+
+    allBudgets.sort((a, b) {
+      if (a.year != b.year) return b.year.compareTo(a.year);
+      return b.month.compareTo(a.month);
+    });
+
+    return allBudgets.where((b) => b.cardId == cardId).toList();
+  }
+
+  Future<void> deleteBudget(Budget budget) async {
+    await DataService.deleteBudgetRow(budget.id);
+    await _maintainTombstones(budget.type, budget.categoryId, budget.cardId);
+    await loadBudgetsForMonth(budget.month, budget.year);
   }
 }

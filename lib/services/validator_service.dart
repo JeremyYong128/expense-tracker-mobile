@@ -14,12 +14,18 @@ import 'package:expense_tracker_mobile/services/data_service.dart';
 class ValidatorService {
   static Future<void> validateBudget({
     required String amountText,
+    required String type,
     required Category? category,
+    required Card? card,
     required int selectedMonth,
     required int selectedYear,
+    int? excludeBudgetId,
   }) async {
-    if (category == null) {
+    if (type == 'category' && category == null) {
       throw ValidationException('Please select a category.');
+    }
+    if (type == 'card' && card == null) {
+      throw ValidationException('Please select a card.');
     }
 
     if (!Validators.amount(amountText)) {
@@ -31,13 +37,17 @@ class ValidatorService {
     final existingBudget = await DataService.getBudget(
       month: selectedMonth,
       year: selectedYear,
-      type: 'category',
-      categoryId: category.id,
+      type: type,
+      categoryId: type == 'category' ? category?.id : null,
+      cardId: type == 'card' ? card?.id : null,
     );
 
-    if (existingBudget != null) {
+    if (existingBudget != null &&
+        existingBudget.amount != null &&
+        existingBudget.id != excludeBudgetId) {
+      final typeStr = type == 'card' ? 'card' : 'category';
       throw ValidationException(
-        'A budget for this category already exists for this month.',
+        'A budget for this $typeStr already exists for this month.',
       );
     }
   }
