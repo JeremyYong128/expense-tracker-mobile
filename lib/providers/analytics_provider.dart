@@ -8,12 +8,14 @@ import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
+import 'package:expense_tracker_mobile/providers/budget_provider.dart';
 import 'package:expense_tracker_mobile/utils/business_logic.dart';
 
 class AnalyticsProvider extends ChangeNotifier {
   List<Transaction> _transactions = [];
   List<Category> _categories = [];
   List<Card> _cards = [];
+  List<Budget> _budgets = [];
 
   // Memoization caches
   final Map<String, DashboardStats> _dashboardStatsCache = {};
@@ -26,10 +28,12 @@ class AnalyticsProvider extends ChangeNotifier {
     CategoryProvider catProvider,
     CardProvider cardProvider,
     RecurringTransactionProvider recProvider,
+    BudgetProvider budgetProvider,
   ) {
     _transactions = txProvider.transactions;
     _categories = catProvider.categories;
     _cards = cardProvider.cards;
+    _budgets = budgetProvider.activeBudgets;
 
     // Invalidate caches when data updates
     _dashboardStatsCache.clear();
@@ -78,6 +82,8 @@ class AnalyticsProvider extends ChangeNotifier {
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
           income += tx.amount;
+          categorySpending[tx.categoryId] =
+              (categorySpending[tx.categoryId] ?? 0) - tx.amount;
         } else {
           expense += tx.amount;
           categorySpending[tx.categoryId] =
@@ -105,7 +111,9 @@ class AnalyticsProvider extends ChangeNotifier {
       );
 
       // Sort category spending to get top ones
-      final sortedCategories = categorySpending.entries.toList()
+      final sortedCategories = categorySpending.entries
+          .where((e) => e.value > 0)
+          .toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
       // Map to Category objects
@@ -140,12 +148,27 @@ class AnalyticsProvider extends ChangeNotifier {
         }
       }
 
+      Map<Category, double?> categoryBudgetsMap = {};
+      for (var category in expenseBreakdownMap.keys) {
+        double? applicableAmount;
+        for (var budget in _budgets) {
+          if (budget.categoryId == category.id) {
+            if (budget.year < month.year ||
+                (budget.year == month.year && budget.month <= month.month)) {
+              applicableAmount = budget.amount;
+            }
+          }
+        }
+        categoryBudgetsMap[category] = applicableAmount;
+      }
+
       _dashboardStatsCache[key] = DashboardStats(
         totalIncome: income,
         totalExpense: expense,
         incomePercentageChange: incomePercentageChange,
         expensePercentageChange: expensePercentageChange,
         expenseBreakdown: expenseBreakdownMap,
+        categoryBudgets: categoryBudgetsMap,
         monthlyRewards: rewardsMap,
       );
     }

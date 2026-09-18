@@ -8,6 +8,7 @@ class DashboardStats {
   final double? incomePercentageChange;
   final double? expensePercentageChange;
   final Map<Category, double> expenseBreakdown;
+  final Map<Category, double?> categoryBudgets;
   final Map<Card, double> monthlyRewards;
 
   DashboardStats({
@@ -16,6 +17,7 @@ class DashboardStats {
     this.incomePercentageChange,
     this.expensePercentageChange,
     required this.expenseBreakdown,
+    required this.categoryBudgets,
     required this.monthlyRewards,
   });
 }

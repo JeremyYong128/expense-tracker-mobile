@@ -69,16 +69,17 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CardProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => BudgetProvider()),
-        ChangeNotifierProxyProvider4<
+        ChangeNotifierProxyProvider5<
           TransactionProvider,
           CategoryProvider,
           CardProvider,
           RecurringTransactionProvider,
+          BudgetProvider,
           AnalyticsProvider
         >(
           create: (_) => AnalyticsProvider(),
-          update: (_, tx, cat, card, rec, prev) =>
-              (prev ?? AnalyticsProvider())..update(tx, cat, card, rec),
+          update: (_, tx, cat, card, rec, budget, prev) =>
+              (prev ?? AnalyticsProvider())..update(tx, cat, card, rec, budget),
         ),
       ],
       child: const MainApp(),

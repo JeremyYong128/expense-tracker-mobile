@@ -81,7 +81,7 @@ class AppStyles {
     color: AppColors.textPrimary,
   );
 
-  static const double sectionHeaderSpacing = 16.0;
+  static const double sectionHeaderBottomSpacing = 12.0;
   static const double cardInternalPadding = 20.0;
   static const double sectionContentSpacing = 20.0;
   static const double cardSpacing = 20.0;

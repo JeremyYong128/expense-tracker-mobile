@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +15,7 @@ import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
+import 'package:expense_tracker_mobile/ui/widgets/simple_pie_chart.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,11 +27,19 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isCategoriesExpanded = false;
   bool _isRewardsExpanded = false;
+  int? _touchedCategoryIndex;
+  Timer? _clearSelectionTimer;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _clearSelectionTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -81,7 +91,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         percentageChange: stats.expensePercentageChange,
                       ),
                     ),
-                    Container(height: 60, width: 1, color: AppColors.divider),
                     Expanded(
                       child: _buildSummaryCard(
                         'Income',
@@ -103,7 +112,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: 'Expenses by Category',
+                        title: 'Spending Breakdown',
+                        infoText:
+                            'Calculated as total expenses minus income. Only categories with a net outflow are shown.',
                         action: stats.expenseBreakdown.length > 3
                             ? TextButton(
                                 onPressed: () {
@@ -130,6 +141,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               )
                             : null,
                       ),
+                      const SizedBox(height: 8.0),
+                      if (stats.expenseBreakdown.isNotEmpty)
+                        Center(
+                          child: SimplePieChart(
+                            data: {
+                              for (var entry
+                                  in stats.expenseBreakdown.entries)
+                                entry.key.color: entry.value,
+                            },
+                              radius: 80,
+                              strokeWidth: 32,
+                              touchedIndex: _touchedCategoryIndex,
+                              onSectionTouched: (index) {
+                                _clearSelectionTimer?.cancel();
+                                setState(() {
+                                  if (index == null ||
+                                      index == _touchedCategoryIndex) {
+                                    _touchedCategoryIndex = null;
+                                  } else {
+                                    _touchedCategoryIndex = index;
+                                    _clearSelectionTimer = Timer(
+                                      const Duration(milliseconds: 1000),
+                                      () {
+                                        if (mounted) {
+                                          setState(() {
+                                            _touchedCategoryIndex = null;
+                                          });
+                                        }
+                                      },
+                                    );
+                                  }
+                                });
+                              },
+                            ),
+                        ),
+                      const SizedBox(height: AppStyles.listItemSpacing),
                       AnimatedSize(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
@@ -154,98 +201,177 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ? (amount / stats.totalExpense)
                                   : 0.0;
 
+                              final budgetAmount =
+                                  stats.categoryBudgets[category];
+                              String subtitleText = 'No budget';
+                              Color subtitleColor = AppColors.textSecondary;
+                              if (budgetAmount != null && budgetAmount > 0) {
+                                final diff = budgetAmount - amount;
+                                if (diff >= 0) {
+                                  subtitleText =
+                                      '${_currencyFormat.format(diff)} under budget';
+                                } else {
+                                  subtitleText =
+                                      '${_currencyFormat.format(diff.abs())} over budget';
+                                  subtitleColor = AppColors.error;
+                                }
+                              }
+
                               children.add(
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        CupertinoPageRoute(
-                                          builder: (context) =>
-                                              CategoryDetailsScreen(
-                                                category: category,
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Positioned(
+                                      top: -8.0,
+                                      bottom: -8.0,
+                                      left: -12.0,
+                                      right: -12.0,
+                                      child: AnimatedContainer(
+                                        duration: Duration(
+                                          milliseconds:
+                                              _touchedCategoryIndex == i
+                                              ? 150
+                                              : 600,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _touchedCategoryIndex == i
+                                              ? AppColors.primary.withValues(
+                                                  alpha: 0.1,
+                                                )
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            16.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            CupertinoPageRoute(
+                                              builder: (context) =>
+                                                  CategoryDetailsScreen(
+                                                    category: category,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        borderRadius: BorderRadius.circular(
+                                          12.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(
+                                                10.0,
                                               ),
-                                        ),
-                                      );
-                                    },
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10.0),
-                                          decoration: BoxDecoration(
-                                            color: color.withValues(
-                                              alpha: 0.15,
+                                              decoration: BoxDecoration(
+                                                color: color.withValues(
+                                                  alpha: 0.15,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                              ),
+                                              child: Icon(
+                                                category.iconData,
+                                                color: color,
+                                                size: 24,
+                                              ),
                                             ),
-                                            borderRadius: BorderRadius.circular(
-                                              12.0,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            category.iconData,
-                                            color: color,
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                            const SizedBox(width: 12.0),
+                                            Expanded(
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 children: [
-                                                  Text(
-                                                    category.name,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 15,
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                          category.name,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: 15,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
+                                                          subtitleText,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            color:
+                                                                subtitleColor,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  Text(
-                                                    _currencyFormat.format(
-                                                      amount,
-                                                    ),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 15,
-                                                    ),
+                                                  const SizedBox(width: 16.0),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        _currencyFormat.format(
+                                                          amount,
+                                                        ),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '${(percentage * 100).toStringAsFixed(1)}%',
+                                                        style: const TextStyle(
+                                                          color: AppColors
+                                                              .textSecondary,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 8),
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                child: LinearProgressIndicator(
-                                                  value: percentage,
-                                                  backgroundColor: AppColors
-                                                      .grey
-                                                      .withValues(alpha: 0.3),
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(color),
-                                                  minHeight: 6,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               );
 
                               if (i < visibleEntries.length - 1) {
-                                children.add(const SizedBox(height: AppStyles.listItemSpacing));
+                                children.add(
+                                  const SizedBox(
+                                    height: AppStyles.listItemSpacing,
+                                  ),
+                                );
                               }
                             }
                             return children;
