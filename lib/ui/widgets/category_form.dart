@@ -8,10 +8,12 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/services/validator_service.dart';
-import 'package:expense_tracker_mobile/ui/widgets/category_type_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+
+enum CategoryTypeSelection { expense, income, both }
 
 class CategoryForm extends StatefulWidget {
   final Category? category;
@@ -185,8 +187,27 @@ class _CategoryFormState extends State<CategoryForm> {
               ],
 
               // 0. Type Selection
-              CategoryTypeToggle(
-                selection: _typeSelection,
+              CustomSegmentToggle<CategoryTypeSelection>(
+                activeValue: _typeSelection,
+                options: [
+                  CustomSegmentOption(
+                    value: CategoryTypeSelection.expense,
+                    label: 'Expense',
+                    activeColor: AppColors.expense,
+                  ),
+                  CustomSegmentOption(
+                    value: CategoryTypeSelection.both,
+                    label: 'Both',
+                    activeColor: AppColors.primary,
+                  ),
+                  CustomSegmentOption(
+                    value: CategoryTypeSelection.income,
+                    label: 'Income',
+                    activeColor: AppColors.income,
+                  ),
+                ],
+                hasShadow: true,
+                backgroundColor: AppColors.white,
                 onChanged: (val) => setState(() => _typeSelection = val),
               ),
               const SizedBox(height: 24),

@@ -13,6 +13,7 @@ import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_month_year_picker.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
@@ -234,73 +235,22 @@ class _BudgetFormState extends State<BudgetForm> {
 
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Stack(
-                    children: [
-                      AnimatedAlign(
-                        duration: const Duration(milliseconds: 150),
-                        curve: Curves.easeInOut,
-                        alignment: _budgetType == 'card' ? Alignment.centerRight : Alignment.centerLeft,
-                        child: FractionallySizedBox(
-                          widthFactor: 0.5,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => setState(() => _budgetType = 'category'),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: AnimatedDefaultTextStyle(
-                                  duration: const Duration(milliseconds: 150),
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: _budgetType == 'category' ? AppColors.primary : Colors.grey,
-                                  ),
-                                  child: Text('Category'.cased(context)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => setState(() => _budgetType = 'card'),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: AnimatedDefaultTextStyle(
-                                  duration: const Duration(milliseconds: 150),
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: _budgetType == 'card' ? AppColors.primary : Colors.grey,
-                                  ),
-                                  child: Text('Card'.cased(context)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: CustomSegmentToggle<String>(
+                  activeValue: _budgetType,
+                  options: [
+                    CustomSegmentOption(
+                      value: 'category',
+                      label: 'Category',
+                      activeColor: AppColors.primary,
+                    ),
+                    CustomSegmentOption(
+                      value: 'card',
+                      label: 'Card',
+                      activeColor: AppColors.primary,
+                    ),
+                  ],
+                  backgroundColor: Colors.white,
+                  onChanged: (value) => setState(() => _budgetType = value),
                 ),
               ),
 

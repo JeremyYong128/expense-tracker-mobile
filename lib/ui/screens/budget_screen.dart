@@ -87,16 +87,22 @@ class _BudgetScreenState extends State<BudgetScreen> {
         children: [
           CustomSegmentToggle<String>(
             activeValue: _activeTab,
-            option1Value: 'category',
-            option1Text: 'Category',
-            option2Value: 'card',
-            option2Text: 'Card',
-            onChanged: (value) {
-              setState(() {
-                _activeTab = value;
-                _expandedBudgetId = null;
-              });
-            },
+            options: [
+              CustomSegmentOption(
+                value: 'category',
+                label: 'Category',
+                activeColor: AppColors.primary,
+              ),
+              CustomSegmentOption(
+                value: 'card',
+                label: 'Card',
+                activeColor: AppColors.primary,
+              ),
+            ],
+            onChanged: (value) => setState(() {
+              _activeTab = value;
+              _expandedBudgetId = null;
+            }),
           ),
           const SizedBox(height: AppStyles.sectionHeaderBottomSpacing),
           if (budgets.isEmpty)

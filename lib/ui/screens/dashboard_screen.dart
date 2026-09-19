@@ -155,10 +155,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       CustomSegmentToggle<String>(
                         activeValue: _spendingBreakdownType,
-                        option1Value: 'category',
-                        option1Text: 'Category',
-                        option2Value: 'card',
-                        option2Text: 'Card',
+                        options: [
+                          CustomSegmentOption(
+                            value: 'category',
+                            label: 'Category',
+                            activeColor: AppColors.primary,
+                          ),
+                          CustomSegmentOption(
+                            value: 'card',
+                            label: 'Card',
+                            activeColor: AppColors.primary,
+                          ),
+                        ],
                         onChanged: (value) {
                           setState(() {
                             _pieAnimationMs = 150;

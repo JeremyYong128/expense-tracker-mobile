@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
-import 'package:expense_tracker_mobile/ui/widgets/transaction_type_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
@@ -456,8 +456,22 @@ class TransactionFormState extends State<TransactionForm> {
               ),
             ),
           // Income / Expense Toggle
-          TransactionTypeToggle(
-            isIncome: _isIncome,
+          CustomSegmentToggle<bool>(
+            activeValue: _isIncome,
+            options: [
+              CustomSegmentOption(
+                value: false,
+                label: 'Expense',
+                activeColor: AppColors.expense,
+              ),
+              CustomSegmentOption(
+                value: true,
+                label: 'Income',
+                activeColor: AppColors.income,
+              ),
+            ],
+            hasShadow: true,
+            backgroundColor: Colors.white,
             onChanged: (value) {
               setState(() {
                 _isIncome = value;
