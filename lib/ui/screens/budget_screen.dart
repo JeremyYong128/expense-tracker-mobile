@@ -11,6 +11,7 @@ import 'package:expense_tracker_mobile/ui/widgets/budget_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
@@ -84,85 +85,18 @@ class _BudgetScreenState extends State<BudgetScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 48,
-            padding: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Stack(
-              children: [
-                AnimatedAlign(
-                  duration: const Duration(milliseconds: 150),
-                  curve: Curves.easeInOut,
-                  alignment: _activeTab == 'card'
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() {
-                          _activeTab = 'category';
-                          _expandedBudgetId = null;
-                        }),
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 150),
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: _activeTab == 'category'
-                                  ? AppColors.primary
-                                  : AppColors.grey,
-                            ),
-                            child: Text('Category'.cased(context)),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() {
-                          _activeTab = 'card';
-                          _expandedBudgetId = null;
-                        }),
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 150),
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: _activeTab == 'card'
-                                  ? AppColors.primary
-                                  : AppColors.grey,
-                            ),
-                            child: Text('Card'.cased(context)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          CustomSegmentToggle<String>(
+            activeValue: _activeTab,
+            option1Value: 'category',
+            option1Text: 'Category',
+            option2Value: 'card',
+            option2Text: 'Card',
+            onChanged: (value) {
+              setState(() {
+                _activeTab = value;
+                _expandedBudgetId = null;
+              });
+            },
           ),
           const SizedBox(height: AppStyles.sectionHeaderBottomSpacing),
           if (budgets.isEmpty)

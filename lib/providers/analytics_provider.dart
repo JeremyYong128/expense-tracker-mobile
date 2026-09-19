@@ -78,6 +78,7 @@ class AnalyticsProvider extends ChangeNotifier {
       double income = 0;
       double expense = 0;
       Map<int, double> categorySpending = {};
+      Map<int, double> cardSpending = {};
 
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
@@ -88,6 +89,9 @@ class AnalyticsProvider extends ChangeNotifier {
           expense += tx.amount;
           categorySpending[tx.categoryId] =
               (categorySpending[tx.categoryId] ?? 0) + tx.amount;
+          
+          final cardId = tx.cardId ?? -1;
+          cardSpending[cardId] = (cardSpending[cardId] ?? 0) + tx.amount;
         }
       }
 
@@ -162,6 +166,43 @@ class AnalyticsProvider extends ChangeNotifier {
         categoryBudgetsMap[category] = applicableAmount;
       }
 
+      // Sort card spending
+      final sortedCards = cardSpending.entries
+          .where((e) => e.value > 0)
+          .toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      // Map to Card objects
+      Map<Card, double> cardExpenseBreakdownMap = {};
+      for (var entry in sortedCards) {
+        final card = _cards.firstWhere(
+          (c) => c.id == entry.key,
+          orElse: () => Card(
+            id: -1,
+            name: 'No card',
+            rewardType: 'none',
+            rewardRate: 0.0,
+            colorHex: '#9E9E9E',
+            isActive: true,
+          ),
+        );
+        cardExpenseBreakdownMap[card] = entry.value;
+      }
+
+      Map<Card, double?> cardBudgetsMap = {};
+      for (var card in cardExpenseBreakdownMap.keys) {
+        double? applicableAmount;
+        for (var budget in _budgets) {
+          if (budget.cardId == card.id) {
+            if (budget.year < month.year ||
+                (budget.year == month.year && budget.month <= month.month)) {
+              applicableAmount = budget.amount;
+            }
+          }
+        }
+        cardBudgetsMap[card] = applicableAmount;
+      }
+
       _dashboardStatsCache[key] = DashboardStats(
         totalIncome: income,
         totalExpense: expense,
@@ -169,6 +210,8 @@ class AnalyticsProvider extends ChangeNotifier {
         expensePercentageChange: expensePercentageChange,
         expenseBreakdown: expenseBreakdownMap,
         categoryBudgets: categoryBudgetsMap,
+        cardExpenseBreakdown: cardExpenseBreakdownMap,
+        cardBudgets: cardBudgetsMap,
         monthlyRewards: rewardsMap,
       );
     }

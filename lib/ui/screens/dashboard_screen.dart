@@ -16,6 +16,9 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/simple_pie_chart.dart';
+import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/models/card.dart' as model_card;
+import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,7 +30,9 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isCategoriesExpanded = false;
   bool _isRewardsExpanded = false;
+  String _spendingBreakdownType = 'category';
   int? _touchedCategoryIndex;
+  int _pieAnimationMs = 150;
   Timer? _clearSelectionTimer;
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
@@ -60,6 +65,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
     final stats = analyticsProvider.getDashboardStats();
+
+    final bool isCategoryBreakdown = _spendingBreakdownType == 'category';
+    final breakdownEntries = isCategoryBreakdown
+        ? stats.expenseBreakdown.entries.toList()
+        : stats.cardExpenseBreakdown.entries.toList();
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -107,15 +117,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: AppStyles.cardSpacing),
 
               // EXPENSES BY CATEGORY
-              if (stats.expenseBreakdown.isNotEmpty) ...[
+              if (stats.expenseBreakdown.isNotEmpty ||
+                  stats.cardExpenseBreakdown.isNotEmpty) ...[
                 ContentCard(
                   child: Column(
                     children: [
                       SectionHeader(
                         title: 'Spending Breakdown',
-                        infoText:
-                            'Calculated as total expenses minus income. Only categories with a net outflow are shown.',
-                        action: stats.expenseBreakdown.length > 3
+                        infoText: _spendingBreakdownType == 'category'
+                            ? 'Calculated as total expenses minus income. Only categories with a net outflow are shown.'
+                            : null,
+                        action: breakdownEntries.length > 3
                             ? TextButton(
                                 onPressed: () {
                                   setState(() {
@@ -141,42 +153,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               )
                             : null,
                       ),
-                      const SizedBox(height: 8.0),
-                      if (stats.expenseBreakdown.isNotEmpty)
+                      CustomSegmentToggle<String>(
+                        activeValue: _spendingBreakdownType,
+                        option1Value: 'category',
+                        option1Text: 'Category',
+                        option2Value: 'card',
+                        option2Text: 'Card',
+                        onChanged: (value) {
+                          setState(() {
+                            _pieAnimationMs = 150;
+                            _spendingBreakdownType = value;
+                            _touchedCategoryIndex = null;
+                            _isCategoriesExpanded = false;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: AppStyles.listItemSpacing * 1.5),
+                      if (breakdownEntries.isNotEmpty)
                         Center(
                           child: SimplePieChart(
-                            data: {
-                              for (var entry
-                                  in stats.expenseBreakdown.entries)
-                                entry.key.color: entry.value,
-                            },
-                              radius: 80,
-                              strokeWidth: 32,
-                              touchedIndex: _touchedCategoryIndex,
-                              onSectionTouched: (index) {
-                                _clearSelectionTimer?.cancel();
-                                setState(() {
-                                  if (index == null ||
-                                      index == _touchedCategoryIndex) {
-                                    _touchedCategoryIndex = null;
-                                  } else {
-                                    _touchedCategoryIndex = index;
-                                    _clearSelectionTimer = Timer(
-                                      const Duration(milliseconds: 1000),
-                                      () {
-                                        if (mounted) {
-                                          setState(() {
-                                            _touchedCategoryIndex = null;
-                                          });
-                                        }
-                                      },
-                                    );
-                                  }
-                                });
-                              },
+                            data: [
+                              for (var entry in breakdownEntries)
+                                PieChartSector(
+                                  color: isCategoryBreakdown
+                                      ? (entry.key as Category).color
+                                      : Color(
+                                          int.parse(
+                                            (entry.key as model_card.Card)
+                                                .colorHex
+                                                .replaceAll('#', '0xFF'),
+                                          ),
+                                        ),
+                                  value: entry.value,
+                                ),
+                            ],
+                            radius: 80,
+                            strokeWidth: 32,
+                            touchedIndex: _touchedCategoryIndex,
+                            animationDuration: Duration(
+                              milliseconds: _pieAnimationMs,
                             ),
+                            onSectionTouched: (index) {
+                              _clearSelectionTimer?.cancel();
+                              setState(() {
+                                if (index == null ||
+                                    index == _touchedCategoryIndex) {
+                                  _pieAnimationMs = 600;
+                                  _touchedCategoryIndex = null;
+                                } else {
+                                  _pieAnimationMs = 150;
+                                  _touchedCategoryIndex = index;
+                                  _clearSelectionTimer = Timer(
+                                    const Duration(milliseconds: 250),
+                                    () {
+                                      if (mounted) {
+                                        setState(() {
+                                          _pieAnimationMs = 600;
+                                          _touchedCategoryIndex = null;
+                                        });
+                                      }
+                                    },
+                                  );
+                                }
+                              });
+                            },
+                          ),
                         ),
-                      const SizedBox(height: AppStyles.listItemSpacing),
+                      const SizedBox(height: AppStyles.listItemSpacing * 1.5),
                       AnimatedSize(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
@@ -185,24 +228,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: () {
                             final visibleEntries =
                                 (_isCategoriesExpanded
-                                        ? stats.expenseBreakdown.entries
-                                        : stats.expenseBreakdown.entries.take(
-                                            3,
-                                          ))
+                                        ? breakdownEntries
+                                        : breakdownEntries.take(3))
                                     .toList();
                             final List<Widget> children = [];
 
                             for (int i = 0; i < visibleEntries.length; i++) {
                               final entry = visibleEntries[i];
-                              final category = entry.key;
                               final amount = entry.value;
-                              final color = category.color;
+
+                              String name;
+                              Color color;
+                              IconData iconData;
+                              double? budgetAmount;
+
+                              if (isCategoryBreakdown) {
+                                final category = entry.key as Category;
+                                name = category.name;
+                                color = category.color;
+                                iconData = category.iconData;
+                                budgetAmount = stats.categoryBudgets[category];
+                              } else {
+                                final card = entry.key as model_card.Card;
+                                name = card.name;
+                                color = Color(
+                                  int.parse(
+                                    card.colorHex.replaceAll('#', '0xFF'),
+                                  ),
+                                );
+                                iconData = Icons.credit_card;
+                                budgetAmount = stats.cardBudgets[card];
+                              }
+
                               final percentage = stats.totalExpense > 0
                                   ? (amount / stats.totalExpense)
                                   : 0.0;
-
-                              final budgetAmount =
-                                  stats.categoryBudgets[category];
                               String subtitleText = 'No budget';
                               Color subtitleColor = AppColors.textSecondary;
                               if (budgetAmount != null && budgetAmount > 0) {
@@ -249,15 +309,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       color: Colors.transparent,
                                       child: InkWell(
                                         onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            CupertinoPageRoute(
-                                              builder: (context) =>
-                                                  CategoryDetailsScreen(
-                                                    category: category,
-                                                  ),
-                                            ),
-                                          );
+                                          if (isCategoryBreakdown) {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    CategoryDetailsScreen(
+                                                      category:
+                                                          entry.key as Category,
+                                                    ),
+                                              ),
+                                            );
+                                          } else {
+                                            final card =
+                                                entry.key as model_card.Card;
+                                            if (card.id != -1) {
+                                              Navigator.push(
+                                                context,
+                                                CupertinoPageRoute(
+                                                  builder: (context) =>
+                                                      CardDetailsScreen(
+                                                        card: card,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+                                          }
                                         },
                                         borderRadius: BorderRadius.circular(
                                           12.0,
@@ -276,7 +353,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                     BorderRadius.circular(12.0),
                                               ),
                                               child: Icon(
-                                                category.iconData,
+                                                iconData,
                                                 color: color,
                                                 size: 24,
                                               ),
@@ -297,7 +374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                               .center,
                                                       children: [
                                                         Text(
-                                                          category.name,
+                                                          name,
                                                           maxLines: 1,
                                                           overflow: TextOverflow
                                                               .ellipsis,

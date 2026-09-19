@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+class PieChartSector {
+  final Color color;
+  final double value;
+  const PieChartSector({required this.color, required this.value});
+}
+
 class SimplePieChart extends StatelessWidget {
-  final Map<Color, double> data;
+  final List<PieChartSector> data;
   final double radius;
   final double strokeWidth;
   final int? touchedIndex;
   final ValueChanged<int?>? onSectionTouched;
+  final Duration? animationDuration;
 
   const SimplePieChart({
     super.key,
@@ -15,27 +22,28 @@ class SimplePieChart extends StatelessWidget {
     this.strokeWidth = 24,
     this.touchedIndex,
     this.onSectionTouched,
+    this.animationDuration,
   });
 
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) return SizedBox(width: radius * 2, height: radius * 2);
 
-    double total = data.values.fold(0, (sum, val) => sum + val);
+    double total = data.fold(0, (sum, sector) => sum + sector.value);
     if (total <= 0) return SizedBox(width: radius * 2, height: radius * 2);
 
     List<PieChartSectionData> sections = [];
     int i = 0;
-    for (final entry in data.entries) {
-      if (entry.value <= 0) continue;
+    for (final sector in data) {
+      if (sector.value <= 0) continue;
 
       final isTouched = i == touchedIndex;
       final currentStrokeWidth = isTouched ? strokeWidth + 6 : strokeWidth;
 
       sections.add(
         PieChartSectionData(
-          color: entry.key,
-          value: entry.value,
+          color: sector.color,
+          value: sector.value,
           radius: currentStrokeWidth,
           showTitle: false,
         ),
@@ -72,7 +80,7 @@ class SimplePieChart extends StatelessWidget {
           centerSpaceRadius: radius - strokeWidth,
           borderData: FlBorderData(show: false),
         ),
-        duration: Duration(milliseconds: touchedIndex == null ? 600 : 150),
+        duration: animationDuration ?? const Duration(milliseconds: 150),
         curve: Curves.linear,
       ),
     );
