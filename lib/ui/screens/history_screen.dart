@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
-import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
+import 'package:expense_tracker_mobile/utils/business_logic.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
@@ -41,7 +41,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         _selectedMonth,
       );
 
-      final availableMonths = MonthSelectorToggle.getAvailableMonths(
+      final availableMonths = BusinessLogic.getAvailableMonths(
         transactionProvider.transactions,
       );
       final earliestMonth = availableMonths.first;

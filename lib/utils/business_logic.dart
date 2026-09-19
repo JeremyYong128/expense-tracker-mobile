@@ -1,3 +1,5 @@
+import 'package:expense_tracker_mobile/models/transaction.dart';
+
 class BusinessLogic {
   /// Calculates the percentage change between a current value and a previous value.
   /// Returns null if both values are 0.
@@ -55,5 +57,42 @@ class BusinessLogic {
       default:
         return date.add(Duration(days: interval));
     }
+  }
+
+  static List<DateTime> getAvailableMonths(List<Transaction> txs) {
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month);
+
+    if (txs.isEmpty) {
+      return [currentMonth];
+    }
+
+    DateTime earliest = txs
+        .map((t) => t.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    DateTime latest = txs
+        .map((t) => t.date)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
+
+    DateTime earliestMonth = DateTime(earliest.year, earliest.month);
+    DateTime latestMonth = DateTime(latest.year, latest.month);
+
+    if (currentMonth.isBefore(earliestMonth)) {
+      earliestMonth = currentMonth;
+    }
+    if (currentMonth.isAfter(latestMonth)) {
+      latestMonth = currentMonth;
+    }
+
+    List<DateTime> months = [];
+    DateTime iter = earliestMonth;
+    while (iter.isBefore(latestMonth) || iter.isAtSameMomentAs(latestMonth)) {
+      months.add(iter);
+      iter = DateTime(
+        iter.year,
+        iter.month + 1,
+      ); // handles year wrapping correctly
+    }
+    return months;
   }
 }

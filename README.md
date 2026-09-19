@@ -100,17 +100,12 @@ flutter run
 
 ### Changes
 - High priority
-    - Remove app bar on top
     - Budgeting
-        - Need to ensure that data integrity is maintained when categories are edited, hard/soft deleted, merged etc.
         - Budget screen: List of budgets (need to make view different from usual card view), users can click into each budget to see more details. What details should be on the main budget screen? Should users only be able to see the current month's budgets or all budgets? 
     - Dashboard "Category breakdown" section:
         - Toggle between income and expense, set to expense.
         - Pie chart for income/expenses by category
-    - Dashboard "Budget" section:
-        - Progress bar for current month budgets
     - Improve list designs
-        - Maybe transaction list shouldn't use cards
         - Manage screen items
         - Dashboard cashback section
     - Change form design: form field titles should be placeholders instead of text fields on top

@@ -1,9 +1,9 @@
+import 'package:expense_tracker_mobile/utils/business_logic.dart';
 import 'package:flutter/material.dart' hide Card;
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
-import '../../utils/business_logic.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -16,7 +16,6 @@ import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
-import 'package:expense_tracker_mobile/ui/widgets/month_selector_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
@@ -177,7 +176,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final prevExpense = stats.prevExpense;
     final prevRewardsAmount = stats.prevRewardsAmount;
 
-    final availableMonths = MonthSelectorToggle.getAvailableMonths(
+    final availableMonths = BusinessLogic.getAvailableMonths(
       allTransactions,
     );
     final earliestMonth = availableMonths.first;
