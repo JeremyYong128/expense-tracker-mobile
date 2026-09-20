@@ -77,18 +77,19 @@ class AnalyticsProvider extends ChangeNotifier {
 
       double income = 0;
       double expense = 0;
-      Map<int, double> categorySpending = {};
+      Map<int, double> categoryExpense = {};
+      Map<int, double> categoryIncome = {};
       Map<int, double> cardSpending = {};
 
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
           income += tx.amount;
-          categorySpending[tx.categoryId] =
-              (categorySpending[tx.categoryId] ?? 0) - tx.amount;
+          categoryIncome[tx.categoryId] =
+              (categoryIncome[tx.categoryId] ?? 0) + tx.amount;
         } else {
           expense += tx.amount;
-          categorySpending[tx.categoryId] =
-              (categorySpending[tx.categoryId] ?? 0) + tx.amount;
+          categoryExpense[tx.categoryId] =
+              (categoryExpense[tx.categoryId] ?? 0) + tx.amount;
           
           final cardId = tx.cardId ?? -1;
           cardSpending[cardId] = (cardSpending[cardId] ?? 0) + tx.amount;
@@ -115,14 +116,19 @@ class AnalyticsProvider extends ChangeNotifier {
       );
 
       // Sort category spending to get top ones
-      final sortedCategories = categorySpending.entries
+      final sortedExpenseCategories = categoryExpense.entries
+          .where((e) => e.value > 0)
+          .toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      final sortedIncomeCategories = categoryIncome.entries
           .where((e) => e.value > 0)
           .toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
       // Map to Category objects
       Map<Category, double> expenseBreakdownMap = {};
-      for (var entry in sortedCategories) {
+      for (var entry in sortedExpenseCategories) {
         final category = _categories.firstWhere(
           (c) => c.id == entry.key,
           orElse: () => Category(
@@ -133,6 +139,20 @@ class AnalyticsProvider extends ChangeNotifier {
           ),
         );
         expenseBreakdownMap[category] = entry.value;
+      }
+
+      Map<Category, double> incomeBreakdownMap = {};
+      for (var entry in sortedIncomeCategories) {
+        final category = _categories.firstWhere(
+          (c) => c.id == entry.key,
+          orElse: () => Category(
+            id: -1,
+            name: 'Unknown',
+            colorHex: '#9E9E9E',
+            isActive: false,
+          ),
+        );
+        incomeBreakdownMap[category] = entry.value;
       }
 
       Map<Card, double> rewardsMap = {};
@@ -208,6 +228,7 @@ class AnalyticsProvider extends ChangeNotifier {
         totalExpense: expense,
         incomePercentageChange: incomePercentageChange,
         expensePercentageChange: expensePercentageChange,
+        incomeBreakdown: incomeBreakdownMap,
         expenseBreakdown: expenseBreakdownMap,
         categoryBudgets: categoryBudgetsMap,
         cardExpenseBreakdown: cardExpenseBreakdownMap,

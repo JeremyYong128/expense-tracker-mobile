@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -15,10 +14,10 @@ import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
-import 'package:expense_tracker_mobile/ui/widgets/simple_pie_chart.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as model_card;
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/breakdown_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,12 +27,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  bool _isCategoriesExpanded = false;
   bool _isRewardsExpanded = false;
-  String _spendingBreakdownType = 'category';
-  int? _touchedCategoryIndex;
-  int _pieAnimationMs = 150;
-  Timer? _clearSelectionTimer;
+  String _categoryBreakdownType = 'expense';
   final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
@@ -43,7 +38,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    _clearSelectionTimer?.cancel();
     super.dispose();
   }
 
@@ -65,11 +59,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
     final stats = analyticsProvider.getDashboardStats();
-
-    final bool isCategoryBreakdown = _spendingBreakdownType == 'category';
-    final breakdownEntries = isCategoryBreakdown
-        ? stats.expenseBreakdown.entries.toList()
-        : stats.cardExpenseBreakdown.entries.toList();
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -118,353 +107,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // EXPENSES BY CATEGORY
               if (stats.expenseBreakdown.isNotEmpty ||
-                  stats.cardExpenseBreakdown.isNotEmpty) ...[
-                ContentCard(
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: 'Spending Breakdown',
-                        infoText: _spendingBreakdownType == 'category'
-                            ? 'Calculated as total expenses minus income. Only categories with a net outflow are shown.'
-                            : null,
-                        action: breakdownEntries.length > 3
-                            ? TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isCategoriesExpanded =
-                                        !_isCategoriesExpanded;
-                                  });
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.primary,
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(
-                                  _isCategoriesExpanded
-                                      ? 'Less'.cased(context)
-                                      : 'More'.cased(context),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                      CustomSegmentToggle<String>(
-                        activeValue: _spendingBreakdownType,
-                        options: [
-                          CustomSegmentOption(
-                            value: 'category',
-                            label: 'Category',
-                            activeColor: AppColors.primary,
-                          ),
-                          CustomSegmentOption(
-                            value: 'card',
-                            label: 'Card',
-                            activeColor: AppColors.primary,
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _pieAnimationMs = 150;
-                            _spendingBreakdownType = value;
-                            _touchedCategoryIndex = null;
-                            _isCategoriesExpanded = false;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: AppStyles.listItemSpacing * 1.5),
-                      if (breakdownEntries.isNotEmpty)
-                        Center(
-                          child: SimplePieChart(
-                            data: [
-                              for (var entry in breakdownEntries)
-                                PieChartSector(
-                                  color: isCategoryBreakdown
-                                      ? (entry.key as Category).color
-                                      : Color(
-                                          int.parse(
-                                            (entry.key as model_card.Card)
-                                                .colorHex
-                                                .replaceAll('#', '0xFF'),
-                                          ),
-                                        ),
-                                  value: entry.value,
-                                ),
-                            ],
-                            radius: 80,
-                            strokeWidth: 32,
-                            touchedIndex: _touchedCategoryIndex,
-                            animationDuration: Duration(
-                              milliseconds: _pieAnimationMs,
-                            ),
-                            onSectionTouched: (index) {
-                              _clearSelectionTimer?.cancel();
-                              setState(() {
-                                if (index == null ||
-                                    index == _touchedCategoryIndex) {
-                                  _pieAnimationMs = 600;
-                                  _touchedCategoryIndex = null;
-                                } else {
-                                  _pieAnimationMs = 150;
-                                  _touchedCategoryIndex = index;
-                                  _clearSelectionTimer = Timer(
-                                    const Duration(milliseconds: 250),
-                                    () {
-                                      if (mounted) {
-                                        setState(() {
-                                          _pieAnimationMs = 600;
-                                          _touchedCategoryIndex = null;
-                                        });
-                                      }
-                                    },
-                                  );
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                      const SizedBox(height: AppStyles.listItemSpacing * 1.5),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        alignment: Alignment.topCenter,
-                        child: Column(
-                          children: () {
-                            final visibleEntries =
-                                (_isCategoriesExpanded
-                                        ? breakdownEntries
-                                        : breakdownEntries.take(3))
-                                    .toList();
-                            final List<Widget> children = [];
-
-                            for (int i = 0; i < visibleEntries.length; i++) {
-                              final entry = visibleEntries[i];
-                              final amount = entry.value;
-
-                              String name;
-                              Color color;
-                              IconData iconData;
-                              double? budgetAmount;
-
-                              if (isCategoryBreakdown) {
-                                final category = entry.key as Category;
-                                name = category.name;
-                                color = category.color;
-                                iconData = category.iconData;
-                                budgetAmount = stats.categoryBudgets[category];
-                              } else {
-                                final card = entry.key as model_card.Card;
-                                name = card.name;
-                                color = Color(
-                                  int.parse(
-                                    card.colorHex.replaceAll('#', '0xFF'),
-                                  ),
-                                );
-                                iconData = Icons.credit_card;
-                                budgetAmount = stats.cardBudgets[card];
-                              }
-
-                              final percentage = stats.totalExpense > 0
-                                  ? (amount / stats.totalExpense)
-                                  : 0.0;
-                              String subtitleText = 'No budget';
-                              Color subtitleColor = AppColors.textSecondary;
-                              if (budgetAmount != null && budgetAmount > 0) {
-                                final diff = budgetAmount - amount;
-                                if (diff >= 0) {
-                                  subtitleText =
-                                      '${_currencyFormat.format(diff)} under budget';
-                                } else {
-                                  subtitleText =
-                                      '${_currencyFormat.format(diff.abs())} over budget';
-                                  subtitleColor = AppColors.error;
-                                }
-                              }
-
-                              children.add(
-                                Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Positioned(
-                                      top: -8.0,
-                                      bottom: -8.0,
-                                      left: -12.0,
-                                      right: -12.0,
-                                      child: AnimatedContainer(
-                                        duration: Duration(
-                                          milliseconds:
-                                              _touchedCategoryIndex == i
-                                              ? 150
-                                              : 600,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: _touchedCategoryIndex == i
-                                              ? AppColors.primary.withValues(
-                                                  alpha: 0.1,
-                                                )
-                                              : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            16.0,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          if (isCategoryBreakdown) {
-                                            Navigator.push(
-                                              context,
-                                              CupertinoPageRoute(
-                                                builder: (context) =>
-                                                    CategoryDetailsScreen(
-                                                      category:
-                                                          entry.key as Category,
-                                                    ),
-                                              ),
-                                            );
-                                          } else {
-                                            final card =
-                                                entry.key as model_card.Card;
-                                            if (card.id != -1) {
-                                              Navigator.push(
-                                                context,
-                                                CupertinoPageRoute(
-                                                  builder: (context) =>
-                                                      CardDetailsScreen(
-                                                        card: card,
-                                                      ),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        },
-                                        borderRadius: BorderRadius.circular(
-                                          12.0,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(
-                                                10.0,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: color.withValues(
-                                                  alpha: 0.15,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12.0),
-                                              ),
-                                              child: Icon(
-                                                iconData,
-                                                color: color,
-                                                size: 24,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12.0),
-                                            Expanded(
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          name,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize: 15,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          subtitleText,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                            color:
-                                                                subtitleColor,
-                                                            fontSize: 13,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 16.0),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        _currencyFormat.format(
-                                                          amount,
-                                                        ),
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(
-                                                        '${(percentage * 100).toStringAsFixed(1)}%',
-                                                        style: const TextStyle(
-                                                          color: AppColors
-                                                              .textSecondary,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (i < visibleEntries.length - 1) {
-                                children.add(
-                                  const SizedBox(
-                                    height: AppStyles.listItemSpacing,
-                                  ),
-                                );
-                              }
-                            }
-                            return children;
-                          }(),
+                  stats.incomeBreakdown.isNotEmpty) ...[
+                BreakdownCard<Category>(
+                  title: 'Category Breakdown',
+                  infoText: _categoryBreakdownType == 'expense'
+                      ? 'Calculated as total expenses minus income. Only categories with a net outflow are shown.'
+                      : 'Total income grouped by category.',
+                  entries: _categoryBreakdownType == 'expense'
+                      ? stats.expenseBreakdown.entries.toList()
+                      : stats.incomeBreakdown.entries.toList(),
+                  budgets: stats.categoryBudgets,
+                  totalAmount: _categoryBreakdownType == 'expense'
+                      ? stats.totalExpense
+                      : stats.totalIncome,
+                  isCategory: true,
+                  activeToggleValue: _categoryBreakdownType,
+                  toggleOptions: [
+                    CustomSegmentOption(
+                      value: 'expense',
+                      label: 'Expense',
+                      activeColor: AppColors.expense,
+                    ),
+                    CustomSegmentOption(
+                      value: 'income',
+                      label: 'Income',
+                      activeColor: AppColors.income,
+                    ),
+                  ],
+                  onToggleChanged: (val) {
+                    setState(() {
+                      _categoryBreakdownType = val;
+                    });
+                  },
+                  onItemTap: (category) {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => CategoryDetailsScreen(
+                          category: category,
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppStyles.cardSpacing),
+              ],
+
+              // EXPENSES BY CARD
+              if (stats.cardExpenseBreakdown.isNotEmpty) ...[
+                BreakdownCard<model_card.Card>(
+                  title: 'Card Expenses',
+                  entries: stats.cardExpenseBreakdown.entries.toList(),
+                  budgets: stats.cardBudgets,
+                  totalAmount: stats.totalExpense,
+                  isCategory: false,
+                  onItemTap: (card) {
+                    if (card.id != -1) {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => CardDetailsScreen(
+                            card: card,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(height: AppStyles.cardSpacing),
               ],

@@ -100,14 +100,13 @@ flutter run
 
 ### Changes
 - High priority
+    - Dashboard analytics: should income and expense summaries for categories be grouped by net inflow/outflow (ie categories with net inflow are under income and vice versa) or grouped by transaction (ie income and expenses for each category aggregated separately in each tab)
     - Budgeting
         - Budget screen: List of budgets (need to make view different from usual card view), users can click into each budget to see more details. What details should be on the main budget screen? Should users only be able to see the current month's budgets or all budgets? 
-    - Dashboard "Category breakdown" section:
-        - Toggle between income and expense, set to expense.
-        - Pie chart for income/expenses by category
     - Improve list designs
         - Manage screen items
         - Dashboard cashback section
+        - Category list item is a bit too similar to the transaction list item. Should either transaction list/dashboard list item be changed to differentiate the two? Maybe can remove icon from transaction list.
     - Change form design: form field titles should be placeholders instead of text fields on top
     - Month navigator: add month and year selector dropdown when clicking the displayed month
     - Auto-focus onto the first field when a form is opened
