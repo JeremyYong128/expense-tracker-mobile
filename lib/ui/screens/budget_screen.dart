@@ -374,6 +374,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final activeBudgets = context.watch<BudgetProvider>().activeBudgets;
+    
     final categoryBudgets = activeBudgets
         .where((b) => b.type == 'category')
         .toList();
@@ -395,8 +396,15 @@ class _BudgetScreenState extends State<BudgetScreen> {
           children: [
             MonthNavigator(
               currentMonth: _currentMonth,
-              canGoBack: true,
-              canGoForward: true,
+              onMonthSelected: (month) {
+                setState(() {
+                  _currentMonth = month;
+                });
+                context.read<BudgetProvider>().loadBudgetsForMonth(
+                  _currentMonth.month,
+                  _currentMonth.year,
+                );
+              },
               onPrevious: () => _navigateMonth(-1),
               onNext: () => _navigateMonth(1),
             ),

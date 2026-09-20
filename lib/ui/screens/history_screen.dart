@@ -47,8 +47,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       final earliestMonth = availableMonths.first;
       final latestMonth = availableMonths.last;
 
-      final canGoBack = _selectedMonth.isAfter(earliestMonth);
-      final canGoForward = _selectedMonth.isBefore(latestMonth);
 
       bodyContent = SafeArea(
         top: false,
@@ -59,8 +57,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               MonthNavigator(
                 currentMonth: _selectedMonth,
-                canGoBack: canGoBack,
-                canGoForward: canGoForward,
+                minMonth: earliestMonth,
+                maxMonth: latestMonth,
+                onMonthSelected: (month) {
+                  setState(() {
+                    _selectedMonth = month;
+                  });
+                },
                 onPrevious: () {
                   setState(() {
                     _selectedMonth = DateTime(

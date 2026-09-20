@@ -107,19 +107,18 @@ flutter run
         - Manage screen items
         - Dashboard cashback section
         - Category list item is a bit too similar to the transaction list item. Should either transaction list/dashboard list item be changed to differentiate the two? Maybe can remove icon from transaction list.
-    - Change form design: form field titles should be placeholders instead of text fields on top
-    - Month navigator: add month and year selector dropdown when clicking the displayed month
+
 - Medium priority
     - Multicurrency support
 
 - Low priority
-    - When navigating to a detail screen from somewhere not on the manage tab (eg dashboard), should the screen persist after switching to another tab and switching back? If no, implement, if yes, need to implement double tap for other tabs as well
     - List design for notifications screen
     - Redesign modal for pending approvals
-    - Tags for expenses
+    - Tags
     - Custom dropdowns (including date and time pickers)
 
 - Possible changes to consider:
     - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?
     - Should cards support income transactions too? For things like refunds.
     - Add more credit card details and make the details screen look like a card.
+    - Change form design: form field titles should be placeholders instead of text fields on top (are there any reasons for this?)

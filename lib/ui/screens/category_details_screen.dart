@@ -124,8 +124,6 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     final earliestMonth = availableMonths.first;
     final latestMonth = availableMonths.last;
 
-    final canGoBack = _selectedMonth.isAfter(earliestMonth);
-    final canGoForward = _selectedMonth.isBefore(latestMonth);
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -161,8 +159,13 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                 const SizedBox(height: 24),
                 MonthNavigator(
                   currentMonth: _selectedMonth,
-                  canGoBack: canGoBack,
-                  canGoForward: canGoForward,
+                  minMonth: earliestMonth,
+                  maxMonth: latestMonth,
+                  onMonthSelected: (month) {
+                    setState(() {
+                      _selectedMonth = month;
+                    });
+                  },
                   onPrevious: () {
                     setState(() {
                       _selectedMonth = DateTime(
