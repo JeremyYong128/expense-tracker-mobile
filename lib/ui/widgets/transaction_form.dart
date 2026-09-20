@@ -507,6 +507,7 @@ class TransactionFormState extends State<TransactionForm> {
           CustomField(
             label: 'Title'.cased(context),
             child: TextField(
+              autofocus: true,
               controller: _titleController,
               decoration: _getInputDecoration(
                 hintText: 'e.g. Groceries'.cased(context),

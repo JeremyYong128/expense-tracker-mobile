@@ -184,6 +184,7 @@ class _CardFormState extends State<CardForm> {
               CustomField(
                 label: 'Card Name'.cased(context),
                 child: TextField(
+                  autofocus: true,
                   controller: _nameController,
                   decoration: InputDecoration(
                     hintText: 'e.g. Chase Sapphire'.cased(context),

@@ -236,6 +236,7 @@ class _CategoryFormState extends State<CategoryForm> {
               CustomField(
                 label: 'Category Name'.cased(context),
                 child: TextField(
+                  autofocus: true,
                   controller: _nameController,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(

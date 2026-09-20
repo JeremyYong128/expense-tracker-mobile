@@ -109,8 +109,6 @@ flutter run
         - Category list item is a bit too similar to the transaction list item. Should either transaction list/dashboard list item be changed to differentiate the two? Maybe can remove icon from transaction list.
     - Change form design: form field titles should be placeholders instead of text fields on top
     - Month navigator: add month and year selector dropdown when clicking the displayed month
-    - Auto-focus onto the first field when a form is opened
-
 - Medium priority
     - Multicurrency support
 

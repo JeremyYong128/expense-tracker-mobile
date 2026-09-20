@@ -215,6 +215,7 @@ class _BudgetFormState extends State<BudgetForm> {
               CustomField(
                 label: 'Amount'.cased(context),
                 child: TextField(
+                  autofocus: true,
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
