@@ -14,16 +14,37 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
+  static final ValueNotifier<int> scrollToTopSignal = ValueNotifier(0);
+
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    HistoryScreen.scrollToTopSignal.addListener(_onScrollToTop);
+  }
+
+  @override
+  void dispose() {
+    HistoryScreen.scrollToTopSignal.removeListener(_onScrollToTop);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -52,6 +73,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         top: false,
         bottom: true,
         child: SingleChildScrollView(
+          controller: _scrollController,
           padding: AppStyles.screenPadding,
           child: Column(
             children: [

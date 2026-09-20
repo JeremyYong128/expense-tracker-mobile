@@ -246,9 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             if (_lastTappedIndex == index) {
-              _navigatorKeys[index].currentState?.popUntil(
-                (route) => route.isFirst,
-              );
+              final navigator = _navigatorKeys[index].currentState;
+              if (navigator != null && navigator.canPop()) {
+                navigator.popUntil((route) => route.isFirst);
+              } else if (index == 1) {
+                HistoryScreen.scrollToTopSignal.value++;
+              }
             }
             _lastTappedIndex = index;
           },
