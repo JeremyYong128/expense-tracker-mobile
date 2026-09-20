@@ -86,6 +86,7 @@ class AppStyles {
   static const double sectionContentSpacing = 20.0;
   static const double cardSpacing = 20.0;
   static const double listItemSpacing = 16.0;
+  static const double transactionListItemSpacing = 8.0;
 }
 
 class AppTheme {

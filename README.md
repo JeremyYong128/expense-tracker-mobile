@@ -106,7 +106,6 @@ flutter run
     - Improve list designs
         - Manage screen items
         - Dashboard cashback section
-        - Category list item is a bit too similar to the transaction list item. Should either transaction list/dashboard list item be changed to differentiate the two? Maybe can remove icon from transaction list.
 
 - Medium priority
     - Multicurrency support

@@ -82,10 +82,10 @@ class _TransactionListState extends State<TransactionList> {
           bottomRight: Radius.circular(AppStyles.cardRadius),
         ),
       ),
-      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: AppStyles.transactionListItemSpacing),
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -102,7 +102,6 @@ class _TransactionListState extends State<TransactionList> {
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Row(
                   children: [
-                    const SizedBox(width: 60.0),
                     Icon(category.iconData, size: 16, color: AppColors.primary),
                     const SizedBox(width: 8.0),
                     Expanded(
@@ -144,7 +143,6 @@ class _TransactionListState extends State<TransactionList> {
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Row(
                     children: [
-                      const SizedBox(width: 60.0),
                       const Icon(
                         Icons.repeat,
                         size: 16,
@@ -189,7 +187,6 @@ class _TransactionListState extends State<TransactionList> {
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Row(
                     children: [
-                      const SizedBox(width: 60.0),
                       const Icon(
                         Icons.credit_card,
                         size: 16,
@@ -224,7 +221,6 @@ class _TransactionListState extends State<TransactionList> {
               padding: const EdgeInsets.symmetric(vertical: 4.0),
               child: Row(
                 children: [
-                  const SizedBox(width: 60.0),
                   const Icon(
                     Icons.stars,
                     size: 16,
@@ -251,7 +247,6 @@ class _TransactionListState extends State<TransactionList> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(width: 60.0),
                   const Icon(
                     Icons.sticky_note_2,
                     size: 16,
@@ -378,7 +373,7 @@ class _TransactionListState extends State<TransactionList> {
                 ),
               ),
             ),
-            const SizedBox(height: 12.0),
+            const SizedBox(height: AppStyles.transactionListItemSpacing),
             ...dayTransactions.asMap().entries.map((txEntry) {
               final index = txEntry.key;
               final transaction = txEntry.value;
@@ -413,99 +408,96 @@ class _TransactionListState extends State<TransactionList> {
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                         alignment: Alignment.topCenter,
-                        child: Column(
-                          children: [
-                            IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Container(
+                                width: 4.0,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 2.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(2.0),
+                                ),
+                              ),
+                              const SizedBox(width: 12.0),
+                              Expanded(
+                                child: Column(
                                   children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10.0),
-                                          decoration: BoxDecoration(
-                                            color: color.withValues(
-                                              alpha: 0.15,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              12.0,
-                                            ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                transaction.title,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2.0),
+                                              Text(
+                                                DateFormat.jm()
+                                                    .format(transaction.date)
+                                                    .cased(context),
+                                                style: const TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  fontSize: 13,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
-                                          child: Icon(
-                                            category.iconData,
-                                            color: color,
-                                            size: 24,
-                                          ),
+                                        ),
+                                        const SizedBox(width: 16.0),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              transaction.isIncome
+                                                  ? '+\$${transaction.amount.toStringAsFixed(2)}'
+                                                  : '-\$${transaction.amount.toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 16,
+                                                color: transaction.isIncome
+                                                    ? AppColors.income
+                                                    : AppColors.expense,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(width: 16.0),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            transaction.title,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2.0),
-                                          Text(
-                                            DateFormat.jm()
-                                                .format(transaction.date)
-                                                .cased(context),
-                                            style: const TextStyle(
-                                              color: AppColors.textSecondary,
-                                              fontSize: 13,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
+                                    if (isExpanded)
+                                      _buildExpandedSection(
+                                        context,
+                                        transaction,
+                                        category,
+                                        cardProvider,
+                                        recurringProvider,
                                       ),
-                                    ),
-                                    const SizedBox(width: 16.0),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          transaction.isIncome
-                                              ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                                              : '-\$${transaction.amount.toStringAsFixed(2)}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16,
-                                            color: transaction.isIncome
-                                                ? AppColors.income
-                                                : AppColors.expense,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                   ],
                                 ),
                               ),
-                            if (isExpanded)
-                              _buildExpandedSection(
-                                context,
-                                transaction,
-                                category,
-                                cardProvider,
-                                recurringProvider,
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  if (index < dayTransactions.length - 1) const SizedBox(height: AppStyles.listItemSpacing),
+                  if (index < dayTransactions.length - 1)
+                    const SizedBox(
+                      height: AppStyles.transactionListItemSpacing,
+                    ),
                 ],
               );
             }),
