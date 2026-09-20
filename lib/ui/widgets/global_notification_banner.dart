@@ -29,10 +29,16 @@ class GlobalNotificationBanner extends StatelessWidget {
                   vertical: 8.0,
                 ),
                 child: Material(
-                  elevation: 6,
-                  shadowColor: Colors.black.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppColors.surface,
+                  elevation: 8,
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
+                  color: AppColors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: AppColors.grey.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
