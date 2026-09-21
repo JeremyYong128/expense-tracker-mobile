@@ -109,10 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (stats.expenseBreakdown.isNotEmpty ||
                   stats.incomeBreakdown.isNotEmpty) ...[
                 BreakdownCard<Category>(
-                  title: 'Category Breakdown',
-                  infoText: _categoryBreakdownType == 'expense'
-                      ? 'Calculated as total expenses minus income. Only categories with a net outflow are shown.'
-                      : 'Total income grouped by category.',
+                  title: 'Top Categories',
                   entries: _categoryBreakdownType == 'expense'
                       ? stats.expenseBreakdown.entries.toList()
                       : stats.incomeBreakdown.entries.toList(),
@@ -121,6 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ? stats.totalExpense
                       : stats.totalIncome,
                   isCategory: true,
+                  showBudget: _categoryBreakdownType == 'expense',
                   activeToggleValue: _categoryBreakdownType,
                   toggleOptions: [
                     CustomSegmentOption(

@@ -17,6 +17,7 @@ class BreakdownCard<T> extends StatefulWidget {
   final Map<T, double?> budgets;
   final double totalAmount;
   final bool isCategory;
+  final bool showBudget;
   
   // Toggle properties
   final String? activeToggleValue;
@@ -31,7 +32,8 @@ class BreakdownCard<T> extends StatefulWidget {
     required this.entries,
     required this.budgets,
     required this.totalAmount,
-    required this.isCategory,
+    this.isCategory = false,
+    this.showBudget = true,
     this.activeToggleValue,
     this.toggleOptions,
     this.onToggleChanged,
@@ -189,7 +191,7 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                       budgetAmount = widget.budgets[category];
                     } else {
                       final card = entry.key as model_card.Card;
-                      name = card.name;
+                      name = card.name == 'No card' ? card.name.cased(context) : card.name;
                       color = Color(
                         int.parse(card.colorHex.replaceAll('#', '0xFF')),
                       );
@@ -200,7 +202,7 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                     final percentage = widget.totalAmount > 0
                         ? (amount / widget.totalAmount)
                         : 0.0;
-                    String subtitleText = 'No budget';
+                    String subtitleText = 'No budget'.cased(context);
                     Color subtitleColor = AppColors.textSecondary;
                     if (budgetAmount != null && budgetAmount > 0) {
                       final diff = budgetAmount - amount;
@@ -274,16 +276,18 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                                                   fontSize: 15,
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                subtitleText,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: subtitleColor,
-                                                  fontSize: 13,
+                                              if (widget.showBudget) ...[
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  subtitleText,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: subtitleColor,
+                                                    fontSize: 13,
+                                                  ),
                                                 ),
-                                              ),
+                                              ],
                                             ],
                                           ),
                                         ),

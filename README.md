@@ -100,9 +100,7 @@ flutter run
 
 ### Changes
 - High priority
-    - Dashboard analytics
-        - Should income and expense summaries for categories be grouped by net inflow/outflow (ie categories with net inflow are under income and vice versa) or grouped by transaction (ie income and expenses for each category aggregated separately in each tab)
-        - Income (for categories) should not have a comparison to budget: replace with what?
+    - Dashboard analytics (Completed: Categories are grouped by transaction type, and budget comparison is hidden for income)
     - Budgeting
         - Budget screen: List of budgets (need to make view different from usual card view), users can click into each budget to see more details. What details should be on the main budget screen? Should users only be able to see the current month's budgets or all budgets? 
     - Improve list designs
