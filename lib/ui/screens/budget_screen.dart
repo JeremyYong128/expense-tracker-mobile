@@ -270,83 +270,77 @@ class _BudgetScreenState extends State<BudgetScreen> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8.0),
                         AnimatedSize(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                           alignment: Alignment.topCenter,
                           child: _expandedBudgetId == budget.id
-                              ? Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 8.0,
-                                    bottom: 4.0,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton.icon(
-                                        onPressed: () => _showAddBudgetForm(
-                                          context,
-                                          existingBudget: budget,
-                                        ),
-                                        icon: const Icon(Icons.edit, size: 18),
-                                        label: const Text('Edit'),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 8,
-                                          ),
-                                          minimumSize: Size.zero,
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: () => _showAddBudgetForm(
+                                        context,
+                                        existingBudget: budget,
                                       ),
-                                      const SizedBox(width: 16.0),
-                                      TextButton.icon(
-                                        onPressed: () async {
-                                          try {
-                                            await context
-                                                .read<BudgetProvider>()
-                                                .deleteBudget(budget);
-                                            if (context.mounted) {
-                                              SnackBarService.showSuccess(
-                                                'Budget deleted successfully',
-                                              );
-                                            }
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              SnackBarService.showError(
-                                                'Failed to delete budget',
-                                              );
-                                            }
+                                      icon: const Icon(Icons.edit, size: 18),
+                                      label: const Text('Edit'),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16.0),
+                                    TextButton.icon(
+                                      onPressed: () async {
+                                        try {
+                                          await context
+                                              .read<BudgetProvider>()
+                                              .deleteBudget(budget);
+                                          if (context.mounted) {
+                                            SnackBarService.showSuccess(
+                                              'Budget deleted successfully',
+                                            );
                                           }
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          size: 18,
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            SnackBarService.showError(
+                                              'Failed to delete budget',
+                                            );
+                                          }
+                                        }
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        size: 18,
+                                        color: AppColors.error,
+                                      ),
+                                      label: const Text(
+                                        'Delete',
+                                        style: TextStyle(
                                           color: AppColors.error,
                                         ),
-                                        label: const Text(
-                                          'Delete',
-                                          style: TextStyle(
-                                            color: AppColors.error,
-                                          ),
-                                        ),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 8,
-                                          ),
-                                          minimumSize: Size.zero,
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
                                       ),
-                                    ],
-                                  ),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                  ],
                                 )
                               : const SizedBox.shrink(),
                         ),
-                        const SizedBox(height: 8.0),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
@@ -374,7 +368,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final activeBudgets = context.watch<BudgetProvider>().activeBudgets;
-    
+
     final categoryBudgets = activeBudgets
         .where((b) => b.type == 'category')
         .toList();
