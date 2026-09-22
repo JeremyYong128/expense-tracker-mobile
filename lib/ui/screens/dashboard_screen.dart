@@ -141,9 +141,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
-                        builder: (context) => CategoryDetailsScreen(
-                          category: category,
-                        ),
+                        builder: (context) =>
+                            CategoryDetailsScreen(category: category),
                       ),
                     );
                   },
@@ -164,9 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => CardDetailsScreen(
-                            card: card,
-                          ),
+                          builder: (context) => CardDetailsScreen(card: card),
                         ),
                       );
                     }
@@ -337,44 +334,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? CrossAxisAlignment.end
           : CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (label.toLowerCase() == 'income') ...[
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.income.withValues(alpha: 0.15),
-                ),
-                child: const Icon(
-                  Icons.north_east,
-                  color: AppColors.income,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label.cased(context),
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (label.toLowerCase() == 'expense') ...[
-              const SizedBox(width: 6),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.expense.withValues(alpha: 0.15),
-                ),
-                child: const Icon(
-                  Icons.south_east,
-                  color: AppColors.expense,
-                  size: 16,
-                ),
-              ),
-            ],
-          ],
+        Text(
+          label.cased(context),
+          style: TextStyle(
+            color: color,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 4),
         FittedBox(
@@ -382,13 +348,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
           alignment: isRightAligned
               ? Alignment.centerRight
               : Alignment.centerLeft,
-          child: Text(
-            _currencyFormat.format(amount),
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (label.toLowerCase() == 'expense') ...[
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.expense,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                _currencyFormat.format(amount),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (label.toLowerCase() == 'income') ...[
+                const SizedBox(width: 8),
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.income,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 8),
