@@ -113,7 +113,6 @@ flutter run
     - List design for notifications screen
     - Redesign modal for pending approvals
     - Tags
-    - Custom dropdowns (including date and time pickers)
 
 - Possible changes to consider:
     - Dashboard summary: when the previous month is 0 and the current month is nonzero, is it better to have 100% or null for percentage change?

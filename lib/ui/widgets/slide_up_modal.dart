@@ -20,7 +20,7 @@ class SlideUpModal extends StatelessWidget {
     this.rightButtonTitle,
     this.onRightButtonPressed,
     required this.child,
-    this.heightFraction = 0.8,
+    this.heightFraction = 0.9,
   });
 
   static Future<T?> show<T>({
