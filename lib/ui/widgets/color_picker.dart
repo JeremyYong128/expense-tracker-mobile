@@ -24,9 +24,9 @@ class ColorPicker extends StatelessWidget {
 
     SlideUpModal.show(
       context: context,
-      leftButtonTitle: 'Cancel'.cased(context),
+      leftButtonTitle: 'Cancel'.localized(context).cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
-      rightButtonTitle: 'Save'.cased(context),
+      rightButtonTitle: 'Save'.localized(context).cased(context),
       onRightButtonPressed: () {
         String hex = '#${pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
         onColorSelected(hex);
@@ -40,7 +40,7 @@ class ColorPicker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CustomField(
-                  label: 'Custom Color'.cased(context),
+                  label: 'Custom Colour'.localized(context).cased(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -88,7 +88,7 @@ class ColorPicker extends StatelessWidget {
                   ),
                 ),
                 CustomField(
-                  label: 'Hex'.cased(context),
+                  label: 'Hex'.localized(context).cased(context),
                   child: TextField(
                     controller: hexController,
                     maxLength: 6,
