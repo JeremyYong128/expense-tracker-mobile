@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' as flutter_colorpicker;
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
+import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 
 class ColorPicker extends StatelessWidget {
   final String selectedColorHex;
@@ -14,73 +18,113 @@ class ColorPicker extends StatelessWidget {
 
   void _showCustomColorPicker(BuildContext context) {
     Color pickerColor = AppColors.getColorFromHex(selectedColorHex);
+    HSVColor currentHsvColor = HSVColor.fromColor(pickerColor);
+    String initialHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
+    final TextEditingController hexController = TextEditingController(text: initialHex);
 
-    showModalBottomSheet(
+    SlideUpModal.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: 24.0,
-              bottom: 16.0,
-            ),
+      leftButtonTitle: 'Cancel'.cased(context),
+      onLeftButtonPressed: () => Navigator.pop(context),
+      rightButtonTitle: 'Save'.cased(context),
+      onRightButtonPressed: () {
+        String hex = '#${pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
+        onColorSelected(hex);
+        Navigator.pop(context);
+      },
+      child: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Custom Color',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                CustomField(
+                  label: 'Custom Color'.cased(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Square Shade Picker
+                      AspectRatio(
+                        aspectRatio: 1.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: flutter_colorpicker.ColorPickerArea(
+                            currentHsvColor,
+                            (HSVColor color) {
+                              setState(() {
+                                currentHsvColor = color;
+                                pickerColor = color.toColor();
+                                final newHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
+                                if (hexController.text != newHex) {
+                                  hexController.text = newHex;
+                                }
+                              });
+                            },
+                            flutter_colorpicker.PaletteType.hsv,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Horizontal Hue Slider
+                      SizedBox(
+                        height: 40,
+                        child: flutter_colorpicker.ColorPickerSlider(
+                          flutter_colorpicker.TrackType.hue,
+                          currentHsvColor,
+                          (HSVColor color) {
+                            setState(() {
+                              currentHsvColor = color;
+                              pickerColor = color.toColor();
+                              final newHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
+                              if (hexController.text != newHex) {
+                                hexController.text = newHex;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                HueRingPicker(
-                  pickerColor: pickerColor,
-                  onColorChanged: (Color color) {
-                    pickerColor = color;
-                  },
-                  enableAlpha: false,
-                  displayThumbColor: true,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                CustomField(
+                  label: 'Hex'.cased(context),
+                  child: TextField(
+                    controller: hexController,
+                    maxLength: 6,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
+                    ],
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      hintText: '000000',
+                      hintStyle: const TextStyle(color: AppColors.grey),
+                      prefixText: '#',
+                      counterText: '',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
                       ),
+                      filled: true,
+                      fillColor: AppColors.white,
                     ),
-                    child: const Text(
-                      'Select',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      // Convert Color to hex string #RRGGBB
-                      String hex = '#${pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
-                      onColorSelected(hex);
-                      Navigator.of(context).pop();
+                    onChanged: (val) {
+                      if (val.length == 6) {
+                        final color = AppColors.getColorFromHex('#$val');
+                        setState(() {
+                          pickerColor = color;
+                          currentHsvColor = HSVColor.fromColor(pickerColor);
+                        });
+                      }
                     },
                   ),
                 ),
+                SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -109,8 +153,9 @@ class ColorPicker extends StatelessWidget {
     }).toList();
 
     // Check if the current selected color is a custom color
-    final isCustomColorSelected =
-        !AppColors.colorPaletteHexes.contains(selectedColorHex);
+    final isCustomColorSelected = !AppColors.colorPaletteHexes.contains(
+      selectedColorHex,
+    );
     final customColor = isCustomColorSelected
         ? AppColors.getColorFromHex(selectedColorHex)
         : AppColors.white;
@@ -139,10 +184,6 @@ class ColorPicker extends StatelessWidget {
       ),
     );
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: colorWidgets,
-    );
+    return Wrap(spacing: 12, runSpacing: 12, children: colorWidgets);
   }
 }
