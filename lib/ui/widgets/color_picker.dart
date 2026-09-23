@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart' as flutter_colorpicker;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart'
+    as flutter_colorpicker;
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
@@ -19,16 +20,24 @@ class ColorPicker extends StatelessWidget {
   void _showCustomColorPicker(BuildContext context) {
     Color pickerColor = AppColors.getColorFromHex(selectedColorHex);
     HSVColor currentHsvColor = HSVColor.fromColor(pickerColor);
-    String initialHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
-    final TextEditingController hexController = TextEditingController(text: initialHex);
+    String initialHex = pickerColor
+        .toARGB32()
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .substring(2, 8)
+        .toUpperCase();
+    final TextEditingController hexController = TextEditingController(
+      text: initialHex,
+    );
 
     SlideUpModal.show(
       context: context,
-      leftButtonTitle: 'Cancel'.localized(context).cased(context),
+      leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
-      rightButtonTitle: 'Save'.localized(context).cased(context),
+      rightButtonTitle: 'Save'.cased(context),
       onRightButtonPressed: () {
-        String hex = '#${pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
+        String hex =
+            '#${pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase()}';
         onColorSelected(hex);
         Navigator.pop(context);
       },
@@ -55,7 +64,12 @@ class ColorPicker extends StatelessWidget {
                               setState(() {
                                 currentHsvColor = color;
                                 pickerColor = color.toColor();
-                                final newHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
+                                final newHex = pickerColor
+                                    .toARGB32()
+                                    .toRadixString(16)
+                                    .padLeft(8, '0')
+                                    .substring(2, 8)
+                                    .toUpperCase();
                                 if (hexController.text != newHex) {
                                   hexController.text = newHex;
                                 }
@@ -76,7 +90,12 @@ class ColorPicker extends StatelessWidget {
                             setState(() {
                               currentHsvColor = color;
                               pickerColor = color.toColor();
-                              final newHex = pickerColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2, 8).toUpperCase();
+                              final newHex = pickerColor
+                                  .toARGB32()
+                                  .toRadixString(16)
+                                  .padLeft(8, '0')
+                                  .substring(2, 8)
+                                  .toUpperCase();
                               if (hexController.text != newHex) {
                                 hexController.text = newHex;
                               }
@@ -88,7 +107,7 @@ class ColorPicker extends StatelessWidget {
                   ),
                 ),
                 CustomField(
-                  label: 'Hex'.localized(context).cased(context),
+                  label: 'Hex'.cased(context),
                   child: TextField(
                     controller: hexController,
                     maxLength: 6,
@@ -96,7 +115,9 @@ class ColorPicker extends StatelessWidget {
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]')),
                     ],
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                      ),
                       hintText: '000000',
                       hintStyle: const TextStyle(color: AppColors.grey),
                       prefixText: '#',
@@ -167,19 +188,46 @@ class ColorPicker extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: customColor,
+            color: isCustomColorSelected ? null : customColor,
             shape: BoxShape.circle,
+            gradient: isCustomColorSelected
+                ? const SweepGradient(
+                    colors: [
+                      Colors.red,
+                      Colors.orange,
+                      Colors.yellow,
+                      Colors.green,
+                      Colors.blue,
+                      Colors.indigo,
+                      Colors.purple,
+                      Colors.red,
+                    ],
+                  )
+                : null,
             border: isCustomColorSelected
-                ? Border.all(color: AppColors.primary, width: 3)
+                ? null
                 : Border.all(color: AppColors.border, width: 2),
           ),
-          child: Icon(
-            isCustomColorSelected ? Icons.check : Icons.palette_outlined,
-            color: isCustomColorSelected
-                ? AppColors.white
-                : AppColors.textSecondary,
-            size: 20,
-          ),
+          child: isCustomColorSelected
+              ? Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: customColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.white,
+                      size: 16,
+                    ),
+                  ),
+                )
+              : Icon(
+                  Icons.palette_outlined,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
         ),
       ),
     );
