@@ -109,10 +109,9 @@ class CustomDropdownField<T> extends StatelessWidget {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16.0,
-        vertical: 16.0,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -134,7 +133,7 @@ class CustomDropdownField<T> extends StatelessWidget {
         ],
         InkWell(
           onTap: enabled ? () => _showPicker(context) : null,
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(12.0),
           child: InputDecorator(
             decoration: _getInputDecoration(),
             child: Row(

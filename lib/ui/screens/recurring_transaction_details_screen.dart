@@ -11,6 +11,8 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
@@ -136,6 +138,7 @@ class _RecurringTransactionDetailsScreenState
         : null;
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
     final stats = analyticsProvider.getRecurringStats(
       latestTx.id!,
       _selectedMonth,
@@ -175,7 +178,7 @@ class _RecurringTransactionDetailsScreenState
           padding: AppStyles.screenPadding,
           child: Column(
             children: [
-              _buildRecurringHeader(latestTx, category, latestCard),
+              _buildRecurringHeader(latestTx, category, latestCard, baseCurrency),
               if (allTransactions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
@@ -220,6 +223,7 @@ class _RecurringTransactionDetailsScreenState
                         totalIncome,
                         totalExpense,
                         prevBalance,
+                        baseCurrency,
                       ),
                       const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Transactions'.cased(context)),
@@ -258,6 +262,7 @@ class _RecurringTransactionDetailsScreenState
     double totalIncome,
     double totalExpense,
     double prevBalance,
+    String baseCurrency,
   ) {
     final balance = totalIncome - totalExpense;
     final isPositive = balance > 0;
@@ -287,7 +292,7 @@ class _RecurringTransactionDetailsScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            '$sign\$${balance.abs().toStringAsFixed(2)}',
+            '$sign${CurrencyFormatter.format(balance.abs(), baseCurrency)}',
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 24,
@@ -306,7 +311,7 @@ class _RecurringTransactionDetailsScreenState
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '\$${diff.abs().toStringAsFixed(2)} vs last month',
+                  '${CurrencyFormatter.format(diff.abs(), baseCurrency)} vs last month',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -325,6 +330,7 @@ class _RecurringTransactionDetailsScreenState
     RecurringTransaction tx,
     Category category,
     dynamic card,
+    String baseCurrency,
   ) {
     final color = AppColors.getColorFromHex(category.colorHex);
 
@@ -332,16 +338,16 @@ class _RecurringTransactionDetailsScreenState
     if (tx.rewardAmount != null && tx.rewardAmount! > 0) {
       if (card != null) {
         if (card.rewardType == 'Cashback') {
-          rewardText = '\$${tx.rewardAmount!.toStringAsFixed(2)} cashback';
+          rewardText = '${CurrencyFormatter.format(tx.rewardAmount!, baseCurrency)} cashback';
         } else if (card.rewardType == 'Miles') {
           rewardText = '${tx.rewardAmount!.toStringAsFixed(0)} miles';
         } else if (card.rewardType == 'Points') {
           rewardText = '${tx.rewardAmount!.toStringAsFixed(0)} points';
         } else {
-          rewardText = '\$${tx.rewardAmount!.toStringAsFixed(2)}';
+          rewardText = CurrencyFormatter.format(tx.rewardAmount!, baseCurrency);
         }
       } else {
-        rewardText = '\$${tx.rewardAmount!.toStringAsFixed(2)}';
+        rewardText = CurrencyFormatter.format(tx.rewardAmount!, baseCurrency);
       }
     }
 
@@ -413,7 +419,7 @@ class _RecurringTransactionDetailsScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            '${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+            '${tx.isIncome ? '+' : '-'}${CurrencyFormatter.format(tx.amount, tx.currencyCode)}',
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 32,

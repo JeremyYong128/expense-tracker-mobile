@@ -12,6 +12,7 @@ class RecurringTransaction {
   final int? cardId;
   final double? rewardAmount;
   final int sortOrder;
+  final String currencyCode;
 
   RecurringTransaction({
     this.id,
@@ -27,6 +28,7 @@ class RecurringTransaction {
     this.cardId,
     this.rewardAmount,
     this.sortOrder = 0,
+    this.currencyCode = 'SGD',
   });
 
   Map<String, dynamic> toMap() {
@@ -44,6 +46,7 @@ class RecurringTransaction {
       'cardId': cardId,
       'rewardAmount': rewardAmount,
       'sortOrder': sortOrder,
+      'currencyCode': currencyCode,
     };
   }
 
@@ -61,6 +64,7 @@ class RecurringTransaction {
     int? cardId,
     double? rewardAmount,
     int? sortOrder,
+    String? currencyCode,
   }) {
     return RecurringTransaction(
       id: id ?? this.id,
@@ -76,6 +80,7 @@ class RecurringTransaction {
       cardId: cardId ?? this.cardId,
       rewardAmount: rewardAmount ?? this.rewardAmount,
       sortOrder: sortOrder ?? this.sortOrder,
+      currencyCode: currencyCode ?? this.currencyCode,
     );
   }
 
@@ -93,6 +98,7 @@ class RecurringTransaction {
       nextDueDate: DateTime.parse(map['nextDueDate']),
       cardId: map['cardId'],
       rewardAmount: map['rewardAmount'],
+      currencyCode: map['currencyCode'] ?? 'SGD',
     );
   }
 }

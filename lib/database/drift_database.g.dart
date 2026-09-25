@@ -1107,6 +1107,18 @@ class $RecurringTransactionsTable extends RecurringTransactions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _currencyCodeMeta = const VerificationMeta(
+    'currencyCode',
+  );
+  @override
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+    'currency_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SGD'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1122,6 +1134,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     nextDueDate,
     cardId,
     sortOrder,
+    currencyCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1228,6 +1241,15 @@ class $RecurringTransactionsTable extends RecurringTransactions
         sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
       );
     }
+    if (data.containsKey('currency_code')) {
+      context.handle(
+        _currencyCodeMeta,
+        currencyCode.isAcceptableOrUnknown(
+          data['currency_code']!,
+          _currencyCodeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1292,6 +1314,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.int,
         data['${effectivePrefix}sortOrder'],
       )!,
+      currencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency_code'],
+      )!,
     );
   }
 
@@ -1316,6 +1342,7 @@ class RecurringTransactionTableData extends DataClass
   final String nextDueDate;
   final int? cardId;
   final int sortOrder;
+  final String currencyCode;
   const RecurringTransactionTableData({
     required this.id,
     required this.amount,
@@ -1330,6 +1357,7 @@ class RecurringTransactionTableData extends DataClass
     required this.nextDueDate,
     this.cardId,
     required this.sortOrder,
+    required this.currencyCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1353,6 +1381,7 @@ class RecurringTransactionTableData extends DataClass
       map['cardId'] = Variable<int>(cardId);
     }
     map['sortOrder'] = Variable<int>(sortOrder);
+    map['currency_code'] = Variable<String>(currencyCode);
     return map;
   }
 
@@ -1375,6 +1404,7 @@ class RecurringTransactionTableData extends DataClass
           ? const Value.absent()
           : Value(cardId),
       sortOrder: Value(sortOrder),
+      currencyCode: Value(currencyCode),
     );
   }
 
@@ -1397,6 +1427,7 @@ class RecurringTransactionTableData extends DataClass
       nextDueDate: serializer.fromJson<String>(json['nextDueDate']),
       cardId: serializer.fromJson<int?>(json['cardId']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
     );
   }
   @override
@@ -1416,6 +1447,7 @@ class RecurringTransactionTableData extends DataClass
       'nextDueDate': serializer.toJson<String>(nextDueDate),
       'cardId': serializer.toJson<int?>(cardId),
       'sortOrder': serializer.toJson<int>(sortOrder),
+      'currencyCode': serializer.toJson<String>(currencyCode),
     };
   }
 
@@ -1433,6 +1465,7 @@ class RecurringTransactionTableData extends DataClass
     String? nextDueDate,
     Value<int?> cardId = const Value.absent(),
     int? sortOrder,
+    String? currencyCode,
   }) => RecurringTransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -1447,6 +1480,7 @@ class RecurringTransactionTableData extends DataClass
     nextDueDate: nextDueDate ?? this.nextDueDate,
     cardId: cardId.present ? cardId.value : this.cardId,
     sortOrder: sortOrder ?? this.sortOrder,
+    currencyCode: currencyCode ?? this.currencyCode,
   );
   RecurringTransactionTableData copyWithCompanion(
     RecurringTransactionsCompanion data,
@@ -1471,6 +1505,9 @@ class RecurringTransactionTableData extends DataClass
           : this.nextDueDate,
       cardId: data.cardId.present ? data.cardId.value : this.cardId,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
     );
   }
 
@@ -1489,7 +1526,8 @@ class RecurringTransactionTableData extends DataClass
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
           ..write('cardId: $cardId, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('currencyCode: $currencyCode')
           ..write(')'))
         .toString();
   }
@@ -1509,6 +1547,7 @@ class RecurringTransactionTableData extends DataClass
     nextDueDate,
     cardId,
     sortOrder,
+    currencyCode,
   );
   @override
   bool operator ==(Object other) =>
@@ -1526,7 +1565,8 @@ class RecurringTransactionTableData extends DataClass
           other.startDate == this.startDate &&
           other.nextDueDate == this.nextDueDate &&
           other.cardId == this.cardId &&
-          other.sortOrder == this.sortOrder);
+          other.sortOrder == this.sortOrder &&
+          other.currencyCode == this.currencyCode);
 }
 
 class RecurringTransactionsCompanion
@@ -1544,6 +1584,7 @@ class RecurringTransactionsCompanion
   final Value<String> nextDueDate;
   final Value<int?> cardId;
   final Value<int> sortOrder;
+  final Value<String> currencyCode;
   const RecurringTransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -1558,6 +1599,7 @@ class RecurringTransactionsCompanion
     this.nextDueDate = const Value.absent(),
     this.cardId = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.currencyCode = const Value.absent(),
   });
   RecurringTransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -1573,6 +1615,7 @@ class RecurringTransactionsCompanion
     required String nextDueDate,
     this.cardId = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.currencyCode = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        categoryId = Value(categoryId),
@@ -1593,6 +1636,7 @@ class RecurringTransactionsCompanion
     Expression<String>? nextDueDate,
     Expression<int>? cardId,
     Expression<int>? sortOrder,
+    Expression<String>? currencyCode,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1608,6 +1652,7 @@ class RecurringTransactionsCompanion
       if (nextDueDate != null) 'nextDueDate': nextDueDate,
       if (cardId != null) 'cardId': cardId,
       if (sortOrder != null) 'sortOrder': sortOrder,
+      if (currencyCode != null) 'currency_code': currencyCode,
     });
   }
 
@@ -1625,6 +1670,7 @@ class RecurringTransactionsCompanion
     Value<String>? nextDueDate,
     Value<int?>? cardId,
     Value<int>? sortOrder,
+    Value<String>? currencyCode,
   }) {
     return RecurringTransactionsCompanion(
       id: id ?? this.id,
@@ -1640,6 +1686,7 @@ class RecurringTransactionsCompanion
       nextDueDate: nextDueDate ?? this.nextDueDate,
       cardId: cardId ?? this.cardId,
       sortOrder: sortOrder ?? this.sortOrder,
+      currencyCode: currencyCode ?? this.currencyCode,
     );
   }
 
@@ -1685,6 +1732,9 @@ class RecurringTransactionsCompanion
     if (sortOrder.present) {
       map['sortOrder'] = Variable<int>(sortOrder.value);
     }
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
+    }
     return map;
   }
 
@@ -1703,7 +1753,8 @@ class RecurringTransactionsCompanion
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
           ..write('cardId: $cardId, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('currencyCode: $currencyCode')
           ..write(')'))
         .toString();
   }
@@ -1825,6 +1876,30 @@ class $TransactionsTable extends Transactions
     requiredDuringInsert: false,
     $customConstraints: 'REFERENCES cards(id) ON DELETE SET NULL',
   );
+  static const VerificationMeta _currencyCodeMeta = const VerificationMeta(
+    'currencyCode',
+  );
+  @override
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+    'currency_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SGD'),
+  );
+  static const VerificationMeta _baseCurrencyAmountMeta =
+      const VerificationMeta('baseCurrencyAmount');
+  @override
+  late final GeneratedColumn<double> baseCurrencyAmount =
+      GeneratedColumn<double>(
+        'base_currency_amount',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0.0),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1837,6 +1912,8 @@ class $TransactionsTable extends Transactions
     rewardAmount,
     recurringId,
     cardId,
+    currencyCode,
+    baseCurrencyAmount,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1921,6 +1998,24 @@ class $TransactionsTable extends Transactions
         cardId.isAcceptableOrUnknown(data['cardId']!, _cardIdMeta),
       );
     }
+    if (data.containsKey('currency_code')) {
+      context.handle(
+        _currencyCodeMeta,
+        currencyCode.isAcceptableOrUnknown(
+          data['currency_code']!,
+          _currencyCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('base_currency_amount')) {
+      context.handle(
+        _baseCurrencyAmountMeta,
+        baseCurrencyAmount.isAcceptableOrUnknown(
+          data['base_currency_amount']!,
+          _baseCurrencyAmountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1970,6 +2065,14 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}cardId'],
       ),
+      currencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency_code'],
+      )!,
+      baseCurrencyAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}base_currency_amount'],
+      )!,
     );
   }
 
@@ -1991,6 +2094,8 @@ class TransactionTableData extends DataClass
   final double? rewardAmount;
   final int? recurringId;
   final int? cardId;
+  final String currencyCode;
+  final double baseCurrencyAmount;
   const TransactionTableData({
     required this.id,
     required this.amount,
@@ -2002,6 +2107,8 @@ class TransactionTableData extends DataClass
     this.rewardAmount,
     this.recurringId,
     this.cardId,
+    required this.currencyCode,
+    required this.baseCurrencyAmount,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2024,6 +2131,8 @@ class TransactionTableData extends DataClass
     if (!nullToAbsent || cardId != null) {
       map['cardId'] = Variable<int>(cardId);
     }
+    map['currency_code'] = Variable<String>(currencyCode);
+    map['base_currency_amount'] = Variable<double>(baseCurrencyAmount);
     return map;
   }
 
@@ -2045,6 +2154,8 @@ class TransactionTableData extends DataClass
       cardId: cardId == null && nullToAbsent
           ? const Value.absent()
           : Value(cardId),
+      currencyCode: Value(currencyCode),
+      baseCurrencyAmount: Value(baseCurrencyAmount),
     );
   }
 
@@ -2064,6 +2175,10 @@ class TransactionTableData extends DataClass
       rewardAmount: serializer.fromJson<double?>(json['rewardAmount']),
       recurringId: serializer.fromJson<int?>(json['recurringId']),
       cardId: serializer.fromJson<int?>(json['cardId']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
+      baseCurrencyAmount: serializer.fromJson<double>(
+        json['baseCurrencyAmount'],
+      ),
     );
   }
   @override
@@ -2080,6 +2195,8 @@ class TransactionTableData extends DataClass
       'rewardAmount': serializer.toJson<double?>(rewardAmount),
       'recurringId': serializer.toJson<int?>(recurringId),
       'cardId': serializer.toJson<int?>(cardId),
+      'currencyCode': serializer.toJson<String>(currencyCode),
+      'baseCurrencyAmount': serializer.toJson<double>(baseCurrencyAmount),
     };
   }
 
@@ -2094,6 +2211,8 @@ class TransactionTableData extends DataClass
     Value<double?> rewardAmount = const Value.absent(),
     Value<int?> recurringId = const Value.absent(),
     Value<int?> cardId = const Value.absent(),
+    String? currencyCode,
+    double? baseCurrencyAmount,
   }) => TransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -2105,6 +2224,8 @@ class TransactionTableData extends DataClass
     rewardAmount: rewardAmount.present ? rewardAmount.value : this.rewardAmount,
     recurringId: recurringId.present ? recurringId.value : this.recurringId,
     cardId: cardId.present ? cardId.value : this.cardId,
+    currencyCode: currencyCode ?? this.currencyCode,
+    baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
   );
   TransactionTableData copyWithCompanion(TransactionsCompanion data) {
     return TransactionTableData(
@@ -2124,6 +2245,12 @@ class TransactionTableData extends DataClass
           ? data.recurringId.value
           : this.recurringId,
       cardId: data.cardId.present ? data.cardId.value : this.cardId,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
+      baseCurrencyAmount: data.baseCurrencyAmount.present
+          ? data.baseCurrencyAmount.value
+          : this.baseCurrencyAmount,
     );
   }
 
@@ -2139,7 +2266,9 @@ class TransactionTableData extends DataClass
           ..write('isIncome: $isIncome, ')
           ..write('rewardAmount: $rewardAmount, ')
           ..write('recurringId: $recurringId, ')
-          ..write('cardId: $cardId')
+          ..write('cardId: $cardId, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('baseCurrencyAmount: $baseCurrencyAmount')
           ..write(')'))
         .toString();
   }
@@ -2156,6 +2285,8 @@ class TransactionTableData extends DataClass
     rewardAmount,
     recurringId,
     cardId,
+    currencyCode,
+    baseCurrencyAmount,
   );
   @override
   bool operator ==(Object other) =>
@@ -2170,7 +2301,9 @@ class TransactionTableData extends DataClass
           other.isIncome == this.isIncome &&
           other.rewardAmount == this.rewardAmount &&
           other.recurringId == this.recurringId &&
-          other.cardId == this.cardId);
+          other.cardId == this.cardId &&
+          other.currencyCode == this.currencyCode &&
+          other.baseCurrencyAmount == this.baseCurrencyAmount);
 }
 
 class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
@@ -2184,6 +2317,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
   final Value<double?> rewardAmount;
   final Value<int?> recurringId;
   final Value<int?> cardId;
+  final Value<String> currencyCode;
+  final Value<double> baseCurrencyAmount;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2195,6 +2330,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.rewardAmount = const Value.absent(),
     this.recurringId = const Value.absent(),
     this.cardId = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    this.baseCurrencyAmount = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -2207,6 +2344,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.rewardAmount = const Value.absent(),
     this.recurringId = const Value.absent(),
     this.cardId = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    this.baseCurrencyAmount = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        date = Value(date),
@@ -2222,6 +2361,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Expression<double>? rewardAmount,
     Expression<int>? recurringId,
     Expression<int>? cardId,
+    Expression<String>? currencyCode,
+    Expression<double>? baseCurrencyAmount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2234,6 +2375,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       if (rewardAmount != null) 'reward_amount': rewardAmount,
       if (recurringId != null) 'recurringId': recurringId,
       if (cardId != null) 'cardId': cardId,
+      if (currencyCode != null) 'currency_code': currencyCode,
+      if (baseCurrencyAmount != null)
+        'base_currency_amount': baseCurrencyAmount,
     });
   }
 
@@ -2248,6 +2392,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Value<double?>? rewardAmount,
     Value<int?>? recurringId,
     Value<int?>? cardId,
+    Value<String>? currencyCode,
+    Value<double>? baseCurrencyAmount,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -2260,6 +2406,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       rewardAmount: rewardAmount ?? this.rewardAmount,
       recurringId: recurringId ?? this.recurringId,
       cardId: cardId ?? this.cardId,
+      currencyCode: currencyCode ?? this.currencyCode,
+      baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
     );
   }
 
@@ -2296,6 +2444,12 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     if (cardId.present) {
       map['cardId'] = Variable<int>(cardId.value);
     }
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
+    }
+    if (baseCurrencyAmount.present) {
+      map['base_currency_amount'] = Variable<double>(baseCurrencyAmount.value);
+    }
     return map;
   }
 
@@ -2311,7 +2465,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
           ..write('isIncome: $isIncome, ')
           ..write('rewardAmount: $rewardAmount, ')
           ..write('recurringId: $recurringId, ')
-          ..write('cardId: $cardId')
+          ..write('cardId: $cardId, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('baseCurrencyAmount: $baseCurrencyAmount')
           ..write(')'))
         .toString();
   }
@@ -3941,6 +4097,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       required String nextDueDate,
       Value<int?> cardId,
       Value<int> sortOrder,
+      Value<String> currencyCode,
     });
 typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
     RecurringTransactionsCompanion Function({
@@ -3957,6 +4114,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<String> nextDueDate,
       Value<int?> cardId,
       Value<int> sortOrder,
+      Value<String> currencyCode,
     });
 
 final class $$RecurringTransactionsTableReferences
@@ -4086,6 +4244,11 @@ class $$RecurringTransactionsTableFilterComposer
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4225,6 +4388,11 @@ class $$RecurringTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4317,6 +4485,11 @@ class $$RecurringTransactionsTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => column,
+  );
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -4449,6 +4622,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<String> nextDueDate = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
               }) => RecurringTransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -4463,6 +4637,7 @@ class $$RecurringTransactionsTableTableManager
                 nextDueDate: nextDueDate,
                 cardId: cardId,
                 sortOrder: sortOrder,
+                currencyCode: currencyCode,
               ),
           createCompanionCallback:
               ({
@@ -4479,6 +4654,7 @@ class $$RecurringTransactionsTableTableManager
                 required String nextDueDate,
                 Value<int?> cardId = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
               }) => RecurringTransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -4493,6 +4669,7 @@ class $$RecurringTransactionsTableTableManager
                 nextDueDate: nextDueDate,
                 cardId: cardId,
                 sortOrder: sortOrder,
+                currencyCode: currencyCode,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -4620,6 +4797,8 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<double?> rewardAmount,
       Value<int?> recurringId,
       Value<int?> cardId,
+      Value<String> currencyCode,
+      Value<double> baseCurrencyAmount,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -4633,6 +4812,8 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<double?> rewardAmount,
       Value<int?> recurringId,
       Value<int?> cardId,
+      Value<String> currencyCode,
+      Value<double> baseCurrencyAmount,
     });
 
 final class $$TransactionsTableReferences
@@ -4738,6 +4919,16 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<double> get rewardAmount => $composableBuilder(
     column: $table.rewardAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get baseCurrencyAmount => $composableBuilder(
+    column: $table.baseCurrencyAmount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4856,6 +5047,16 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get baseCurrencyAmount => $composableBuilder(
+    column: $table.baseCurrencyAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4956,6 +5157,16 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<double> get rewardAmount => $composableBuilder(
     column: $table.rewardAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get baseCurrencyAmount => $composableBuilder(
+    column: $table.baseCurrencyAmount,
     builder: (column) => column,
   );
 
@@ -5072,6 +5283,8 @@ class $$TransactionsTableTableManager
                 Value<double?> rewardAmount = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
+                Value<double> baseCurrencyAmount = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -5083,6 +5296,8 @@ class $$TransactionsTableTableManager
                 rewardAmount: rewardAmount,
                 recurringId: recurringId,
                 cardId: cardId,
+                currencyCode: currencyCode,
+                baseCurrencyAmount: baseCurrencyAmount,
               ),
           createCompanionCallback:
               ({
@@ -5096,6 +5311,8 @@ class $$TransactionsTableTableManager
                 Value<double?> rewardAmount = const Value.absent(),
                 Value<int?> recurringId = const Value.absent(),
                 Value<int?> cardId = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
+                Value<double> baseCurrencyAmount = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -5107,6 +5324,8 @@ class $$TransactionsTableTableManager
                 rewardAmount: rewardAmount,
                 recurringId: recurringId,
                 cardId: cardId,
+                currencyCode: currencyCode,
+                baseCurrencyAmount: baseCurrencyAmount,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -51,6 +51,7 @@ void main() async {
 
   // Global Error Handlers
   FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
     AppLogger.error('Flutter UI Error', details.exception, details.stack);
   };
 

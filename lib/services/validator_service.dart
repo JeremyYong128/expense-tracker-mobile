@@ -67,6 +67,8 @@ class ValidatorService {
     required String recurringPeriod,
     required String rewardAmountText,
     required bool hasRewards,
+    required String currencyCode,
+    required double baseCurrencyAmount,
   }) async {
     // 1. Field-Level Validation & Parsing
     if (!Validators.isPresent(titleText)) {
@@ -172,6 +174,8 @@ class ValidatorService {
       recurringInterval: recurringInterval,
       recurringPeriod: recurringPeriod,
       rewardAmount: rewardAmount,
+      currencyCode: currencyCode,
+      baseCurrencyAmount: baseCurrencyAmount,
     );
   }
 

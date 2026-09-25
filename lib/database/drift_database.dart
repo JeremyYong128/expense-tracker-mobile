@@ -50,6 +50,8 @@ class Transactions extends Table {
       .named('cardId')
       .nullable()
       .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
+  TextColumn get currencyCode => text().withDefault(const Constant('SGD'))();
+  RealColumn get baseCurrencyAmount => real().withDefault(const Constant(0.0))();
 }
 
 @DataClassName('CardTableData')
@@ -91,6 +93,7 @@ class RecurringTransactions extends Table {
       .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
   IntColumn get sortOrder =>
       integer().named('sortOrder').withDefault(const Constant(0))();
+  TextColumn get currencyCode => text().withDefault(const Constant('SGD'))();
 }
 
 class Budgets extends Table {
@@ -100,13 +103,18 @@ class Budgets extends Table {
   IntColumn get year => integer()();
   TextColumn get type => text()();
 
-  IntColumn get categoryId =>
-      integer().nullable().references(Categories, #id, onDelete: KeyAction.cascade)();
-  IntColumn get cardId => integer().nullable().references(Cards, #id, onDelete: KeyAction.cascade)();
+  IntColumn get categoryId => integer().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
+  IntColumn get cardId => integer().nullable().references(
+    Cards,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
 
   RealColumn get amount => real().nullable()();
-
-
 
   @override
   List<Set<Column>> get uniqueKeys => [
@@ -133,7 +141,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
@@ -242,6 +250,18 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+          }
+        }
+        if (from < 15) {
+          try {
+            await customStatement(
+              "UPDATE transactions SET currencyCode = 'SGD' WHERE currencyCode IS NULL;",
+            );
+            await customStatement(
+              "UPDATE transactions SET baseCurrencyAmount = amount WHERE baseCurrencyAmount IS NULL OR baseCurrencyAmount = 0.0;",
+            );
+          } catch (e, stack) {
+            AppLogger.error('Failed to migrate baseCurrencyAmount', e, stack);
           }
         }
         // --- Robust Migration Fallback ---

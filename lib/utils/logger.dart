@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -9,7 +8,7 @@ class AppLogger {
   /// Logs an informational message.
   static void info(String message) {
     if (kDebugMode) {
-      developer.log('ℹ️ INFO: $message', name: 'AppLogger');
+      print('ℹ️ INFO: $message');
     } else {
       FirebaseCrashlytics.instance.log('INFO: $message');
     }
@@ -18,12 +17,9 @@ class AppLogger {
   /// Logs an error and optional stack trace.
   static void error(String message, [dynamic error, StackTrace? stackTrace]) {
     if (kDebugMode) {
-      developer.log(
-        '❌ ERROR: $message',
-        name: 'AppLogger',
-        error: error,
-        stackTrace: stackTrace,
-      );
+      print('❌ ERROR: $message');
+      if (error != null) print(error);
+      if (stackTrace != null) print(stackTrace);
     } else {
       FirebaseCrashlytics.instance.recordError(
         error ?? Exception(message),

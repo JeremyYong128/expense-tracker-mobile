@@ -18,6 +18,8 @@ import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as model_card;
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/breakdown_card.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -29,7 +31,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isRewardsExpanded = false;
   String _categoryBreakdownType = 'expense';
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final analyticsProvider = Provider.of<AnalyticsProvider>(context);
     final stats = analyticsProvider.getDashboardStats();
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -87,6 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Expense',
                         stats.totalExpense,
                         AppColors.primary,
+                        baseCurrency: baseCurrency,
                         percentageChange: stats.expensePercentageChange,
                       ),
                     ),
@@ -95,6 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Income',
                         stats.totalIncome,
                         AppColors.primary,
+                        baseCurrency: baseCurrency,
                         percentageChange: stats.incomePercentageChange,
                         isRightAligned: true,
                       ),
@@ -223,7 +227,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               final reward = entry.value;
                               final isCashback = card.rewardType == 'Cashback';
                               final rewardText = isCashback
-                                  ? '\$${reward.toStringAsFixed(2)}'
+                                  ? CurrencyFormatter.format(reward, baseCurrency)
                                   : NumberFormat.decimalPattern().format(
                                       reward.toInt(),
                                     );
@@ -279,7 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ],
                                           ),
                                           Text(
-                                            '+$rewardText ${card.rewardType.cased(context)}',
+                                            '+$rewardText ${!isCashback ? card.rewardType.cased(context) : ''}',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: AppColors.income,
@@ -316,6 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String label,
     double amount,
     Color color, {
+    required String baseCurrency,
     double? percentageChange,
     bool isRightAligned = false,
   }) {
@@ -363,7 +368,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 8),
               ],
               Text(
-                _currencyFormat.format(amount),
+                CurrencyFormatter.format(amount, baseCurrency),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 24,

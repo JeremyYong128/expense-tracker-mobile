@@ -19,6 +19,8 @@ import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
+import 'package:expense_tracker_mobile/services/exchange_rate_service.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
 class TransactionFormData {
   final double amount;
@@ -33,6 +35,8 @@ class TransactionFormData {
   final int recurringInterval;
   final String recurringPeriod;
   final double? rewardAmount;
+  final String currencyCode;
+  final double baseCurrencyAmount;
 
   TransactionFormData({
     required this.amount,
@@ -47,6 +51,8 @@ class TransactionFormData {
     required this.recurringInterval,
     required this.recurringPeriod,
     this.rewardAmount,
+    required this.currencyCode,
+    required this.baseCurrencyAmount,
   });
 }
 
@@ -92,6 +98,15 @@ class TransactionFormState extends State<TransactionForm> {
   bool _hasRewards = false;
   bool _lockRewardRecalculation = false;
 
+  late String _selectedCurrency;
+  double? _baseCurrencyAmount;
+  bool _isConvertingCurrency = false;
+  late String _baseCurrency;
+  
+  static const List<String> _commonCurrencies = [
+    'SGD', 'USD', 'EUR', 'JPY', 'MYR', 'THB', 'GBP', 'AUD', 'CAD'
+  ];
+
   static const List<String> _recurringPeriods = [
     'Day(s)',
     'Week(s)',
@@ -116,6 +131,7 @@ class TransactionFormState extends State<TransactionForm> {
       final t = widget.transaction!;
       return _amountController.text.trim() != t.amount.toString() ||
           _titleController.text.trim() != t.title ||
+          _selectedCurrency != t.currencyCode ||
           _selectedCategory?.id != t.categoryId ||
           _selectedDate != t.date ||
           _isIncome != t.isIncome ||
@@ -130,6 +146,7 @@ class TransactionFormState extends State<TransactionForm> {
       final r = widget.recurringTransaction!;
       return _amountController.text.trim() != r.amount.toString() ||
           _titleController.text.trim() != r.title ||
+          _selectedCurrency != r.currencyCode ||
           _selectedCategory?.id != r.categoryId ||
           _selectedDate != r.startDate ||
           _isIncome != r.isIncome ||
@@ -156,6 +173,8 @@ class TransactionFormState extends State<TransactionForm> {
     double? initialRewardAmount;
     int initialInterval = 1;
     String initialPeriod = _recurringPeriods[2];
+    String? initialCurrencyCode;
+    double? initialBaseCurrencyAmount;
 
     if (widget.recurringTransaction != null) {
       final rt = widget.recurringTransaction!;
@@ -167,6 +186,7 @@ class TransactionFormState extends State<TransactionForm> {
       initialRewardAmount = rt.rewardAmount;
       initialInterval = rt.interval;
       initialPeriod = rt.period;
+      initialCurrencyCode = rt.currencyCode;
     } else if (widget.transaction != null) {
       final t = widget.transaction!;
       initialAmount = t.amount;
@@ -175,7 +195,13 @@ class TransactionFormState extends State<TransactionForm> {
       initialDate = t.date;
       initialIsIncome = t.isIncome;
       initialRewardAmount = t.rewardAmount;
+      initialCurrencyCode = t.currencyCode;
+      initialBaseCurrencyAmount = t.baseCurrencyAmount;
     }
+
+    _baseCurrency = context.read<UserPreferencesProvider>().baseCurrency;
+    _selectedCurrency = initialCurrencyCode ?? _baseCurrency;
+    _baseCurrencyAmount = initialBaseCurrencyAmount;
 
     _isIncome = initialIsIncome;
     _selectedDate = initialDate ?? DateTime.now();
@@ -207,6 +233,8 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   void _onAmountChanged() {
+    _convertCurrency();
+
     if (_lockRewardRecalculation ||
         !_hasRewards ||
         _selectedCard == null ||
@@ -227,6 +255,42 @@ class TransactionFormState extends State<TransactionForm> {
     _rewardAmountController.text = _selectedCard!.rewardType == 'Cashback'
         ? reward.toStringAsFixed(2)
         : reward.toStringAsFixed(0);
+  }
+
+  Future<void> _convertCurrency() async {
+    if (_selectedCurrency == _baseCurrency) {
+      setState(() {
+        _baseCurrencyAmount = double.tryParse(_amountController.text) ?? 0.0;
+      });
+      return;
+    }
+
+    final amt = double.tryParse(_amountController.text) ?? 0.0;
+    if (amt == 0) {
+      setState(() {
+        _baseCurrencyAmount = 0.0;
+      });
+      return;
+    }
+
+    setState(() {
+      _isConvertingCurrency = true;
+    });
+
+    final converted = await ExchangeRateService.convert(
+      amount: amt,
+      fromCurrency: _selectedCurrency,
+      toCurrency: _baseCurrency,
+    );
+
+    if (mounted) {
+      setState(() {
+        _isConvertingCurrency = false;
+        if (converted != null) {
+          _baseCurrencyAmount = converted;
+        }
+      });
+    }
   }
 
   void _onRecurringSelected(RecurringTransaction? val) {
@@ -374,6 +438,10 @@ class TransactionFormState extends State<TransactionForm> {
         recurringPeriod: _recurringPeriod,
         rewardAmountText: _rewardAmountController.text,
         hasRewards: _hasRewards,
+        currencyCode: _selectedCurrency,
+        baseCurrencyAmount: _selectedCurrency != _baseCurrency 
+            ? (_baseCurrencyAmount ?? double.parse(_amountController.text))
+            : double.parse(_amountController.text),
       );
 
       await widget.onSave(data);
@@ -515,21 +583,73 @@ class TransactionFormState extends State<TransactionForm> {
             ),
           ),
 
-          CustomField(
-            label: 'Amount'.cased(context),
-            child: TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: _getInputDecoration(
-                hintText: '0.00',
-                prefixIcon: const Icon(
-                  Icons.attach_money,
-                  color: AppColors.primary,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: CustomField(
+                  label: 'Amount'.cased(context),
+                  padding: EdgeInsets.only(bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0, right: 16.0),
+                  child: TextField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: _getInputDecoration(
+                      hintText: '0.00',
+                    ),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Expanded(
+                flex: 1,
+                child: CustomField(
+                  label: 'Currency'.cased(context),
+                  padding: EdgeInsets.only(bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0),
+                  child: CustomDropdownField<String>(
+                    label: '',
+                    items: _commonCurrencies,
+                    selectedItem: _selectedCurrency,
+                    displayText: (c) => c,
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedCurrency = val;
+                      });
+                      _convertCurrency();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedCurrency != _baseCurrency)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: SizedBox(
+                height: 24,
+                child: Row(
+                  children: [
+                  const Icon(Icons.calculate, color: AppColors.grey, size: 20),
+                  const SizedBox(width: 8),
+                  if (_isConvertingCurrency)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    Text(
+                      '≈ ${_baseCurrencyAmount?.toStringAsFixed(2) ?? '0.00'} $_baseCurrency',
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
 

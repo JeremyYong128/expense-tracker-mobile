@@ -14,6 +14,8 @@ import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -73,6 +75,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     BuildContext context,
     List<Budget> categoryBudgets,
     List<Budget> cardBudgets,
+    String baseCurrency,
   ) {
     final categories = context.watch<CategoryProvider>().categories;
     final cards = context.watch<CardProvider>().cards;
@@ -207,7 +210,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                     TextSpan(
                                       children: [
                                         TextSpan(
-                                          text: '\$${spent.toStringAsFixed(2)}',
+                                          text: CurrencyFormatter.format(spent, baseCurrency),
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: isExceeded
@@ -217,7 +220,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                         ),
                                         TextSpan(
                                           text:
-                                              ' / \$${budgetAmount.toStringAsFixed(2)}',
+                                              ' / ${CurrencyFormatter.format(budgetAmount, baseCurrency)}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             color: AppColors.textSecondary,
@@ -368,6 +371,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final activeBudgets = context.watch<BudgetProvider>().activeBudgets;
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
 
     final categoryBudgets = activeBudgets
         .where((b) => b.type == 'category')
@@ -418,7 +422,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               )
             else
-              _buildBudgetContentCard(context, categoryBudgets, cardBudgets),
+              _buildBudgetContentCard(context, categoryBudgets, cardBudgets, baseCurrency),
           ],
         ),
       ),

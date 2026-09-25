@@ -9,6 +9,8 @@ class Transaction {
   final int? recurringId;
   final int? cardId;
   final double? rewardAmount;
+  final String currencyCode;
+  final double baseCurrencyAmount;
 
   Transaction({
     this.id,
@@ -21,6 +23,8 @@ class Transaction {
     this.recurringId,
     this.cardId,
     this.rewardAmount,
+    this.currencyCode = 'SGD',
+    required this.baseCurrencyAmount,
   });
 
   Map<String, dynamic> toMap() {
@@ -35,6 +39,8 @@ class Transaction {
       'recurringId': recurringId,
       'cardId': cardId,
       'rewardAmount': rewardAmount,
+      'currencyCode': currencyCode,
+      'baseCurrencyAmount': baseCurrencyAmount,
     };
   }
 
@@ -49,6 +55,8 @@ class Transaction {
     int? recurringId,
     int? cardId,
     double? rewardAmount,
+    String? currencyCode,
+    double? baseCurrencyAmount,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -61,6 +69,8 @@ class Transaction {
       recurringId: recurringId ?? this.recurringId,
       cardId: cardId ?? this.cardId,
       rewardAmount: rewardAmount ?? this.rewardAmount,
+      currencyCode: currencyCode ?? this.currencyCode,
+      baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
     );
   }
 
@@ -76,6 +86,8 @@ class Transaction {
       recurringId: map['recurringId'],
       cardId: map['cardId'],
       rewardAmount: map['rewardAmount'],
+      currencyCode: map['currencyCode'] ?? 'SGD',
+      baseCurrencyAmount: map['baseCurrencyAmount'] ?? map['amount'],
     );
   }
 }

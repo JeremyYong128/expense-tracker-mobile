@@ -25,6 +25,8 @@ class RecurringProcessingService {
             recurringId: tx.id,
             cardId: tx.cardId,
             rewardAmount: tx.rewardAmount,
+            currencyCode: tx.currencyCode,
+            baseCurrencyAmount: tx.amount,
           ),
         );
 

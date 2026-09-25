@@ -8,6 +8,8 @@ import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/widgets/category_form.dart';
 import 'package:expense_tracker_mobile/ui/widgets/dialogs/confirmation_dialog.dart';
@@ -95,6 +97,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
 
     final latestCategory =
         categoryProvider.getCategoryById(widget.category.id) ?? widget.category;
@@ -191,6 +194,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                         totalIncome,
                         totalExpense,
                         prevBalance,
+                        baseCurrency,
                       ),
                       const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Transactions'.cased(context)),
@@ -229,6 +233,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
     double totalIncome,
     double totalExpense,
     double prevBalance,
+    String baseCurrency,
   ) {
     final balance = totalIncome - totalExpense;
     final isPositive = balance > 0;
@@ -258,7 +263,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            '$sign\$${balance.abs().toStringAsFixed(2)}',
+            '$sign${CurrencyFormatter.format(balance.abs(), baseCurrency)}',
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 24,
@@ -277,7 +282,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '\$${diff.abs().toStringAsFixed(2)} vs last month',
+                  '${CurrencyFormatter.format(diff.abs(), baseCurrency)} vs last month',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

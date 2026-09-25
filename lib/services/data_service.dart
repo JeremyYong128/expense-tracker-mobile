@@ -36,6 +36,8 @@ class DataService {
       recurringId: data.recurringId,
       cardId: data.cardId,
       rewardAmount: data.rewardAmount,
+      currencyCode: data.currencyCode,
+      baseCurrencyAmount: data.baseCurrencyAmount,
     );
   }
 
@@ -66,6 +68,7 @@ class DataService {
       nextDueDate: DateTime.parse(data.nextDueDate),
       cardId: data.cardId,
       rewardAmount: data.rewardAmount,
+      currencyCode: data.currencyCode,
     );
   }
 
@@ -342,8 +345,11 @@ class DataService {
     int? cardId,
     int? recurringId,
     double? rewardAmount,
+    String currencyCode = 'SGD',
+    double? baseCurrencyAmount,
   }) async {
     final amount = double.parse(amountText);
+    final actualBaseCurrencyAmount = baseCurrencyAmount ?? amount;
     final recurringInterval = int.tryParse(recurringIntervalText) ?? 1;
 
     if (isRecurring) {
@@ -374,6 +380,7 @@ class DataService {
               note: drift.Value(note.trim().isEmpty ? null : note.trim()),
               cardId: drift.Value(cardId),
               rewardAmount: drift.Value(rewardAmount),
+              currencyCode: drift.Value(currencyCode),
               sortOrder: drift.Value(newSortOrder),
             ),
           );
@@ -391,6 +398,8 @@ class DataService {
               cardId: drift.Value(cardId),
               recurringId: drift.Value(recurringId),
               rewardAmount: drift.Value(rewardAmount),
+              currencyCode: drift.Value(currencyCode),
+              baseCurrencyAmount: drift.Value(actualBaseCurrencyAmount),
             ),
           );
     }
@@ -410,6 +419,8 @@ class DataService {
         cardId: drift.Value(transaction.cardId),
         recurringId: drift.Value(transaction.recurringId),
         rewardAmount: drift.Value(transaction.rewardAmount),
+        currencyCode: drift.Value(transaction.currencyCode),
+        baseCurrencyAmount: drift.Value(transaction.baseCurrencyAmount),
       ),
     );
   }
@@ -483,6 +494,7 @@ class DataService {
         note: drift.Value(transaction.note),
         cardId: drift.Value(transaction.cardId),
         rewardAmount: drift.Value(transaction.rewardAmount),
+        currencyCode: drift.Value(transaction.currencyCode),
       ),
     );
   }
@@ -548,6 +560,8 @@ class DataService {
             recurringId: drift.Value(transaction.recurringId),
             cardId: drift.Value(transaction.cardId),
             rewardAmount: drift.Value(transaction.rewardAmount),
+            currencyCode: drift.Value(transaction.currencyCode),
+            baseCurrencyAmount: drift.Value(transaction.baseCurrencyAmount),
           ),
         );
   }

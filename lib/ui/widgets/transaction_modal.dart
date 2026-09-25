@@ -58,6 +58,8 @@ class _TransactionModalState extends State<TransactionModal> {
         cardId: data.cardId,
         recurringId: data.recurringId,
         rewardAmount: data.rewardAmount,
+        currencyCode: data.currencyCode,
+        baseCurrencyAmount: data.baseCurrencyAmount,
       );
       SnackBarService.showSuccess('Transaction added successfully');
 
@@ -123,6 +125,8 @@ class _TransactionModalState extends State<TransactionModal> {
         note: data.note,
         cardId: data.cardId,
         rewardAmount: data.rewardAmount,
+        currencyCode: data.currencyCode,
+        baseCurrencyAmount: data.baseCurrencyAmount,
       );
       await context.read<TransactionProvider>().updateTransaction(updated);
       SnackBarService.showSuccess('Transaction updated successfully');

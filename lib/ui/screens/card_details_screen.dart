@@ -15,6 +15,8 @@ import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/transaction_list.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/month_navigator.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
@@ -153,6 +155,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
     final cardProvider = context.watch<CardProvider>();
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
 
     final latestCard = cardProvider.getCardById(widget.card.id) ?? widget.card;
 
@@ -204,7 +207,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
           padding: AppStyles.screenPadding,
           child: Column(
             children: [
-              _buildDigitalCard(latestCard),
+              _buildDigitalCard(latestCard, baseCurrency),
               if (allTransactions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
@@ -251,6 +254,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                         totalRewardsAmount,
                         prevExpense,
                         prevRewardsAmount,
+                        baseCurrency,
                       ),
                       const SizedBox(height: AppStyles.sectionContentSpacing),
                       SectionHeader(title: 'Expenses'.cased(context)),
@@ -298,22 +302,23 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     }
   }
 
-  String _getRewardSubtitle(BuildContext context, Card card) {
+  String _getRewardSubtitle(BuildContext context, Card card, String baseCurrency) {
     final type = card.rewardType.toLowerCase();
     if (type == 'none') return 'No rewards'.cased(context);
     final rateStr = card.rewardRate == card.rewardRate.toInt()
         ? card.rewardRate.toInt().toString()
         : card.rewardRate.toStringAsFixed(1);
+    final symbol = NumberFormat.simpleCurrency(name: baseCurrency).currencySymbol;
     if (type == 'cashback') return '$rateStr% Cashback'.cased(context);
-    if (type == 'miles') return '$rateStr Miles per \$'.cased(context);
-    if (type == 'points') return '$rateStr Points per \$'.cased(context);
+    if (type == 'miles') return '$rateStr Miles per $symbol'.cased(context);
+    if (type == 'points') return '$rateStr Points per $symbol'.cased(context);
     return '$rateStr ${card.rewardType.cased(context)}';
   }
 
-  Widget _buildDigitalCard(Card card) {
+  Widget _buildDigitalCard(Card card, String baseCurrency) {
     final color = AppColors.getColorFromHex(card.colorHex);
     final iconData = _getIconForRewardType(card.rewardType);
-    final subtitle = _getRewardSubtitle(context, card);
+    final subtitle = _getRewardSubtitle(context, card, baseCurrency);
 
     return Container(
       width: double.infinity,
@@ -369,10 +374,11 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     double totalRewardsAmount,
     double prevExpense,
     double prevRewardsAmount,
+    String baseCurrency,
   ) {
     final isCashback = card.rewardType == 'Cashback';
     final rewardText = isCashback
-        ? '\$${totalRewardsAmount.toStringAsFixed(2)}'
+        ? CurrencyFormatter.format(totalRewardsAmount, baseCurrency)
         : NumberFormat('#,##0.##').format(totalRewardsAmount);
 
     final expenseDiff = BusinessLogic.calculateAbsoluteDifference(
@@ -404,7 +410,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '\$${totalExpense.abs().toStringAsFixed(2)}',
+                  CurrencyFormatter.format(totalExpense.abs(), baseCurrency),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 24,
@@ -426,7 +432,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
-                          '\$${expenseDiff.abs().toStringAsFixed(2)} vs last month',
+                          '${CurrencyFormatter.format(expenseDiff.abs(), baseCurrency)} vs last month',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,

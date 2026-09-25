@@ -83,16 +83,16 @@ class AnalyticsProvider extends ChangeNotifier {
 
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
-          income += tx.amount;
+          income += tx.baseCurrencyAmount;
           categoryIncome[tx.categoryId] =
-              (categoryIncome[tx.categoryId] ?? 0) + tx.amount;
+              (categoryIncome[tx.categoryId] ?? 0) + tx.baseCurrencyAmount;
         } else {
-          expense += tx.amount;
+          expense += tx.baseCurrencyAmount;
           categoryExpense[tx.categoryId] =
-              (categoryExpense[tx.categoryId] ?? 0) + tx.amount;
+              (categoryExpense[tx.categoryId] ?? 0) + tx.baseCurrencyAmount;
           
           final cardId = tx.cardId ?? -1;
-          cardSpending[cardId] = (cardSpending[cardId] ?? 0) + tx.amount;
+          cardSpending[cardId] = (cardSpending[cardId] ?? 0) + tx.baseCurrencyAmount;
         }
       }
 
@@ -100,9 +100,9 @@ class AnalyticsProvider extends ChangeNotifier {
       double pastExpense = 0;
       for (var tx in pastMonthTransactions) {
         if (tx.isIncome) {
-          pastIncome += tx.amount;
+          pastIncome += tx.baseCurrencyAmount;
         } else {
-          pastExpense += tx.amount;
+          pastExpense += tx.baseCurrencyAmount;
         }
       }
 
@@ -255,7 +255,7 @@ class AnalyticsProvider extends ChangeNotifier {
       double totalRewardsAmount = 0;
       for (var tx in currentMonthTransactions) {
         if (!tx.isIncome) {
-          totalExpense += tx.amount;
+          totalExpense += tx.baseCurrencyAmount;
           if (tx.rewardAmount != null) {
             totalRewardsAmount += tx.rewardAmount!;
           }
@@ -271,7 +271,7 @@ class AnalyticsProvider extends ChangeNotifier {
       double prevRewardsAmount = 0;
       for (var tx in prevTransactionsList) {
         if (!tx.isIncome) {
-          prevExpense += tx.amount;
+          prevExpense += tx.baseCurrencyAmount;
           if (tx.rewardAmount != null) {
             prevRewardsAmount += tx.rewardAmount!;
           }
@@ -306,9 +306,9 @@ class AnalyticsProvider extends ChangeNotifier {
       double totalExpense = 0;
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
-          totalIncome += tx.amount;
+          totalIncome += tx.baseCurrencyAmount;
         } else {
-          totalExpense += tx.amount;
+          totalExpense += tx.baseCurrencyAmount;
         }
       }
 
@@ -321,9 +321,9 @@ class AnalyticsProvider extends ChangeNotifier {
       double prevExpense = 0;
       for (var tx in prevTransactionsList) {
         if (tx.isIncome) {
-          prevIncome += tx.amount;
+          prevIncome += tx.baseCurrencyAmount;
         } else {
-          prevExpense += tx.amount;
+          prevExpense += tx.baseCurrencyAmount;
         }
       }
 
@@ -354,9 +354,9 @@ class AnalyticsProvider extends ChangeNotifier {
       double totalExpense = 0;
       for (var tx in currentMonthTransactions) {
         if (tx.isIncome) {
-          totalIncome += tx.amount;
+          totalIncome += tx.baseCurrencyAmount;
         } else {
-          totalExpense += tx.amount;
+          totalExpense += tx.baseCurrencyAmount;
         }
       }
 
@@ -369,9 +369,9 @@ class AnalyticsProvider extends ChangeNotifier {
       double prevExpense = 0;
       for (var tx in prevTransactionsList) {
         if (tx.isIncome) {
-          prevIncome += tx.amount;
+          prevIncome += tx.baseCurrencyAmount;
         } else {
-          prevExpense += tx.amount;
+          prevExpense += tx.baseCurrencyAmount;
         }
       }
 
@@ -413,7 +413,7 @@ class AnalyticsProvider extends ChangeNotifier {
       double spent = 0;
       for (var tx in monthTransactions) {
         if (!tx.isIncome && tx.categoryId == categoryId) {
-          spent += tx.amount;
+          spent += tx.baseCurrencyAmount;
         }
       }
 

@@ -12,6 +12,8 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:intl/intl.dart';
 
 class CardForm extends StatefulWidget {
   final Card? card;
@@ -157,6 +159,9 @@ class _CardFormState extends State<CardForm> {
 
   @override
   Widget build(BuildContext context) {
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
+    final symbol = NumberFormat.simpleCurrency(name: baseCurrency).currencySymbol;
+
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
@@ -244,7 +249,7 @@ class _CardFormState extends State<CardForm> {
               CustomField(
                 label: _rewardType == 'Cashback'
                     ? 'Reward Rate (%)'.cased(context)
-                    : 'Reward Rate (per \$)'.cased(context),
+                    : 'Reward Rate (per $symbol)'.cased(context),
                 infoText: _rewardType != 'None'
                     ? 'This will be the default rate applied to new transactions. You can modify or remove the rewards on individual transactions later.'
                     : null,

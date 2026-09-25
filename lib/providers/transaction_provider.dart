@@ -64,6 +64,8 @@ class TransactionProvider extends ChangeNotifier {
     int? cardId,
     int? recurringId,
     double? rewardAmount,
+    String currencyCode = 'SGD',
+    double? baseCurrencyAmount,
   }) async {
     await DataService.addTransaction(
       amountText: amountText,
@@ -78,6 +80,8 @@ class TransactionProvider extends ChangeNotifier {
       cardId: cardId,
       recurringId: recurringId,
       rewardAmount: rewardAmount,
+      currencyCode: currencyCode,
+      baseCurrencyAmount: baseCurrencyAmount,
     );
     await fetchTransactions();
   }

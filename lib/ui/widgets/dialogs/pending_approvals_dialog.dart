@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/recurring_transaction_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 
 class PendingApprovalsDialog extends StatefulWidget {
@@ -76,22 +78,23 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
     }
   }
 
-  String _getRewardText(Transaction tx, var card) {
+  String _getRewardText(Transaction tx, var card, String baseCurrency) {
     if (card != null) {
       if (card.rewardType == 'Cashback') {
-        return '\$${tx.rewardAmount!.toStringAsFixed(2)} cashback';
+        return '${CurrencyFormatter.format(tx.rewardAmount!, baseCurrency)} cashback';
       } else if (card.rewardType == 'Miles') {
         return '${tx.rewardAmount!.toStringAsFixed(0)} miles';
       } else if (card.rewardType == 'Points') {
         return '${tx.rewardAmount!.toStringAsFixed(0)} points';
       }
     }
-    return '\$${tx.rewardAmount!.toStringAsFixed(2)}';
+    return CurrencyFormatter.format(tx.rewardAmount!, baseCurrency);
   }
 
   @override
   Widget build(BuildContext context) {
     final cardProvider = context.watch<CardProvider>();
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
     final groupedPending = <int, List<Transaction>>{};
     for (final tx in _pending) {
       if (tx.recurringId != null) {
@@ -148,7 +151,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                 ),
                               ),
                               Text(
-                                '\$${firstTx.amount.toStringAsFixed(2)}',
+                                CurrencyFormatter.format(firstTx.amount, firstTx.currencyCode),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -168,7 +171,7 @@ class _PendingApprovalsDialogState extends State<PendingApprovalsDialog> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  _getRewardText(firstTx, card),
+                                  _getRewardText(firstTx, card, baseCurrency),
                                   style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 12,

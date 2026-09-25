@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
@@ -56,21 +58,22 @@ class _TransactionListState extends State<TransactionList> {
       transaction.recurringId,
     );
 
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
+
     String rewardText = '';
     if (transaction.rewardAmount != null && transaction.rewardAmount! > 0) {
       if (card != null) {
         if (card.rewardType == 'Cashback') {
-          rewardText =
-              '\$${transaction.rewardAmount!.toStringAsFixed(2)} cashback';
+          rewardText = '${CurrencyFormatter.format(transaction.rewardAmount!, baseCurrency)} cashback';
         } else if (card.rewardType == 'Miles') {
           rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} miles';
         } else if (card.rewardType == 'Points') {
           rewardText = '${transaction.rewardAmount!.toStringAsFixed(0)} points';
         } else {
-          rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)}';
+          rewardText = CurrencyFormatter.format(transaction.rewardAmount!, baseCurrency);
         }
       } else {
-        rewardText = '\$${transaction.rewardAmount!.toStringAsFixed(2)}';
+        rewardText = CurrencyFormatter.format(transaction.rewardAmount!, baseCurrency);
       }
     }
 
@@ -463,8 +466,8 @@ class _TransactionListState extends State<TransactionList> {
                                           children: [
                                             Text(
                                               transaction.isIncome
-                                                  ? '+\$${transaction.amount.toStringAsFixed(2)}'
-                                                  : '-\$${transaction.amount.toStringAsFixed(2)}',
+                                                  ? '+${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}'
+                                                  : '-${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w700,
                                                 fontSize: 16,

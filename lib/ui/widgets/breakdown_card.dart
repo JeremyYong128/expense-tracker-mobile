@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as model_card;
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
@@ -45,11 +47,7 @@ class BreakdownCard<T> extends StatefulWidget {
 }
 
 class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
-  final NumberFormat _currencyFormat = NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 2,
-  );
-  
+
   bool _isExpanded = false;
   int? _touchedIndex;
   Timer? _clearSelectionTimer;
@@ -63,6 +61,8 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
+
     if (widget.entries.isEmpty && widget.toggleOptions == null) {
       return const SizedBox.shrink();
     }
@@ -207,9 +207,9 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                     if (budgetAmount != null && budgetAmount > 0) {
                       final diff = budgetAmount - amount;
                       if (diff >= 0) {
-                        subtitleText = '${_currencyFormat.format(diff)} under budget';
+                        subtitleText = '${CurrencyFormatter.format(diff, baseCurrency)} under budget';
                       } else {
-                        subtitleText = '${_currencyFormat.format(diff.abs())} over budget';
+                        subtitleText = '${CurrencyFormatter.format(diff.abs(), baseCurrency)} over budget';
                         subtitleColor = AppColors.error;
                       }
                     }
@@ -297,7 +297,7 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              _currencyFormat.format(amount),
+                                              CurrencyFormatter.format(amount, baseCurrency),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 15,

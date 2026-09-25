@@ -105,9 +105,11 @@ flutter run
     - Improve list designs
         - Manage screen items
         - Dashboard cashback section
+    - Multicurrency
+        - How to handle rewards for cards in different currencies?
+        - How to handle budget for different currencies?
 
 - Medium priority
-    - Multicurrency support
 
 - Low priority
     - List design for notifications screen
