@@ -45,10 +45,13 @@ if ! flutter clean; then
     exit 1
 fi
 
-echo -e "\n${YELLOW}Step 3: Building iOS App Bundle (IPA)...${NC}"
-# 3. Build the app
+echo -e "\n${YELLOW}Step 3: Building Apps...${NC}"
+# 3. Build the apps
+echo "Building iOS App Bundle (IPA)..."
 flutter build ipa --release
-echo -e "${GREEN}✓ Build completed successfully${NC}"
+echo "Building Android APK..."
+flutter build apk --release
+echo -e "${GREEN}✓ Builds completed successfully${NC}"
 
 IPA_PATH="build/ios/ipa/expense_tracker_mobile.ipa"
 if [ ! -f "$IPA_PATH" ]; then

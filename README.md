@@ -105,7 +105,6 @@ flutter run
     - Improve list designs
         - Manage screen items
         - Dashboard cashback section
-    - Colour picker
 
 - Medium priority
     - Multicurrency support
