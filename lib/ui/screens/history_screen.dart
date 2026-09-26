@@ -68,12 +68,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       final earliestMonth = availableMonths.first;
       final latestMonth = availableMonths.last;
 
-
       bodyContent = SafeArea(
         top: false,
         bottom: true,
         child: SingleChildScrollView(
           controller: _scrollController,
+          // padding: AppStyles.screenPadding.copyWith(top: 0),
           padding: AppStyles.screenPadding,
           child: Column(
             children: [

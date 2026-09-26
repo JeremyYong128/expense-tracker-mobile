@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 
 class MonthNavigator extends StatelessWidget {
   final DateTime currentMonth;
@@ -98,51 +99,54 @@ class MonthNavigator extends StatelessWidget {
         currentMonth.year < maxMonth!.year ||
         (currentMonth.year == maxMonth!.year && currentMonth.month < maxMonth!.month);
 
-    return Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: canGoBack ? onPrevious : null,
-          padding: EdgeInsets.zero,
-        ),
-        Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _showPicker(context),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      DateFormat('MMMM yyyy').format(currentMonth).cased(context),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+    return ContentCard(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: canGoBack ? onPrevious : null,
+            padding: EdgeInsets.zero,
+          ),
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _showPicker(context),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        DateFormat('MMMM yyyy').format(currentMonth).cased(context),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.arrow_drop_down,
-                      color: AppColors.textPrimary,
-                      size: 28,
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.textPrimary,
+                        size: 28,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          onPressed: canGoForward ? onNext : null,
-          padding: EdgeInsets.zero,
-        ),
-      ],
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: canGoForward ? onNext : null,
+            padding: EdgeInsets.zero,
+          ),
+        ],
+      ),
     );
   }
 }

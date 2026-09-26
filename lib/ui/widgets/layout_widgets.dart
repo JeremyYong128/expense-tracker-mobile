@@ -4,8 +4,14 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 class ContentCard extends StatelessWidget {
   final Widget child;
   final Color? backgroundColor;
+  final EdgeInsetsGeometry? padding;
 
-  const ContentCard({super.key, required this.child, this.backgroundColor});
+  const ContentCard({
+    super.key, 
+    required this.child, 
+    this.backgroundColor,
+    this.padding,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +29,7 @@ class ContentCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppStyles.cardInternalPadding),
+        padding: padding ?? const EdgeInsets.all(AppStyles.cardInternalPadding),
         child: child,
       ),
     );
