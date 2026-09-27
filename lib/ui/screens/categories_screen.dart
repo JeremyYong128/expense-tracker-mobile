@@ -152,7 +152,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                               size: 24,
                                             ),
                                           ),
-                                          const SizedBox(width: 16.0),
+                                          const SizedBox(width: 12.0),
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment:

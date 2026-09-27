@@ -150,7 +150,7 @@ class _CardsScreenState extends State<CardsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 16.0),
+                    const SizedBox(width: 12.0),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
