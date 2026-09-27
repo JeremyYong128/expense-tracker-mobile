@@ -141,7 +141,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration {
@@ -250,20 +250,10 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+            rethrow;
           }
         }
-        if (from < 15) {
-          try {
-            await customStatement(
-              "UPDATE transactions SET currencyCode = 'SGD' WHERE currencyCode IS NULL;",
-            );
-            await customStatement(
-              "UPDATE transactions SET baseCurrencyAmount = amount WHERE baseCurrencyAmount IS NULL OR baseCurrencyAmount = 0.0;",
-            );
-          } catch (e, stack) {
-            AppLogger.error('Failed to migrate baseCurrencyAmount', e, stack);
-          }
-        }
+
         // --- Robust Migration Fallback ---
         // Ensure ALL tables and columns exist to prevent crashes from
         // messy or skipped database migrations in older app versions.
@@ -306,6 +296,7 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+            rethrow;
           }
         }
 
@@ -342,6 +333,7 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+            rethrow;
           }
         }
         if (from < 12) {
@@ -369,6 +361,7 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+            rethrow;
           }
         }
         if (from < 14) {
@@ -380,6 +373,23 @@ class AppDatabase extends _$AppDatabase {
               e,
               stack,
             );
+            rethrow;
+          }
+        }
+        if (from < 17) {
+          try {
+            await customStatement(
+              "UPDATE transactions SET currency_code = 'SGD' WHERE currency_code IS NULL;",
+            );
+            await customStatement(
+              "UPDATE transactions SET base_currency_amount = amount WHERE base_currency_amount IS NULL OR base_currency_amount = 0.0;",
+            );
+            await customStatement(
+              "UPDATE recurring_transactions SET currency_code = 'SGD' WHERE currency_code IS NULL;",
+            );
+          } catch (e, stack) {
+            AppLogger.error('Failed to migrate baseCurrencyAmount', e, stack);
+            rethrow;
           }
         }
       },
