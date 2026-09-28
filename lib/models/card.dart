@@ -6,6 +6,7 @@ class Card {
   final String colorHex;
   final bool isActive;
   final int sortOrder;
+  final String currencyCode;
 
   Card({
     this.id,
@@ -15,6 +16,7 @@ class Card {
     required this.colorHex,
     this.isActive = true,
     this.sortOrder = 0,
+    required this.currencyCode,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +28,7 @@ class Card {
       'colorHex': colorHex,
       'isActive': isActive,
       'sortOrder': sortOrder,
+      'currencyCode': currencyCode,
     };
   }
 
@@ -37,6 +40,7 @@ class Card {
     String? colorHex,
     bool? isActive,
     int? sortOrder,
+    String? currencyCode,
   }) {
     return Card(
       id: id ?? this.id,
@@ -46,6 +50,7 @@ class Card {
       colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
       sortOrder: sortOrder ?? this.sortOrder,
+      currencyCode: currencyCode ?? this.currencyCode,
     );
   }
 
@@ -57,6 +62,7 @@ class Card {
       rewardRate: map['rewardRate'],
       colorHex: map['colorHex'] ?? '#9E9E9E',
       isActive: map['isActive'] ?? true,
+      currencyCode: map['currencyCode'] ?? 'SGD',
     );
   }
 }

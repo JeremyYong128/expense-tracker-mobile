@@ -204,6 +204,7 @@ class AnalyticsProvider extends ChangeNotifier {
             rewardRate: 0.0,
             colorHex: '#9E9E9E',
             isActive: true,
+            currencyCode: 'SGD',
           ),
         );
         cardExpenseBreakdownMap[card] = entry.value;

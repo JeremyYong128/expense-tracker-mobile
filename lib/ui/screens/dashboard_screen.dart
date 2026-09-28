@@ -229,7 +229,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               final rewardText = isCashback
                                   ? CurrencyFormatter.format(
                                       reward,
-                                      baseCurrency,
+                                      card.currencyCode,
                                     )
                                   : NumberFormat.decimalPattern().format(
                                       reward.toInt(),

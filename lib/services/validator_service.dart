@@ -224,6 +224,7 @@ class ValidatorService {
     required String rewardType,
     required String rateText,
     required String colorHex,
+    required String currencyCode,
   }) {
     final cardProvider = context.read<CardProvider>();
 
@@ -263,6 +264,7 @@ class ValidatorService {
       rewardType: rewardType,
       rewardRate: rate,
       colorHex: colorHex,
+      currencyCode: currencyCode,
     );
   }
 }

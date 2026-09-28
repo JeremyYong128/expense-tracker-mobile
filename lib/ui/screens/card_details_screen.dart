@@ -308,7 +308,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final rateStr = card.rewardRate == card.rewardRate.toInt()
         ? card.rewardRate.toInt().toString()
         : card.rewardRate.toStringAsFixed(1);
-    final symbol = NumberFormat.simpleCurrency(name: baseCurrency).currencySymbol;
+    final symbol = NumberFormat.simpleCurrency(name: card.currencyCode).currencySymbol;
     if (type == 'cashback') return '$rateStr% Cashback'.cased(context);
     if (type == 'miles') return '$rateStr Miles per $symbol'.cased(context);
     if (type == 'points') return '$rateStr Points per $symbol'.cased(context);
@@ -378,7 +378,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
   ) {
     final isCashback = card.rewardType == 'Cashback';
     final rewardText = isCashback
-        ? CurrencyFormatter.format(totalRewardsAmount, baseCurrency)
+        ? CurrencyFormatter.format(totalRewardsAmount, card.currencyCode)
         : NumberFormat('#,##0.##').format(totalRewardsAmount);
 
     final expenseDiff = BusinessLogic.calculateAbsoluteDifference(

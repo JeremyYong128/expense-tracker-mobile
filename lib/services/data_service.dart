@@ -49,6 +49,8 @@ class DataService {
       rewardRate: data.rewardRate,
       colorHex: data.colorHex,
       isActive: data.isActive,
+      sortOrder: data.sortOrder,
+      currencyCode: data.currencyCode,
     );
   }
 
@@ -268,6 +270,7 @@ class DataService {
             colorHex: drift.Value(card.colorHex),
             isActive: drift.Value(card.isActive),
             sortOrder: drift.Value(newSortOrder),
+            currencyCode: drift.Value(card.currencyCode),
           ),
         );
     return id;
@@ -294,6 +297,7 @@ class DataService {
         rewardRate: drift.Value(card.rewardRate),
         colorHex: drift.Value(card.colorHex),
         isActive: drift.Value(card.isActive),
+        currencyCode: drift.Value(card.currencyCode),
       ),
     );
   }

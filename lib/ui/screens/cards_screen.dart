@@ -14,6 +14,7 @@ import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
+import 'package:intl/intl.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -53,12 +54,14 @@ class _CardsScreenState extends State<CardsScreen> {
         ? card.rewardRate.toInt().toString()
         : card.rewardRate.toStringAsFixed(1);
 
+    final symbol = NumberFormat.simpleCurrency(name: card.currencyCode).currencySymbol;
+
     if (type == 'cashback') {
       return '$rateStr% Cashback'.cased(context);
     } else if (type == 'miles') {
-      return '$rateStr Miles per \$'.cased(context);
+      return '$rateStr Miles per $symbol'.cased(context);
     } else if (type == 'points') {
-      return '$rateStr Points per \$'.cased(context);
+      return '$rateStr Points per $symbol'.cased(context);
     }
 
     return '$rateStr ${card.rewardType.cased(context)}';

@@ -6,6 +6,7 @@ import 'package:expense_tracker_mobile/models/card.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_time_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_switch.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
@@ -102,10 +103,6 @@ class TransactionFormState extends State<TransactionForm> {
   double? _baseCurrencyAmount;
   bool _isConvertingCurrency = false;
   late String _baseCurrency;
-  
-  static const List<String> _commonCurrencies = [
-    'SGD', 'USD', 'EUR', 'JPY', 'MYR', 'THB', 'GBP', 'AUD', 'CAD'
-  ];
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -234,7 +231,10 @@ class TransactionFormState extends State<TransactionForm> {
 
   void _onAmountChanged() {
     _convertCurrency();
+    _recalculateRewards();
+  }
 
+  Future<void> _recalculateRewards() async {
     if (_lockRewardRecalculation ||
         !_hasRewards ||
         _selectedCard == null ||
@@ -244,17 +244,34 @@ class TransactionFormState extends State<TransactionForm> {
 
     final amtStr = _amountController.text;
     final amt = double.tryParse(amtStr) ?? 0.0;
-
-    double reward = 0;
-    if (_selectedCard!.rewardType == 'Cashback') {
-      reward = amt * (_selectedCard!.rewardRate / 100);
-    } else {
-      reward = amt * _selectedCard!.rewardRate;
+    if (amt == 0) {
+      if (mounted) _rewardAmountController.text = '0';
+      return;
     }
 
-    _rewardAmountController.text = _selectedCard!.rewardType == 'Cashback'
-        ? reward.toStringAsFixed(2)
-        : reward.toStringAsFixed(0);
+    double reward = 0;
+    if (_selectedCurrency != _selectedCard!.currencyCode) {
+      final convertedAmt = await ExchangeRateService.convert(
+        amount: amt,
+        fromCurrency: _selectedCurrency,
+        toCurrency: _selectedCard!.currencyCode,
+      );
+      if (convertedAmt != null) {
+        reward = _selectedCard!.rewardType == 'Cashback'
+            ? convertedAmt * (_selectedCard!.rewardRate / 100)
+            : convertedAmt * _selectedCard!.rewardRate;
+      }
+    } else {
+      reward = _selectedCard!.rewardType == 'Cashback'
+          ? amt * (_selectedCard!.rewardRate / 100)
+          : amt * _selectedCard!.rewardRate;
+    }
+
+    if (mounted) {
+      _rewardAmountController.text = _selectedCard!.rewardType == 'Cashback'
+          ? reward.toStringAsFixed(2)
+          : reward.toStringAsFixed(0);
+    }
   }
 
   Future<void> _convertCurrency() async {
@@ -610,7 +627,7 @@ class TransactionFormState extends State<TransactionForm> {
                   padding: EdgeInsets.only(bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0),
                   child: CustomDropdownField<String>(
                     label: '',
-                    items: _commonCurrencies,
+                    items: CurrencyFormatter.commonCurrencies,
                     selectedItem: _selectedCurrency,
                     displayText: (c) => c,
                     onChanged: (val) {

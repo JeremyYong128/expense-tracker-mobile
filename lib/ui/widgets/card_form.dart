@@ -14,6 +14,7 @@ import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 
 class CardForm extends StatefulWidget {
   final Card? card;
@@ -30,6 +31,7 @@ class _CardFormState extends State<CardForm> {
   late TextEditingController _rateController;
   late String _rewardType;
   late String _colorHex;
+  late String _selectedCurrency;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
@@ -48,6 +50,9 @@ class _CardFormState extends State<CardForm> {
     _colorHex = isEditing
         ? widget.card!.colorHex
         : AppColors.colorPaletteHexes.first;
+    _selectedCurrency = isEditing
+        ? widget.card!.currencyCode
+        : context.read<UserPreferencesProvider>().baseCurrency;
   }
 
   bool get _hasChanges {
@@ -61,7 +66,8 @@ class _CardFormState extends State<CardForm> {
     return currentName != widget.card!.name ||
         _rewardType != widget.card!.rewardType ||
         currentRate != widget.card!.rewardRate ||
-        _colorHex != widget.card!.colorHex;
+        _colorHex != widget.card!.colorHex ||
+        _selectedCurrency != widget.card!.currencyCode;
   }
 
   @override
@@ -92,6 +98,7 @@ class _CardFormState extends State<CardForm> {
         rewardType: _rewardType,
         rateText: rateText,
         colorHex: _colorHex,
+        currencyCode: _selectedCurrency,
       );
 
       if (widget.card != null) {
@@ -224,6 +231,19 @@ class _CardFormState extends State<CardForm> {
                 onColorSelected: (hex) {
                   setState(() {
                     _colorHex = hex;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+
+              CustomDropdownField<String>(
+                label: 'Base Currency'.cased(context),
+                items: CurrencyFormatter.commonCurrencies,
+                selectedItem: _selectedCurrency,
+                displayText: (currency) => currency,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCurrency = value;
                   });
                 },
               ),

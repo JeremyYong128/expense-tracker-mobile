@@ -594,6 +594,18 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _currencyCodeMeta = const VerificationMeta(
+    'currencyCode',
+  );
+  @override
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+    'currency_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SGD'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -603,6 +615,7 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
     colorHex,
     isActive,
     sortOrder,
+    currencyCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -661,6 +674,15 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
         sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
       );
     }
+    if (data.containsKey('currency_code')) {
+      context.handle(
+        _currencyCodeMeta,
+        currencyCode.isAcceptableOrUnknown(
+          data['currency_code']!,
+          _currencyCodeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -698,6 +720,10 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, CardTableData> {
         DriftSqlType.int,
         data['${effectivePrefix}sortOrder'],
       )!,
+      currencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency_code'],
+      )!,
     );
   }
 
@@ -715,6 +741,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
   final String colorHex;
   final bool isActive;
   final int sortOrder;
+  final String currencyCode;
   const CardTableData({
     required this.id,
     required this.name,
@@ -723,6 +750,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     required this.colorHex,
     required this.isActive,
     required this.sortOrder,
+    required this.currencyCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -734,6 +762,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     map['colorHex'] = Variable<String>(colorHex);
     map['isActive'] = Variable<bool>(isActive);
     map['sortOrder'] = Variable<int>(sortOrder);
+    map['currency_code'] = Variable<String>(currencyCode);
     return map;
   }
 
@@ -746,6 +775,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       colorHex: Value(colorHex),
       isActive: Value(isActive),
       sortOrder: Value(sortOrder),
+      currencyCode: Value(currencyCode),
     );
   }
 
@@ -762,6 +792,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       colorHex: serializer.fromJson<String>(json['colorHex']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
     );
   }
   @override
@@ -775,6 +806,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       'colorHex': serializer.toJson<String>(colorHex),
       'isActive': serializer.toJson<bool>(isActive),
       'sortOrder': serializer.toJson<int>(sortOrder),
+      'currencyCode': serializer.toJson<String>(currencyCode),
     };
   }
 
@@ -786,6 +818,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     String? colorHex,
     bool? isActive,
     int? sortOrder,
+    String? currencyCode,
   }) => CardTableData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -794,6 +827,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     colorHex: colorHex ?? this.colorHex,
     isActive: isActive ?? this.isActive,
     sortOrder: sortOrder ?? this.sortOrder,
+    currencyCode: currencyCode ?? this.currencyCode,
   );
   CardTableData copyWithCompanion(CardsCompanion data) {
     return CardTableData(
@@ -808,6 +842,9 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
       colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
     );
   }
 
@@ -820,7 +857,8 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
           ..write('rewardRate: $rewardRate, ')
           ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('currencyCode: $currencyCode')
           ..write(')'))
         .toString();
   }
@@ -834,6 +872,7 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
     colorHex,
     isActive,
     sortOrder,
+    currencyCode,
   );
   @override
   bool operator ==(Object other) =>
@@ -845,7 +884,8 @@ class CardTableData extends DataClass implements Insertable<CardTableData> {
           other.rewardRate == this.rewardRate &&
           other.colorHex == this.colorHex &&
           other.isActive == this.isActive &&
-          other.sortOrder == this.sortOrder);
+          other.sortOrder == this.sortOrder &&
+          other.currencyCode == this.currencyCode);
 }
 
 class CardsCompanion extends UpdateCompanion<CardTableData> {
@@ -856,6 +896,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
   final Value<String> colorHex;
   final Value<bool> isActive;
   final Value<int> sortOrder;
+  final Value<String> currencyCode;
   const CardsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -864,6 +905,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.currencyCode = const Value.absent(),
   });
   CardsCompanion.insert({
     this.id = const Value.absent(),
@@ -873,6 +915,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     this.colorHex = const Value.absent(),
     this.isActive = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.currencyCode = const Value.absent(),
   }) : name = Value(name),
        rewardType = Value(rewardType),
        rewardRate = Value(rewardRate);
@@ -884,6 +927,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     Expression<String>? colorHex,
     Expression<bool>? isActive,
     Expression<int>? sortOrder,
+    Expression<String>? currencyCode,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -893,6 +937,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
       if (colorHex != null) 'colorHex': colorHex,
       if (isActive != null) 'isActive': isActive,
       if (sortOrder != null) 'sortOrder': sortOrder,
+      if (currencyCode != null) 'currency_code': currencyCode,
     });
   }
 
@@ -904,6 +949,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     Value<String>? colorHex,
     Value<bool>? isActive,
     Value<int>? sortOrder,
+    Value<String>? currencyCode,
   }) {
     return CardsCompanion(
       id: id ?? this.id,
@@ -913,6 +959,7 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
       colorHex: colorHex ?? this.colorHex,
       isActive: isActive ?? this.isActive,
       sortOrder: sortOrder ?? this.sortOrder,
+      currencyCode: currencyCode ?? this.currencyCode,
     );
   }
 
@@ -940,6 +987,9 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
     if (sortOrder.present) {
       map['sortOrder'] = Variable<int>(sortOrder.value);
     }
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
+    }
     return map;
   }
 
@@ -952,7 +1002,8 @@ class CardsCompanion extends UpdateCompanion<CardTableData> {
           ..write('rewardRate: $rewardRate, ')
           ..write('colorHex: $colorHex, ')
           ..write('isActive: $isActive, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('currencyCode: $currencyCode')
           ..write(')'))
         .toString();
   }
@@ -3554,6 +3605,7 @@ typedef $$CardsTableCreateCompanionBuilder =
       Value<String> colorHex,
       Value<bool> isActive,
       Value<int> sortOrder,
+      Value<String> currencyCode,
     });
 typedef $$CardsTableUpdateCompanionBuilder =
     CardsCompanion Function({
@@ -3564,6 +3616,7 @@ typedef $$CardsTableUpdateCompanionBuilder =
       Value<String> colorHex,
       Value<bool> isActive,
       Value<int> sortOrder,
+      Value<String> currencyCode,
     });
 
 final class $$CardsTableReferences
@@ -3673,6 +3726,11 @@ class $$CardsTableFilterComposer extends Composer<_$AppDatabase, $CardsTable> {
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3796,6 +3854,11 @@ class $$CardsTableOrderingComposer
     column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CardsTableAnnotationComposer
@@ -3831,6 +3894,11 @@ class $$CardsTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => column,
+  );
 
   Expression<T> recurringTransactionsRefs<T extends Object>(
     Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
@@ -3948,6 +4016,7 @@ class $$CardsTableTableManager
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
               }) => CardsCompanion(
                 id: id,
                 name: name,
@@ -3956,6 +4025,7 @@ class $$CardsTableTableManager
                 colorHex: colorHex,
                 isActive: isActive,
                 sortOrder: sortOrder,
+                currencyCode: currencyCode,
               ),
           createCompanionCallback:
               ({
@@ -3966,6 +4036,7 @@ class $$CardsTableTableManager
                 Value<String> colorHex = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
               }) => CardsCompanion.insert(
                 id: id,
                 name: name,
@@ -3974,6 +4045,7 @@ class $$CardsTableTableManager
                 colorHex: colorHex,
                 isActive: isActive,
                 sortOrder: sortOrder,
+                currencyCode: currencyCode,
               ),
           withReferenceMapper: (p0) => p0
               .map(

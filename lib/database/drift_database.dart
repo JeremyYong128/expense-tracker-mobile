@@ -51,7 +51,8 @@ class Transactions extends Table {
       .nullable()
       .customConstraint('REFERENCES cards(id) ON DELETE SET NULL')();
   TextColumn get currencyCode => text().withDefault(const Constant('SGD'))();
-  RealColumn get baseCurrencyAmount => real().withDefault(const Constant(0.0))();
+  RealColumn get baseCurrencyAmount =>
+      real().withDefault(const Constant(0.0))();
 }
 
 @DataClassName('CardTableData')
@@ -66,6 +67,7 @@ class Cards extends Table {
       boolean().named('isActive').withDefault(const Constant(true))();
   IntColumn get sortOrder =>
       integer().named('sortOrder').withDefault(const Constant(0))();
+  TextColumn get currencyCode => text().withDefault(const Constant('SGD'))();
 }
 
 @DataClassName('RecurringTransactionTableData')
@@ -141,7 +143,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -389,6 +391,16 @@ class AppDatabase extends _$AppDatabase {
             );
           } catch (e, stack) {
             AppLogger.error('Failed to migrate baseCurrencyAmount', e, stack);
+            rethrow;
+          }
+        }
+        if (from < 18) {
+          try {
+            await customStatement(
+              "UPDATE cards SET currency_code = 'SGD' WHERE currency_code IS NULL;",
+            );
+          } catch (e, stack) {
+            AppLogger.error('Failed to migrate cards currencyCode', e, stack);
             rethrow;
           }
         }
