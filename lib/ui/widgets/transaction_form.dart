@@ -103,6 +103,7 @@ class TransactionFormState extends State<TransactionForm> {
   double? _baseCurrencyAmount;
   bool _isConvertingCurrency = false;
   late String _baseCurrency;
+  bool _saveAsDefaultCurrency = false;
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -197,7 +198,10 @@ class TransactionFormState extends State<TransactionForm> {
     }
 
     _baseCurrency = context.read<UserPreferencesProvider>().baseCurrency;
-    _selectedCurrency = initialCurrencyCode ?? _baseCurrency;
+    final defaultInputCurrency = context
+        .read<UserPreferencesProvider>()
+        .defaultInputCurrency;
+    _selectedCurrency = initialCurrencyCode ?? defaultInputCurrency;
     _baseCurrencyAmount = initialBaseCurrencyAmount;
 
     _isIncome = initialIsIncome;
@@ -456,10 +460,16 @@ class TransactionFormState extends State<TransactionForm> {
         rewardAmountText: _rewardAmountController.text,
         hasRewards: _hasRewards,
         currencyCode: _selectedCurrency,
-        baseCurrencyAmount: _selectedCurrency != _baseCurrency 
+        baseCurrencyAmount: _selectedCurrency != _baseCurrency
             ? (_baseCurrencyAmount ?? double.parse(_amountController.text))
             : double.parse(_amountController.text),
       );
+
+      if (_saveAsDefaultCurrency && mounted) {
+        context.read<UserPreferencesProvider>().setDefaultInputCurrency(
+          _selectedCurrency,
+        );
+      }
 
       await widget.onSave(data);
     } on ValidationException catch (e) {
@@ -607,16 +617,20 @@ class TransactionFormState extends State<TransactionForm> {
                 flex: 2,
                 child: CustomField(
                   label: 'Amount'.cased(context),
-                  padding: EdgeInsets.only(bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0, right: 16.0),
+                  padding: EdgeInsets.only(
+                    bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
+                    right: 16.0,
+                  ),
                   child: TextField(
                     controller: _amountController,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: _getInputDecoration(
-                      hintText: '0.00',
+                    decoration: _getInputDecoration(hintText: '0.00'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -624,7 +638,9 @@ class TransactionFormState extends State<TransactionForm> {
                 flex: 1,
                 child: CustomField(
                   label: 'Currency'.cased(context),
-                  padding: EdgeInsets.only(bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0),
+                  padding: EdgeInsets.only(
+                    bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
+                  ),
                   child: CustomDropdownField<String>(
                     label: '',
                     items: CurrencyFormatter.commonCurrencies,
@@ -648,27 +664,73 @@ class TransactionFormState extends State<TransactionForm> {
                 height: 24,
                 child: Row(
                   children: [
-                  const Icon(Icons.calculate, color: AppColors.grey, size: 20),
-                  const SizedBox(width: 8),
-                  if (_isConvertingCurrency)
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  else
+                    const Icon(
+                      Icons.calculate,
+                      color: AppColors.grey,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    if (_isConvertingCurrency)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      Text(
+                        '≈ ${_baseCurrencyAmount?.toStringAsFixed(2) ?? '0.00'} $_baseCurrency',
+                        style: const TextStyle(
+                          color: AppColors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+          if (_selectedCurrency !=
+              context.read<UserPreferencesProvider>().defaultInputCurrency)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: GestureDetector(
+                onTap: () => setState(
+                  () => _saveAsDefaultCurrency = !_saveAsDefaultCurrency,
+                ),
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: Checkbox(
+                        value: _saveAsDefaultCurrency,
+                        onChanged: (val) {
+                          setState(() {
+                            _saveAsDefaultCurrency = val ?? false;
+                          });
+                        },
+                        activeColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Text(
-                      '≈ ${_baseCurrencyAmount?.toStringAsFixed(2) ?? '0.00'} $_baseCurrency',
+                      'Set $_selectedCurrency as default currency'.cased(
+                        context,
+                      ),
                       style: const TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
           CustomField(
             infoText: 'Add or edit categories under \'Manage\'.'.cased(context),

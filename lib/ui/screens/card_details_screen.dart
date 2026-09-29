@@ -179,12 +179,9 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final prevExpense = stats.prevExpense;
     final prevRewardsAmount = stats.prevRewardsAmount;
 
-    final availableMonths = BusinessLogic.getAvailableMonths(
-      allTransactions,
-    );
+    final availableMonths = BusinessLogic.getAvailableMonths(allTransactions);
     final earliestMonth = availableMonths.first;
     final latestMonth = availableMonths.last;
-
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -302,13 +299,17 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     }
   }
 
-  String _getRewardSubtitle(BuildContext context, Card card, String baseCurrency) {
+  String _getRewardSubtitle(
+    BuildContext context,
+    Card card,
+    String baseCurrency,
+  ) {
     final type = card.rewardType.toLowerCase();
     if (type == 'none') return 'No rewards'.cased(context);
     final rateStr = card.rewardRate == card.rewardRate.toInt()
         ? card.rewardRate.toInt().toString()
         : card.rewardRate.toStringAsFixed(1);
-    final symbol = NumberFormat.simpleCurrency(name: card.currencyCode).currencySymbol;
+    final symbol = CurrencyFormatter.getSymbol(card.currencyCode);
     if (type == 'cashback') return '$rateStr% Cashback'.cased(context);
     if (type == 'miles') return '$rateStr Miles per $symbol'.cased(context);
     if (type == 'points') return '$rateStr Points per $symbol'.cased(context);

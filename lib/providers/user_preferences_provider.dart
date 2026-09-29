@@ -7,15 +7,26 @@ class UserPreferencesProvider extends ChangeNotifier {
   bool _isLowerCaps = true;
   bool _useUsEnglish = false;
   String _baseCurrency = 'SGD';
+  String _defaultInputCurrency = 'SGD';
 
   bool get isLowerCaps => _isLowerCaps;
   bool get useUsEnglish => _useUsEnglish;
   String get baseCurrency => _baseCurrency;
+  String get defaultInputCurrency => _defaultInputCurrency;
 
   UserPreferencesProvider(this._prefs) {
     _isLowerCaps = _prefs.getBool('isLowerCaps') ?? true;
     _useUsEnglish = _prefs.getBool('useUsEnglish') ?? false;
     _baseCurrency = _prefs.getString('baseCurrency') ?? 'SGD';
+    _defaultInputCurrency = _prefs.getString('defaultInputCurrency') ?? 'SGD';
+  }
+
+  void setDefaultInputCurrency(String value) {
+    if (_defaultInputCurrency != value) {
+      _defaultInputCurrency = value;
+      _prefs.setString('defaultInputCurrency', value);
+      notifyListeners();
+    }
   }
 
   void toggleLowerCaps(bool value) {

@@ -106,8 +106,8 @@ flutter run
         - Manage screen items
         - Dashboard cashback section
     - Multicurrency
-        - How to handle rewards for cards in different currencies?
         - How to handle budget for different currencies?
+        - Default checkbox for currency in transaction form
 
 - Medium priority
 

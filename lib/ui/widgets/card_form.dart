@@ -32,6 +32,7 @@ class _CardFormState extends State<CardForm> {
   late String _rewardType;
   late String _colorHex;
   late String _selectedCurrency;
+  bool _saveAsDefaultCurrency = false;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
@@ -52,7 +53,7 @@ class _CardFormState extends State<CardForm> {
         : AppColors.colorPaletteHexes.first;
     _selectedCurrency = isEditing
         ? widget.card!.currencyCode
-        : context.read<UserPreferencesProvider>().baseCurrency;
+        : context.read<UserPreferencesProvider>().defaultInputCurrency;
   }
 
   bool get _hasChanges {
@@ -135,6 +136,11 @@ class _CardFormState extends State<CardForm> {
       }
 
       if (mounted) {
+        if (_saveAsDefaultCurrency) {
+          context.read<UserPreferencesProvider>().setDefaultInputCurrency(
+            _selectedCurrency,
+          );
+        }
         widget.onSaved?.call();
         Navigator.pop(context);
       }
@@ -167,7 +173,9 @@ class _CardFormState extends State<CardForm> {
   @override
   Widget build(BuildContext context) {
     final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
-    final symbol = NumberFormat.simpleCurrency(name: baseCurrency).currencySymbol;
+    final symbol = NumberFormat.simpleCurrency(
+      name: baseCurrency,
+    ).currencySymbol;
 
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
@@ -247,6 +255,47 @@ class _CardFormState extends State<CardForm> {
                   });
                 },
               ),
+              if (_selectedCurrency !=
+                  context.read<UserPreferencesProvider>().defaultInputCurrency)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () => setState(
+                      () => _saveAsDefaultCurrency = !_saveAsDefaultCurrency,
+                    ),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: Checkbox(
+                            value: _saveAsDefaultCurrency,
+                            onChanged: (val) {
+                              setState(() {
+                                _saveAsDefaultCurrency = val ?? false;
+                              });
+                            },
+                            activeColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Set $_selectedCurrency as default currency'.cased(
+                            context,
+                          ),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               const SizedBox(height: 24),
 
               CustomDropdownField<String>(

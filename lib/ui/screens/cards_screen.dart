@@ -15,6 +15,7 @@ import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
+import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -54,7 +55,7 @@ class _CardsScreenState extends State<CardsScreen> {
         ? card.rewardRate.toInt().toString()
         : card.rewardRate.toStringAsFixed(1);
 
-    final symbol = NumberFormat.simpleCurrency(name: card.currencyCode).currencySymbol;
+    final symbol = CurrencyFormatter.getSymbol(card.currencyCode);
 
     if (type == 'cashback') {
       return '$rateStr% Cashback'.cased(context);
