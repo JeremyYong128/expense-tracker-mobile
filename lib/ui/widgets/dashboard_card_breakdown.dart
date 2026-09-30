@@ -3,51 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
-import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as model_card;
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
 import 'package:expense_tracker_mobile/ui/widgets/simple_pie_chart.dart';
-import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
+import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
-import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
+import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 
-class BreakdownCard<T> extends StatefulWidget {
-  final String title;
-  final String? infoText;
-  final List<MapEntry<T, double>> entries;
-  final Map<T, double?> budgets;
-  final double totalAmount;
-  final bool isCategory;
-  final bool showBudget;
-  
-  // Toggle properties
-  final String? activeToggleValue;
-  final List<CustomSegmentOption<String>>? toggleOptions;
-  final ValueChanged<String>? onToggleChanged;
-  final void Function(T item)? onItemTap;
-
-  const BreakdownCard({
-    super.key,
-    required this.title,
-    this.infoText,
-    required this.entries,
-    required this.budgets,
-    required this.totalAmount,
-    this.isCategory = false,
-    this.showBudget = true,
-    this.activeToggleValue,
-    this.toggleOptions,
-    this.onToggleChanged,
-    this.onItemTap,
-  });
+class CardBreakdownCard extends StatefulWidget {
+  const CardBreakdownCard({super.key});
 
   @override
-  State<BreakdownCard> createState() => _BreakdownCardState<T>();
+  State<CardBreakdownCard> createState() => _CardBreakdownCardState();
 }
 
-class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
-
+class _CardBreakdownCardState extends State<CardBreakdownCard> {
   bool _isExpanded = false;
   int? _touchedIndex;
   Timer? _clearSelectionTimer;
@@ -62,8 +35,19 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
   @override
   Widget build(BuildContext context) {
     final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
+    final entries = context
+        .select<AnalyticsProvider, List<MapEntry<model_card.Card, double>>>(
+          (p) => p.getDashboardStats().cardExpenseBreakdown.entries.toList(),
+        );
+    final budgets = context
+        .select<AnalyticsProvider, Map<model_card.Card, double?>>(
+          (p) => p.getDashboardStats().cardBudgets,
+        );
+    final totalAmount = context.select<AnalyticsProvider, double>(
+      (p) => p.getDashboardStats().totalExpense,
+    );
 
-    if (widget.entries.isEmpty && widget.toggleOptions == null) {
+    if (entries.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -71,9 +55,8 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
       child: Column(
         children: [
           SectionHeader(
-            title: widget.title,
-            infoText: widget.infoText,
-            action: widget.entries.length > 3
+            title: 'Card Expenses',
+            action: entries.length > 3
                 ? TextButton(
                     onPressed: () {
                       setState(() {
@@ -90,43 +73,20 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                       _isExpanded
                           ? 'Less'.cased(context)
                           : 'More'.cased(context),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   )
                 : null,
           ),
-          if (widget.toggleOptions != null && widget.onToggleChanged != null) ...[
-            CustomSegmentToggle<String>(
-              activeValue: widget.activeToggleValue!,
-              options: widget.toggleOptions!,
-              onChanged: (val) {
-                setState(() {
-                  _pieAnimationMs = 150;
-                  _touchedIndex = null;
-                  _isExpanded = false;
-                });
-                widget.onToggleChanged!(val);
-              },
-            ),
-            const SizedBox(height: AppStyles.listItemSpacing * 1.5),
-          ],
-          if (widget.entries.isNotEmpty)
+          if (entries.isNotEmpty)
             Center(
               child: SimplePieChart(
                 data: [
-                  for (var entry in widget.entries)
+                  for (var entry in entries)
                     PieChartSector(
-                      color: widget.isCategory
-                          ? (entry.key as Category).color
-                          : Color(
-                              int.parse(
-                                (entry.key as model_card.Card)
-                                    .colorHex
-                                    .replaceAll('#', '0xFF'),
-                              ),
-                            ),
+                      color: Color(
+                        int.parse(entry.key.colorHex.replaceAll('#', '0xFF')),
+                      ),
                       value: entry.value,
                     ),
                 ],
@@ -159,57 +119,46 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                 },
               ),
             ),
-          if (widget.entries.isNotEmpty)
-            const SizedBox(height: AppStyles.listItemSpacing * 1.5),
-          if (widget.entries.isNotEmpty)
+          if (entries.isNotEmpty)
+            const SizedBox(height: AppStyles.listItemSpacing),
+          if (entries.isNotEmpty)
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               alignment: Alignment.topCenter,
               child: Column(
                 children: () {
-                  final visibleEntries = (_isExpanded
-                          ? widget.entries
-                          : widget.entries.take(3))
-                      .toList();
+                  final visibleEntries =
+                      (_isExpanded ? entries : entries.take(3)).toList();
                   final List<Widget> children = [];
 
                   for (int i = 0; i < visibleEntries.length; i++) {
                     final entry = visibleEntries[i];
                     final amount = entry.value;
 
-                    String name;
-                    Color color;
-                    IconData iconData;
-                    double? budgetAmount;
+                    final card = entry.key;
+                    final name = card.name == 'No card'
+                        ? card.name.cased(context)
+                        : card.name;
+                    final color = Color(
+                      int.parse(card.colorHex.replaceAll('#', '0xFF')),
+                    );
+                    final iconData = Icons.credit_card;
+                    final budgetAmount = budgets[card];
 
-                    if (widget.isCategory) {
-                      final category = entry.key as Category;
-                      name = category.name;
-                      color = category.color;
-                      iconData = category.iconData;
-                      budgetAmount = widget.budgets[category];
-                    } else {
-                      final card = entry.key as model_card.Card;
-                      name = card.name == 'No card' ? card.name.cased(context) : card.name;
-                      color = Color(
-                        int.parse(card.colorHex.replaceAll('#', '0xFF')),
-                      );
-                      iconData = Icons.credit_card;
-                      budgetAmount = widget.budgets[card];
-                    }
-
-                    final percentage = widget.totalAmount > 0
-                        ? (amount / widget.totalAmount)
+                    final percentage = totalAmount > 0
+                        ? (amount / totalAmount)
                         : 0.0;
                     String subtitleText = 'No budget'.cased(context);
                     Color subtitleColor = AppColors.textSecondary;
                     if (budgetAmount != null && budgetAmount > 0) {
                       final diff = budgetAmount - amount;
                       if (diff >= 0) {
-                        subtitleText = '${CurrencyFormatter.format(diff, baseCurrency)} under budget';
+                        subtitleText =
+                            '${CurrencyFormatter.format(diff, baseCurrency)} under budget';
                       } else {
-                        subtitleText = '${CurrencyFormatter.format(diff.abs(), baseCurrency)} over budget';
+                        subtitleText =
+                            '${CurrencyFormatter.format(diff.abs(), baseCurrency)} over budget';
                         subtitleColor = AppColors.error;
                       }
                     }
@@ -232,17 +181,23 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                                 color: _touchedIndex == i
                                     ? AppColors.primary.withValues(alpha: 0.1)
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(16.0),
                               ),
                             ),
                           ),
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: widget.onItemTap != null
-                                  ? () => widget.onItemTap!(entry.key)
-                                  : null,
-                              borderRadius: BorderRadius.circular(12.0),
+                              onTap: () {
+                                if (entry.key.id != -1) {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          CardDetailsScreen(card: entry.key),
+                                    ),
+                                  );
+                                }
+                              },
                               child: Row(
                                 children: [
                                   Container(
@@ -260,12 +215,15 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                                   const SizedBox(width: 12.0),
                                   Expanded(
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Text(
                                                 name,
@@ -276,28 +234,31 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
                                                   fontSize: 15,
                                                 ),
                                               ),
-                                              if (widget.showBudget) ...[
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  subtitleText,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: subtitleColor,
-                                                    fontSize: 13,
-                                                  ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                subtitleText,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: subtitleColor,
+                                                  fontSize: 13,
                                                 ),
-                                              ],
+                                              ),
                                             ],
                                           ),
                                         ),
                                         const SizedBox(width: 16.0),
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              CurrencyFormatter.format(amount, baseCurrency),
+                                              CurrencyFormatter.format(
+                                                amount,
+                                                baseCurrency,
+                                              ),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 15,
@@ -326,14 +287,12 @@ class _BreakdownCardState<T> extends State<BreakdownCard<T>> {
 
                     if (i < visibleEntries.length - 1) {
                       children.add(
-                        const SizedBox(
-                          height: AppStyles.listItemSpacing,
-                        ),
+                        const SizedBox(height: AppStyles.listItemSpacing),
                       );
                     }
                   }
-              return children;
-            }(),
+                  return children;
+                }(),
               ),
             ),
         ],

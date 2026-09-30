@@ -107,7 +107,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               _expandedBudgetId = null;
             }),
           ),
-          const SizedBox(height: AppStyles.sectionHeaderBottomSpacing),
+          const SizedBox(height: AppStyles.listItemSpacing),
           if (budgets.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -210,7 +210,10 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                     TextSpan(
                                       children: [
                                         TextSpan(
-                                          text: CurrencyFormatter.format(spent, baseCurrency),
+                                          text: CurrencyFormatter.format(
+                                            spent,
+                                            baseCurrency,
+                                          ),
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: isExceeded
@@ -406,7 +409,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               onPrevious: () => _navigateMonth(-1),
               onNext: () => _navigateMonth(1),
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 16.0),
             if (activeBudgets.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 32.0),
@@ -422,7 +425,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               )
             else
-              _buildBudgetContentCard(context, categoryBudgets, cardBudgets, baseCurrency),
+              _buildBudgetContentCard(
+                context,
+                categoryBudgets,
+                cardBudgets,
+                baseCurrency,
+              ),
           ],
         ),
       ),

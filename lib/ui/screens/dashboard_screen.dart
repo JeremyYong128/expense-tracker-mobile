@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -9,15 +7,10 @@ import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/providers/analytics_provider.dart';
 import 'package:expense_tracker_mobile/ui/widgets/notification_button.dart';
-import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
-import 'package:expense_tracker_mobile/ui/screens/card_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
 import 'package:expense_tracker_mobile/ui/widgets/layout_widgets.dart';
-import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
-import 'package:expense_tracker_mobile/models/category.dart';
-import 'package:expense_tracker_mobile/models/card.dart' as model_card;
-import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
-import 'package:expense_tracker_mobile/ui/widgets/breakdown_card.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dashboard_category_breakdown.dart';
+import 'package:expense_tracker_mobile/ui/widgets/dashboard_budgets.dart';
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
@@ -29,9 +22,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  bool _isRewardsExpanded = false;
-  String _categoryBreakdownType = 'expense';
-
   @override
   void initState() {
     super.initState();
@@ -112,205 +102,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // EXPENSES BY CATEGORY
               if (stats.expenseBreakdown.isNotEmpty ||
                   stats.incomeBreakdown.isNotEmpty) ...[
-                BreakdownCard<Category>(
-                  title: 'Top Categories',
-                  entries: _categoryBreakdownType == 'expense'
-                      ? stats.expenseBreakdown.entries.toList()
-                      : stats.incomeBreakdown.entries.toList(),
-                  budgets: stats.categoryBudgets,
-                  totalAmount: _categoryBreakdownType == 'expense'
-                      ? stats.totalExpense
-                      : stats.totalIncome,
-                  isCategory: true,
-                  showBudget: _categoryBreakdownType == 'expense',
-                  activeToggleValue: _categoryBreakdownType,
-                  toggleOptions: [
-                    CustomSegmentOption(
-                      value: 'expense',
-                      label: 'Expense',
-                      activeColor: AppColors.expense,
-                    ),
-                    CustomSegmentOption(
-                      value: 'income',
-                      label: 'Income',
-                      activeColor: AppColors.income,
-                    ),
-                  ],
-                  onToggleChanged: (val) {
-                    setState(() {
-                      _categoryBreakdownType = val;
-                    });
-                  },
-                  onItemTap: (category) {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) =>
-                            CategoryDetailsScreen(category: category),
-                      ),
-                    );
-                  },
-                ),
+                const CategoryBreakdownCard(),
                 const SizedBox(height: AppStyles.cardSpacing),
               ],
 
-              // EXPENSES BY CARD
-              if (stats.cardExpenseBreakdown.isNotEmpty) ...[
-                BreakdownCard<model_card.Card>(
-                  title: 'Card Expenses',
-                  entries: stats.cardExpenseBreakdown.entries.toList(),
-                  budgets: stats.cardBudgets,
-                  totalAmount: stats.totalExpense,
-                  isCategory: false,
-                  onItemTap: (card) {
-                    if (card.id != -1) {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => CardDetailsScreen(card: card),
-                        ),
-                      );
-                    }
-                  },
-                ),
+              // BUDGETS
+              if (stats.categoryBudgets.values.any(
+                    (budget) => budget != null && budget > 0,
+                  ) ||
+                  stats.cardBudgets.values.any(
+                    (budget) => budget != null && budget > 0,
+                  )) ...[
+                const BudgetsCard(),
                 const SizedBox(height: AppStyles.cardSpacing),
-              ],
-
-              // REWARDS SECTION
-              if (stats.monthlyRewards.isNotEmpty) ...[
-                ContentCard(
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: 'Rewards Earned',
-                        action: stats.monthlyRewards.length > 3
-                            ? TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isRewardsExpanded = !_isRewardsExpanded;
-                                  });
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.primary,
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(
-                                  _isRewardsExpanded
-                                      ? 'Less'.cased(context)
-                                      : 'More'.cased(context),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        alignment: Alignment.topCenter,
-                        child: Column(
-                          children: () {
-                            final visibleEntries =
-                                (_isRewardsExpanded
-                                        ? stats.monthlyRewards.entries
-                                        : stats.monthlyRewards.entries.take(3))
-                                    .toList();
-                            final List<Widget> children = [];
-
-                            for (int i = 0; i < visibleEntries.length; i++) {
-                              final entry = visibleEntries[i];
-                              final card = entry.key;
-                              final reward = entry.value;
-                              final isCashback = card.rewardType == 'Cashback';
-                              final rewardText = isCashback
-                                  ? CurrencyFormatter.format(
-                                      reward,
-                                      card.currencyCode,
-                                    )
-                                  : NumberFormat.decimalPattern().format(
-                                      reward.toInt(),
-                                    );
-
-                              children.add(
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        CupertinoPageRoute(
-                                          builder: (context) =>
-                                              CardDetailsScreen(card: card),
-                                        ),
-                                      );
-                                    },
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(
-                                                  8,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.primary
-                                                      .withValues(alpha: 0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.stars,
-                                                  color: AppColors.primary,
-                                                  size: 20,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Text(
-                                                card.name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 15,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Text(
-                                            '+$rewardText ${!isCashback ? card.rewardType.cased(context) : ''}',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.income,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-
-                              if (i < visibleEntries.length - 1) {
-                                children.add(const SizedBox(height: 12));
-                              }
-                            }
-                            return children;
-                          }(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ],
           ),
