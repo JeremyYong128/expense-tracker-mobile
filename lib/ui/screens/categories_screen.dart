@@ -68,136 +68,117 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               padding: AppStyles.screenPadding,
               child: Column(
                 children: [
-                SharedFilterToggle<String>(
-                  items: const ['All', 'Expense', 'Income'],
-                  selectedItem: _filter,
-                  labelBuilder: (item) => item.cased(context),
-                  onSelected: (value) {
-                    setState(() {
-                      _filter = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: AppStyles.cardSpacing),
-                Expanded(
-                  child: categories.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No categories found'.cased(context),
-                            style: const TextStyle(
-                              color: AppColors.grey,
-                              fontSize: 16,
+                  SharedFilterToggle<String>(
+                    items: const ['All', 'Expense', 'Income'],
+                    selectedItem: _filter,
+                    labelBuilder: (item) => item.cased(context),
+                    onSelected: (value) {
+                      setState(() {
+                        _filter = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: AppStyles.cardSpacing),
+                  Expanded(
+                    child: categories.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No categories found'.cased(context),
+                              style: const TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                        )
-                      : CustomReorderableGridView(
-                          padding: EdgeInsets.zero,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 1.65,
-                                crossAxisSpacing: 12.0,
-                                mainAxisSpacing: 12.0,
-                              ),
-                          itemCount: categories.length,
-                          onReorder: (oldIndex, newIndex) {
-                            provider.reorderCategory(
-                              oldIndex,
-                              newIndex,
-                              _filter,
-                            );
-                          },
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-                            return Container(
-                              key: ValueKey(category.id),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.04,
-                                    ),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Material(
-                                color: AppColors.transparent,
-                                child: InkWell(
+                          )
+                        : CustomReorderableGridView(
+                            padding: EdgeInsets.zero,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 1.65,
+                                  crossAxisSpacing: 12.0,
+                                  mainAxisSpacing: 12.0,
+                                ),
+                            itemCount: categories.length,
+                            onReorder: (oldIndex, newIndex) {
+                              provider.reorderCategory(
+                                oldIndex,
+                                newIndex,
+                                _filter,
+                              );
+                            },
+                            itemBuilder: (context, index) {
+                              final category = categories[index];
+                              return Container(
+                                key: ValueKey(category.id),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
                                   borderRadius: BorderRadius.circular(16.0),
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      CupertinoPageRoute(
-                                        builder: (context) =>
-                                            CategoryDetailsScreen(
-                                              category: category,
-                                            ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.04,
                                       ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          category.iconData,
-                                          color: category.color,
-                                          size: 28,
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: AppColors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        CupertinoPageRoute(
+                                          builder: (context) =>
+                                              CategoryDetailsScreen(
+                                                category: category,
+                                              ),
                                         ),
-                                        const SizedBox(height: 4.0),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 2.0,
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            category.iconData,
+                                            color: category.color,
+                                            size: 28,
                                           ),
-                                          child: Text(
-                                            category.name,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.textPrimary,
+                                          const SizedBox(height: 4.0),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 2.0,
+                                            ),
+                                            child: Text(
+                                              category.name,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textPrimary,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
+                              );
+                            },
+                          ),
+                  ),
+                ],
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTypeBadge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );
