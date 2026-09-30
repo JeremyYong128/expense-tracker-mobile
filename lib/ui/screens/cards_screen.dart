@@ -14,7 +14,6 @@ import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
-import 'package:intl/intl.dart';
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 
 class CardsScreen extends StatefulWidget {
@@ -101,7 +100,6 @@ class _CardsScreenState extends State<CardsScreen> {
     return Opacity(
       opacity: isArchived ? 0.6 : 1.0,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24.0),
@@ -249,14 +247,21 @@ class _CardsScreenState extends State<CardsScreen> {
                       },
                       itemBuilder: (context, index) {
                         final c = activeCards[index];
-                        return Padding(
+                        final isLast = index == activeCards.length - 1;
+                        return Container(
                           key: ValueKey(c.id),
-                          padding: EdgeInsets.zero,
-                          child: _buildCardItem(c, false),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildCardItem(c, false),
+                              if (!isLast)
+                                const SizedBox(height: AppStyles.listItemSpacing),
+                            ],
+                          ),
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppStyles.cardSpacing),
                   ],
                   if (archivedCards.isNotEmpty) ...[
                     Padding(
@@ -271,7 +276,17 @@ class _CardsScreenState extends State<CardsScreen> {
                         ),
                       ),
                     ),
-                    ...archivedCards.map((c) => _buildCardItem(c, true)),
+                    ...archivedCards.asMap().entries.map((entry) {
+                      final isLast = entry.key == archivedCards.length - 1;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildCardItem(entry.value, true),
+                          if (!isLast)
+                            const SizedBox(height: AppStyles.listItemSpacing),
+                        ],
+                      );
+                    }),
                   ],
                 ],
               ),

@@ -91,13 +91,15 @@ class _RecurringTransactionsScreenState
                     tx.categoryId,
                   );
                   final color = category?.color ?? AppColors.grey;
+                  final isLast = index == recurringTransactions.length - 1;
 
-                  return Padding(
+                  return Container(
                     key: ValueKey(tx.id),
-                    padding: EdgeInsets.zero,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      decoration: BoxDecoration(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24.0),
                         boxShadow: [
@@ -200,6 +202,10 @@ class _RecurringTransactionsScreenState
                           ),
                         ),
                       ),
+                      ),
+                        if (!isLast)
+                          const SizedBox(height: AppStyles.listItemSpacing),
+                      ],
                     ),
                   );
                 },

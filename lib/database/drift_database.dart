@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 
 part 'drift_database.g.dart';
@@ -143,7 +144,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration {
@@ -401,6 +402,31 @@ class AppDatabase extends _$AppDatabase {
             );
           } catch (e, stack) {
             AppLogger.error('Failed to migrate cards currencyCode', e, stack);
+            rethrow;
+          }
+        }
+        if (from < 19) {
+          try {
+            await customStatement(
+              "DELETE FROM budgets WHERE amount IS NULL;",
+            );
+            
+            // Rewind the copy service by 1 month so it re-evaluates the current month
+            final prefs = await SharedPreferences.getInstance();
+            final lastMonth = prefs.getInt('last_budget_copy_month');
+            final lastYear = prefs.getInt('last_budget_copy_year');
+            if (lastMonth != null && lastYear != null) {
+              int newMonth = lastMonth - 1;
+              int newYear = lastYear;
+              if (newMonth == 0) {
+                newMonth = 12;
+                newYear--;
+              }
+              await prefs.setInt('last_budget_copy_month', newMonth);
+              await prefs.setInt('last_budget_copy_year', newYear);
+            }
+          } catch (e, stack) {
+            AppLogger.error('Failed to clean up tombstones', e, stack);
             rethrow;
           }
         }

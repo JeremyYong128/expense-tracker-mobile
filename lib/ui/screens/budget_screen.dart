@@ -409,7 +409,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               onPrevious: () => _navigateMonth(-1),
               onNext: () => _navigateMonth(1),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: AppStyles.cardSpacing),
             if (activeBudgets.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 32.0),

@@ -103,7 +103,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppStyles.cardSpacing),
               if (filteredTransactions.isEmpty)
                 ContentCard(
                   child: Container(

@@ -90,9 +90,10 @@ class AnalyticsProvider extends ChangeNotifier {
           expense += tx.baseCurrencyAmount;
           categoryExpense[tx.categoryId] =
               (categoryExpense[tx.categoryId] ?? 0) + tx.baseCurrencyAmount;
-          
+
           final cardId = tx.cardId ?? -1;
-          cardSpending[cardId] = (cardSpending[cardId] ?? 0) + tx.baseCurrencyAmount;
+          cardSpending[cardId] =
+              (cardSpending[cardId] ?? 0) + tx.baseCurrencyAmount;
         }
       }
 
@@ -116,15 +117,13 @@ class AnalyticsProvider extends ChangeNotifier {
       );
 
       // Sort category spending to get top ones
-      final sortedExpenseCategories = categoryExpense.entries
-          .where((e) => e.value > 0)
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final sortedExpenseCategories =
+          categoryExpense.entries.where((e) => e.value > 0).toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
 
-      final sortedIncomeCategories = categoryIncome.entries
-          .where((e) => e.value > 0)
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final sortedIncomeCategories =
+          categoryIncome.entries.where((e) => e.value > 0).toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
 
       // Map to Category objects
       Map<Category, double> expenseBreakdownMap = {};
@@ -173,24 +172,22 @@ class AnalyticsProvider extends ChangeNotifier {
       }
 
       Map<Category, double?> categoryBudgetsMap = {};
+      for (var budget in _budgets.where((b) => b.type == 'category')) {
+        try {
+          final category = _categories.firstWhere((c) => c.id == budget.categoryId);
+          categoryBudgetsMap[category] = budget.amount;
+        } catch (_) {}
+      }
       for (var category in expenseBreakdownMap.keys) {
-        double? applicableAmount;
-        for (var budget in _budgets) {
-          if (budget.categoryId == category.id) {
-            if (budget.year < month.year ||
-                (budget.year == month.year && budget.month <= month.month)) {
-              applicableAmount = budget.amount;
-            }
-          }
+        if (!categoryBudgetsMap.containsKey(category)) {
+          categoryBudgetsMap[category] = null;
         }
-        categoryBudgetsMap[category] = applicableAmount;
       }
 
       // Sort card spending
-      final sortedCards = cardSpending.entries
-          .where((e) => e.value > 0)
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final sortedCards =
+          cardSpending.entries.where((e) => e.value > 0).toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
 
       // Map to Card objects
       Map<Card, double> cardExpenseBreakdownMap = {};
@@ -211,17 +208,16 @@ class AnalyticsProvider extends ChangeNotifier {
       }
 
       Map<Card, double?> cardBudgetsMap = {};
+      for (var budget in _budgets.where((b) => b.type == 'card')) {
+        try {
+          final card = _cards.firstWhere((c) => c.id == budget.cardId);
+          cardBudgetsMap[card] = budget.amount;
+        } catch (_) {}
+      }
       for (var card in cardExpenseBreakdownMap.keys) {
-        double? applicableAmount;
-        for (var budget in _budgets) {
-          if (budget.cardId == card.id) {
-            if (budget.year < month.year ||
-                (budget.year == month.year && budget.month <= month.month)) {
-              applicableAmount = budget.amount;
-            }
-          }
+        if (!cardBudgetsMap.containsKey(card)) {
+          cardBudgetsMap[card] = null;
         }
-        cardBudgetsMap[card] = applicableAmount;
       }
 
       _dashboardStatsCache[key] = DashboardStats(

@@ -1,4 +1,3 @@
-import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_list_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +10,7 @@ import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
 import 'package:expense_tracker_mobile/ui/screens/category_details_screen.dart';
 import 'package:expense_tracker_mobile/ui/widgets/shared_filter_toggle.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_app_bar.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_reorderable_grid_view.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -64,21 +64,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               categories = provider.activeCategories;
             }
 
-            return Column(
-              children: [
-                Padding(
-                  padding: AppStyles.screenPadding.copyWith(bottom: 8.0),
-                  child: SharedFilterToggle<String>(
-                    items: const ['All', 'Expense', 'Income'],
-                    selectedItem: _filter,
-                    labelBuilder: (item) => item.cased(context),
-                    onSelected: (value) {
-                      setState(() {
-                        _filter = value;
-                      });
-                    },
-                  ),
+            return Padding(
+              padding: AppStyles.screenPadding,
+              child: Column(
+                children: [
+                SharedFilterToggle<String>(
+                  items: const ['All', 'Expense', 'Income'],
+                  selectedItem: _filter,
+                  labelBuilder: (item) => item.cased(context),
+                  onSelected: (value) {
+                    setState(() {
+                      _filter = value;
+                    });
+                  },
                 ),
+                const SizedBox(height: AppStyles.cardSpacing),
                 Expanded(
                   child: categories.isEmpty
                       ? Center(
@@ -90,10 +90,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                           ),
                         )
-                      : CustomReorderableListView(
-                          padding: AppStyles.screenPadding.copyWith(top: 8.0),
+                      : CustomReorderableGridView(
+                          padding: EdgeInsets.zero,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                childAspectRatio: 1.65,
+                                crossAxisSpacing: 12.0,
+                                mainAxisSpacing: 12.0,
+                              ),
                           itemCount: categories.length,
-                          onReorderItem: (oldIndex, newIndex) {
+                          onReorder: (oldIndex, newIndex) {
                             provider.reorderCategory(
                               oldIndex,
                               newIndex,
@@ -102,94 +109,64 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           },
                           itemBuilder: (context, index) {
                             final category = categories[index];
-                            return Padding(
+                            return Container(
                               key: ValueKey(category.id),
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(24.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.04,
-                                      ),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.04,
                                     ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: AppColors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(24.0),
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        CupertinoPageRoute(
-                                          builder: (context) =>
-                                              CategoryDetailsScreen(
-                                                category: category,
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(10.0),
-                                            decoration: BoxDecoration(
-                                              color: category.color.withValues(
-                                                alpha: 0.15,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(12.0),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                color: AppColors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      CupertinoPageRoute(
+                                        builder: (context) =>
+                                            CategoryDetailsScreen(
+                                              category: category,
                                             ),
-                                            child: Icon(
-                                              category.iconData,
-                                              color: category.color,
-                                              size: 24,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12.0),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  category.name,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        AppColors.textPrimary,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    if (category.isExpense)
-                                                      _buildTypeBadge(
-                                                        'Expense',
-                                                        AppColors.expense,
-                                                      ),
-                                                    if (category.isExpense &&
-                                                        category.isIncome)
-                                                      const SizedBox(width: 4),
-                                                    if (category.isIncome)
-                                                      _buildTypeBadge(
-                                                        'Income',
-                                                        AppColors.income,
-                                                      ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
                                       ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          category.iconData,
+                                          color: category.color,
+                                          size: 28,
+                                        ),
+                                        const SizedBox(height: 4.0),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 2.0,
+                                          ),
+                                          child: Text(
+                                            category.name,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -199,6 +176,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                 ),
               ],
+              ),
             );
           },
         ),

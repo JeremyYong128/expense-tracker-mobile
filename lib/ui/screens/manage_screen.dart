@@ -23,7 +23,7 @@ class ManageScreen extends StatelessWidget {
         top: false,
         bottom: true,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: AppStyles.screenPadding,
           children: [
             _buildManageListItem(
               context,
