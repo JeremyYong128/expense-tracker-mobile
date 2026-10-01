@@ -184,7 +184,7 @@ class _RecurringTransactionDetailsScreenState
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
                   child: Text(
                     'No transactions yet.'.cased(context),
-                    style: const TextStyle(color: AppColors.grey, fontSize: 16),
+                    style: AppStyles.emptyStateText,
                   ),
                 )
               else ...[
@@ -238,10 +238,7 @@ class _RecurringTransactionDetailsScreenState
                                   'No transactions for this month.'.cased(
                                     context,
                                   ),
-                                  style: const TextStyle(
-                                    color: AppColors.grey,
-                                    fontSize: 16,
-                                  ),
+                                  style: AppStyles.emptyStateText,
                                   textAlign: TextAlign.center,
                                 ),
                               ),

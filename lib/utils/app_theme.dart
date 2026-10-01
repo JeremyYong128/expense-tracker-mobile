@@ -81,6 +81,11 @@ class AppStyles {
     color: AppColors.textPrimary,
   );
 
+  static const TextStyle emptyStateText = TextStyle(
+    color: AppColors.grey,
+    fontSize: 16,
+  );
+
   static const double sectionHeaderBottomSpacing = 12.0;
   static const double cardInternalPadding = 20.0;
   static const double sectionContentSpacing = 20.0;

@@ -100,22 +100,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: AppStyles.cardSpacing),
 
               // EXPENSES BY CATEGORY
-              if (stats.expenseBreakdown.isNotEmpty ||
-                  stats.incomeBreakdown.isNotEmpty) ...[
-                const CategoryBreakdownCard(),
-                const SizedBox(height: AppStyles.cardSpacing),
-              ],
+              const CategoryBreakdownCard(),
+              const SizedBox(height: AppStyles.cardSpacing),
 
               // BUDGETS
-              if (stats.categoryBudgets.values.any(
-                    (budget) => budget != null && budget > 0,
-                  ) ||
-                  stats.cardBudgets.values.any(
-                    (budget) => budget != null && budget > 0,
-                  )) ...[
-                const BudgetsCard(),
-                const SizedBox(height: AppStyles.cardSpacing),
-              ],
+              const BudgetsCard(),
             ],
           ),
         ),

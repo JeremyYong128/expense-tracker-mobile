@@ -48,9 +48,10 @@ class _CategoryBreakdownCardState extends State<CategoryBreakdownCard> {
           : stats.totalIncome;
     });
 
-    if (entries.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final hasAnyData = context.select<AnalyticsProvider, bool>((p) {
+      final stats = p.getDashboardStats();
+      return stats.expenseBreakdown.isNotEmpty || stats.incomeBreakdown.isNotEmpty;
+    });
 
     return ContentCard(
       child: Column(
@@ -79,31 +80,54 @@ class _CategoryBreakdownCardState extends State<CategoryBreakdownCard> {
                   )
                 : null,
           ),
-          CustomSegmentToggle<String>(
-            activeValue: _categoryBreakdownType,
-            options: [
-              CustomSegmentOption(
-                value: 'expense',
-                label: 'Expense',
-                activeColor: AppColors.expense,
+          if (!hasAnyData)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0),
+              child: Center(
+                child: Text(
+                  'No transactions this month.'.cased(context),
+                  style: AppStyles.emptyStateText,
+                ),
               ),
-              CustomSegmentOption(
-                value: 'income',
-                label: 'Income',
-                activeColor: AppColors.income,
+            )
+          else ...[
+            CustomSegmentToggle<String>(
+              activeValue: _categoryBreakdownType,
+              options: [
+                CustomSegmentOption(
+                  value: 'expense',
+                  label: 'Expense',
+                  activeColor: AppColors.expense,
+                ),
+                CustomSegmentOption(
+                  value: 'income',
+                  label: 'Income',
+                  activeColor: AppColors.income,
+                ),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  _pieAnimationMs = 150;
+                  _touchedIndex = null;
+                  _isExpanded = false;
+                  _categoryBreakdownType = val;
+                });
+              },
+            ),
+            if (entries.isEmpty) ...[
+              const SizedBox(height: AppStyles.listItemSpacing),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: Text(
+                    'No ${_categoryBreakdownType == 'expense' ? 'expenses' : 'income'} this month.'
+                        .cased(context),
+                    style: AppStyles.emptyStateText,
+                  ),
+                ),
               ),
-            ],
-            onChanged: (val) {
-              setState(() {
-                _pieAnimationMs = 150;
-                _touchedIndex = null;
-                _isExpanded = false;
-                _categoryBreakdownType = val;
-              });
-            },
-          ),
-          const SizedBox(height: AppStyles.listItemSpacing),
-          if (entries.isNotEmpty)
+            ] else ...[
+            const SizedBox(height: AppStyles.listItemSpacing * 1.5),
             Center(
               child: SimplePieChart(
                 data: [
@@ -139,9 +163,7 @@ class _CategoryBreakdownCardState extends State<CategoryBreakdownCard> {
                 },
               ),
             ),
-          if (entries.isNotEmpty)
-            const SizedBox(height: AppStyles.listItemSpacing),
-          if (entries.isNotEmpty)
+            const SizedBox(height: AppStyles.listItemSpacing * 1.5),
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -270,8 +292,10 @@ class _CategoryBreakdownCardState extends State<CategoryBreakdownCard> {
                 }(),
               ),
             ),
+          ],
         ],
-      ),
+      ],
+    ),
     );
   }
 }

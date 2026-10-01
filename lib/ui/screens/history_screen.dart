@@ -112,10 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Center(
                       child: Text(
                         'No transactions for this month.'.cased(context),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: AppColors.grey,
-                        ),
+                        style: AppStyles.emptyStateText,
                         textAlign: TextAlign.center,
                       ),
                     ),
