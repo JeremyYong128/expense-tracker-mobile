@@ -415,12 +415,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 padding: const EdgeInsets.only(top: 32.0),
                 child: Center(
                   child: Text(
-                    'No budgets set for this month.'.cased(context),
+                    'No budgets set this month.'.cased(context),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppStyles.emptyStateText,
                   ),
                 ),
               )

@@ -206,7 +206,7 @@ class _CategoryDetailsScreenState extends State<CategoryDetailsScreen> {
                                   vertical: 20.0,
                                 ),
                                 child: Text(
-                                  'No transactions for this month.'.cased(
+                                  'No transactions this month.'.cased(
                                     context,
                                   ),
                                   style: AppStyles.emptyStateText,

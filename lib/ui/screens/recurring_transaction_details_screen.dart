@@ -235,7 +235,7 @@ class _RecurringTransactionDetailsScreenState
                                   vertical: 32.0,
                                 ),
                                 child: Text(
-                                  'No transactions for this month.'.cased(
+                                  'No transactions this month.'.cased(
                                     context,
                                   ),
                                   style: AppStyles.emptyStateText,

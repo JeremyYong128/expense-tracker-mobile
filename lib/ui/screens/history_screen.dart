@@ -111,7 +111,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 40),
                     child: Center(
                       child: Text(
-                        'No transactions for this month.'.cased(context),
+                        'No transactions this month.'.cased(context),
                         style: AppStyles.emptyStateText,
                         textAlign: TextAlign.center,
                       ),

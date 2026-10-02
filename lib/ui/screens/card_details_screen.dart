@@ -210,7 +210,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                   padding: const EdgeInsets.only(top: 32.0, bottom: 32.0),
                   child: Text(
                     'No expenses tagged to this card.'.cased(context),
-                    style: const TextStyle(color: AppColors.grey, fontSize: 16),
+                    style: AppStyles.emptyStateText,
                   ),
                 )
               else ...[
@@ -263,12 +263,9 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
                                   vertical: 32.0,
                                 ),
                                 child: Text(
-                                  'No expenses tagged to this card for this month.'
+                                  'No expenses tagged to this card this month.'
                                       .cased(context),
-                                  style: const TextStyle(
-                                    color: AppColors.grey,
-                                    fontSize: 16,
-                                  ),
+                                  style: AppStyles.emptyStateText,
                                   textAlign: TextAlign.center,
                                 ),
                               ),

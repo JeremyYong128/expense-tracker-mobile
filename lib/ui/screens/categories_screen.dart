@@ -50,7 +50,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               return Center(
                 child: Text(
                   'No categories found'.cased(context),
-                  style: const TextStyle(color: AppColors.grey, fontSize: 16),
+                  style: AppStyles.emptyStateText,
                 ),
               );
             }
@@ -84,10 +84,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ? Center(
                             child: Text(
                               'No categories found'.cased(context),
-                              style: const TextStyle(
-                                color: AppColors.grey,
-                                fontSize: 16,
-                              ),
+                              style: AppStyles.emptyStateText,
                             ),
                           )
                         : CustomReorderableGridView(

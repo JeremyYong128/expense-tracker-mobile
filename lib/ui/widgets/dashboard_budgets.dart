@@ -7,6 +7,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as model_card;
+import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class BudgetsCard extends StatefulWidget {
   const BudgetsCard({super.key});
@@ -74,11 +75,11 @@ class _BudgetsCardState extends State<BudgetsCard> {
                 : null,
           ),
           if (!hasAnyBudgets)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0),
               child: Center(
                 child: Text(
-                  'No budgets this month',
+                  'No budgets this month.'.cased(context),
                   style: AppStyles.emptyStateText,
                 ),
               ),
@@ -106,11 +107,11 @@ class _BudgetsCardState extends State<BudgetsCard> {
             ),
             const SizedBox(height: AppStyles.listItemSpacing),
             if (budgetedItems.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Center(
                   child: Text(
-                    'No budgets found',
+                    'No budgets this month.'.cased(context),
                     style: AppStyles.emptyStateText,
                   ),
                 ),

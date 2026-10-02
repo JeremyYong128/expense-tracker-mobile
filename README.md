@@ -100,8 +100,6 @@ flutter run
 
 ### Changes
 - High priority
-    - Dashboard card section
-        - Empty state for category and budget cards, currently does not show anything if there are no transactions for the current month/budgets.
     - Budgeting
         - Budget screen: List of budgets (need to make view different from usual card view), users can click into each budget to see more details. What details should be on the main budget screen? Should users only be able to see the current month's budgets or all budgets?
     - Improve list designs

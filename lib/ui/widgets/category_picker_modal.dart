@@ -31,11 +31,7 @@ class CategoryDropdown extends StatelessWidget {
             ? Center(
                 child: Text(
                   'No categories'.cased(context),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.grey,
-                    decoration: TextDecoration.none,
-                  ),
+                  style: AppStyles.emptyStateText,
                 ),
               )
             : ListView.builder(
