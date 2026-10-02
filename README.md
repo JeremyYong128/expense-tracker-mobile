@@ -100,6 +100,13 @@ flutter run
 
 ### Changes
 - High priority
+    - Multicurrency
+        - Historical Exchange Rate Integration: Connect an external forex API to query point-in-time exchange rates for multi-currency transactions and analytics conversion.
+        - Dual-Currency Transaction Input: Allow users to record purchases with both the original foreign currency amount and the settled/estimated base currency amount.
+        - Manual Exchange Rate Overrides: Let users edit the auto-calculated base amount to match the exact charged figure from their credit card statements.
+        - Multi-Currency Category Budgeting: Support budget targets in different currencies with options to aggregate either matching currency entries or all transactions converted to the budget currency.
+        - Quick Transaction Duplication: Add a shortcut action to duplicate an expense with its category and notes prefilled to simplify logging split-currency charges.
+        - Local Exchange Rate Caching (Backlog): Persist fetched daily forex rates into a local Drift table to minimize API usage and enable full offline budget calculations.
     - Budgeting
         - Budget screen: List of budgets (need to make view different from usual card view), users can click into each budget to see more details. What details should be on the main budget screen? Should users only be able to see the current month's budgets or all budgets?
     - Improve list designs

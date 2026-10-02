@@ -245,7 +245,8 @@ class _CardFormState extends State<CardForm> {
               const SizedBox(height: 24),
 
               CustomDropdownField<String>(
-                label: 'Base Currency'.cased(context),
+                label: 'Billing Currency'.cased(context),
+                infoText: 'Transactions in a foreign currency will be marked pending. They will temporarily use an estimated converted amount until the transaction settles.'.cased(context),
                 items: CurrencyFormatter.commonCurrencies,
                 selectedItem: _selectedCurrency,
                 displayText: (currency) => currency,

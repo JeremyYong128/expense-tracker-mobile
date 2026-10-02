@@ -733,11 +733,11 @@ class TransactionFormState extends State<TransactionForm> {
             ),
 
           CustomField(
-            infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
             child: _isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
                 : CustomDropdownField<Category?>(
                     label: 'Category'.cased(context),
+                    infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
                     items: _filteredCategories,
                     selectedItem: _selectedCategory,
                     displayText: (cat) => cat?.name ?? '',
@@ -784,12 +784,10 @@ class TransactionFormState extends State<TransactionForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomField(
-                    infoText: 'Add or edit cards under \'Manage\'.'.cased(
-                      context,
-                    ),
                     padding: EdgeInsets.zero,
                     child: CustomDropdownField<Card?>(
                       label: 'Card'.cased(context),
+                      infoText: 'Add or edit cards under \'Manage\'.'.cased(context),
                       selectedItem: _selectedCard,
                       items: [null, ..._cards],
                       displayText: (card) =>

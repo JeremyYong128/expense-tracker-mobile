@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
+import 'package:just_the_tooltip/just_the_tooltip.dart';
 
 class CustomDropdownField<T> extends StatelessWidget {
   final String? label;
+  final String? infoText;
   final List<T> items;
   final T selectedItem;
   final ValueChanged<T> onChanged;
@@ -14,6 +16,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   const CustomDropdownField({
     super.key,
     this.label,
+    this.infoText,
     required this.items,
     required this.selectedItem,
     required this.onChanged,
@@ -125,9 +128,42 @@ class CustomDropdownField<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null && label!.isNotEmpty) ...[
-          Text(
-            label!,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label!,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              if (infoText != null) ...[
+                const SizedBox(width: 8),
+                JustTheTooltip(
+                  content: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 220,
+                      child: Text(
+                        infoText!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                  backgroundColor: Colors.black87,
+                  tailBaseWidth: 16,
+                  tailLength: 8,
+                  isModal: true,
+                  margin: const EdgeInsets.all(16),
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: AppColors.textSecondary.withOpacity(0.5),
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 8.0),
         ],
