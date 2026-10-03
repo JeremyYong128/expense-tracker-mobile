@@ -38,6 +38,9 @@ class TransactionFormData {
   final double? rewardAmount;
   final String currencyCode;
   final double baseCurrencyAmount;
+  final bool isPending;
+  final double billingAmount;
+  final String billingCurrencyCode;
 
   TransactionFormData({
     required this.amount,
@@ -54,6 +57,9 @@ class TransactionFormData {
     this.rewardAmount,
     required this.currencyCode,
     required this.baseCurrencyAmount,
+    this.isPending = false,
+    required this.billingAmount,
+    required this.billingCurrencyCode,
   });
 }
 
@@ -102,6 +108,10 @@ class TransactionFormState extends State<TransactionForm> {
   late String _selectedCurrency;
   double? _baseCurrencyAmount;
   bool _isConvertingCurrency = false;
+  bool _isPending = false;
+  late final TextEditingController _billingAmountController;
+  double? _billingAmount;
+  String? _billingCurrencyCode;
   late String _baseCurrency;
   bool _saveAsDefaultCurrency = false;
 
@@ -173,6 +183,9 @@ class TransactionFormState extends State<TransactionForm> {
     String initialPeriod = _recurringPeriods[2];
     String? initialCurrencyCode;
     double? initialBaseCurrencyAmount;
+    double? initialBillingAmount;
+    String? initialBillingCurrencyCode;
+    bool initialIsPending = false;
 
     if (widget.recurringTransaction != null) {
       final rt = widget.recurringTransaction!;
@@ -195,6 +208,9 @@ class TransactionFormState extends State<TransactionForm> {
       initialRewardAmount = t.rewardAmount;
       initialCurrencyCode = t.currencyCode;
       initialBaseCurrencyAmount = t.baseCurrencyAmount;
+      initialBillingAmount = t.billingAmount;
+      initialBillingCurrencyCode = t.billingCurrencyCode;
+      initialIsPending = t.isPending;
     }
 
     _baseCurrency = context.read<UserPreferencesProvider>().baseCurrency;
@@ -211,6 +227,11 @@ class TransactionFormState extends State<TransactionForm> {
     );
     _titleController = TextEditingController(text: initialTitle ?? '');
     _noteController = TextEditingController(text: initialNote ?? '');
+    _billingAmountController = TextEditingController(
+      text: initialBillingAmount?.toStringAsFixed(2) ?? '',
+    );
+    _billingCurrencyCode = initialBillingCurrencyCode;
+    _isPending = initialIsPending;
 
     _isRecurring =
         widget.recurringTransaction != null || widget.initialIsRecurring;
@@ -238,6 +259,49 @@ class TransactionFormState extends State<TransactionForm> {
     _recalculateRewards();
   }
 
+  void _onManualBillingAmountChanged(String val) async {
+    final amt = double.tryParse(val);
+    if (amt != null) {
+      setState(() {
+        _isPending = false;
+        _billingAmount = amt;
+      });
+      _recalculateBaseFromBilling(amt);
+      _recalculateRewards();
+    }
+  }
+
+  Future<void> _recalculateBaseFromBilling(double billingAmt) async {
+    if (_billingCurrencyCode == null) return;
+
+    if (_billingCurrencyCode == _baseCurrency) {
+      setState(() {
+        _baseCurrencyAmount = billingAmt;
+      });
+      return;
+    }
+
+    setState(() {
+      _isConvertingCurrency = true;
+    });
+
+    final baseAmt =
+        await ExchangeRateService.convert(
+          amount: billingAmt,
+          fromCurrency: _billingCurrencyCode!,
+          toCurrency: _baseCurrency,
+          date: _selectedDate,
+        ) ??
+        billingAmt;
+
+    if (mounted) {
+      setState(() {
+        _baseCurrencyAmount = baseAmt;
+        _isConvertingCurrency = false;
+      });
+    }
+  }
+
   Future<void> _recalculateRewards() async {
     if (_lockRewardRecalculation ||
         !_hasRewards ||
@@ -255,15 +319,22 @@ class TransactionFormState extends State<TransactionForm> {
 
     double reward = 0;
     if (_selectedCurrency != _selectedCard!.currencyCode) {
-      final convertedAmt = await ExchangeRateService.convert(
-        amount: amt,
-        fromCurrency: _selectedCurrency,
-        toCurrency: _selectedCard!.currencyCode,
-      );
-      if (convertedAmt != null) {
+      final billedAmt = double.tryParse(_billingAmountController.text);
+      if (billedAmt != null && billedAmt > 0) {
         reward = _selectedCard!.rewardType == 'Cashback'
-            ? convertedAmt * (_selectedCard!.rewardRate / 100)
-            : convertedAmt * _selectedCard!.rewardRate;
+            ? billedAmt * (_selectedCard!.rewardRate / 100)
+            : billedAmt * _selectedCard!.rewardRate;
+      } else {
+        final convertedAmt = await ExchangeRateService.convert(
+          amount: amt,
+          fromCurrency: _selectedCurrency,
+          toCurrency: _selectedCard!.currencyCode,
+        );
+        if (convertedAmt != null) {
+          reward = _selectedCard!.rewardType == 'Cashback'
+              ? convertedAmt * (_selectedCard!.rewardRate / 100)
+              : convertedAmt * _selectedCard!.rewardRate;
+        }
       }
     } else {
       reward = _selectedCard!.rewardType == 'Cashback'
@@ -279,37 +350,44 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   Future<void> _convertCurrency() async {
-    if (_selectedCurrency == _baseCurrency) {
-      setState(() {
-        _baseCurrencyAmount = double.tryParse(_amountController.text) ?? 0.0;
-      });
-      return;
-    }
-
     final amt = double.tryParse(_amountController.text) ?? 0.0;
     if (amt == 0) {
-      setState(() {
-        _baseCurrencyAmount = 0.0;
-      });
+      if (mounted) {
+        setState(() {
+          _baseCurrencyAmount = 0.0;
+          _billingAmount = null;
+          _billingAmountController.text = '';
+          _isPending = false;
+          _billingCurrencyCode = null;
+        });
+      }
       return;
     }
 
-    setState(() {
-      _isConvertingCurrency = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isConvertingCurrency = true;
+      });
+    }
 
-    final converted = await ExchangeRateService.convert(
+    _billingCurrencyCode = _selectedCard?.currencyCode;
+
+    final result = await ExchangeRateService.calculateTransactionAmounts(
       amount: amt,
-      fromCurrency: _selectedCurrency,
-      toCurrency: _baseCurrency,
+      transactionCurrencyCode: _selectedCurrency,
+      billingCurrencyCode: _billingCurrencyCode,
+      baseCurrency: _baseCurrency,
+      date: _selectedDate,
     );
+
+    _isPending = result.isPending;
 
     if (mounted) {
       setState(() {
         _isConvertingCurrency = false;
-        if (converted != null) {
-          _baseCurrencyAmount = converted;
-        }
+        _baseCurrencyAmount = result.baseCurrencyAmount;
+        _billingAmount = result.billingAmount;
+        _billingAmountController.text = result.billingAmount.toStringAsFixed(2);
       });
     }
   }
@@ -426,6 +504,7 @@ class TransactionFormState extends State<TransactionForm> {
     _amountController.removeListener(_onAmountChanged);
     _rewardAmountController.dispose();
     _amountController.dispose();
+    _billingAmountController.dispose();
     _titleController.dispose();
     _noteController.dispose();
     _recurringIntervalController.dispose();
@@ -463,6 +542,9 @@ class TransactionFormState extends State<TransactionForm> {
         baseCurrencyAmount: _selectedCurrency != _baseCurrency
             ? (_baseCurrencyAmount ?? double.parse(_amountController.text))
             : double.parse(_amountController.text),
+        isPending: _isPending,
+        billingAmountText: _billingAmountController.text,
+        billingCurrencyCode: _billingCurrencyCode ?? _selectedCurrency,
       );
 
       if (_saveAsDefaultCurrency && mounted) {
@@ -533,6 +615,11 @@ class TransactionFormState extends State<TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
+    bool showBillingAmount =
+        !_isRecurring &&
+        _billingCurrencyCode != null &&
+        _selectedCurrency != _billingCurrencyCode;
+
     // If both are null, it's Add mode. If one is not null, it's Edit mode.
     final isEditMode =
         widget.transaction != null || widget.recurringTransaction != null;
@@ -657,39 +744,6 @@ class TransactionFormState extends State<TransactionForm> {
               ),
             ],
           ),
-          if (_selectedCurrency != _baseCurrency)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: SizedBox(
-                height: 24,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.calculate,
-                      color: AppColors.grey,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    if (_isConvertingCurrency)
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    else
-                      Text(
-                        '≈ ${_baseCurrencyAmount?.toStringAsFixed(2) ?? '0.00'} $_baseCurrency',
-                        style: const TextStyle(
-                          color: AppColors.grey,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
           if (_selectedCurrency !=
               context.read<UserPreferencesProvider>().defaultInputCurrency)
             Padding(
@@ -737,7 +791,9 @@ class TransactionFormState extends State<TransactionForm> {
                 ? const Center(child: CircularProgressIndicator())
                 : CustomDropdownField<Category?>(
                     label: 'Category'.cased(context),
-                    infoText: 'Add or edit categories under \'Manage\'.'.cased(context),
+                    infoText: 'Add or edit categories under \'Manage\'.'.cased(
+                      context,
+                    ),
                     items: _filteredCategories,
                     selectedItem: _selectedCategory,
                     displayText: (cat) => cat?.name ?? '',
@@ -787,7 +843,9 @@ class TransactionFormState extends State<TransactionForm> {
                     padding: EdgeInsets.zero,
                     child: CustomDropdownField<Card?>(
                       label: 'Card'.cased(context),
-                      infoText: 'Add or edit cards under \'Manage\'.'.cased(context),
+                      infoText: 'Add or edit cards under \'Manage\'.'.cased(
+                        context,
+                      ),
                       selectedItem: _selectedCard,
                       items: [null, ..._cards],
                       displayText: (card) =>
@@ -807,6 +865,51 @@ class TransactionFormState extends State<TransactionForm> {
                       },
                     ),
                   ),
+
+                  if (showBillingAmount) ...[
+                    const SizedBox(height: 24),
+                    CustomField(
+                      padding: EdgeInsets.zero,
+                      label: 'Billed Amount'.cased(context),
+                      infoText:
+                          'This is an estimated value based on exchange rate data. You can manually enter a value or mark the transaction as pending to settle it at another time.'
+                              .cased(context),
+                      child: TextField(
+                        controller: _billingAmountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: _onManualBillingAmountChanged,
+                        decoration: _getInputDecoration(
+                          hintText: '0.00',
+                        ).copyWith(suffixText: _billingCurrencyCode),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _isPending,
+                          onChanged: (val) {
+                            setState(() {
+                              _isPending = val ?? false;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Mark transaction as pending'.cased(context),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textPrimary.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
 
                   if (_selectedCard != null &&
                       _selectedCard!.rewardRate > 0) ...[

@@ -69,6 +69,9 @@ class ValidatorService {
     required bool hasRewards,
     required String currencyCode,
     required double baseCurrencyAmount,
+    bool isPending = false,
+    required String? billingAmountText,
+    required String billingCurrencyCode,
   }) async {
     // 1. Field-Level Validation & Parsing
     if (!Validators.isPresent(titleText)) {
@@ -120,6 +123,21 @@ class ValidatorService {
         throw ValidationException('Reward amount must be a valid number.');
       }
       rewardAmount = double.parse(rewardAmountText);
+    }
+
+    double billingAmount;
+    if (!isRecurring && billingCurrencyCode != currencyCode) {
+      if (!Validators.isPresent(billingAmountText)) {
+        throw ValidationException('Billed Amount cannot be empty.');
+      }
+      if (!Validators.amount(billingAmountText)) {
+        throw ValidationException(
+          'Billed Amount must be a valid number greater than 0.',
+        );
+      }
+      billingAmount = double.parse(billingAmountText!);
+    } else {
+      billingAmount = amount;
     }
 
     // 2. Cross-Field Validation
@@ -176,6 +194,9 @@ class ValidatorService {
       rewardAmount: rewardAmount,
       currencyCode: currencyCode,
       baseCurrencyAmount: baseCurrencyAmount,
+      isPending: isPending,
+      billingAmount: billingAmount,
+      billingCurrencyCode: billingCurrencyCode,
     );
   }
 

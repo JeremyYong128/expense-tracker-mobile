@@ -11,6 +11,9 @@ class Transaction {
   final double? rewardAmount;
   final String currencyCode;
   final double baseCurrencyAmount;
+  final bool isPending;
+  final double billingAmount;
+  final String billingCurrencyCode;
 
   Transaction({
     this.id,
@@ -25,6 +28,9 @@ class Transaction {
     this.rewardAmount,
     this.currencyCode = 'SGD',
     required this.baseCurrencyAmount,
+    this.isPending = false,
+    required this.billingAmount,
+    required this.billingCurrencyCode,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +47,9 @@ class Transaction {
       'rewardAmount': rewardAmount,
       'currencyCode': currencyCode,
       'baseCurrencyAmount': baseCurrencyAmount,
+      'isPending': isPending ? 1 : 0,
+      'billingAmount': billingAmount,
+      'billingCurrencyCode': billingCurrencyCode,
     };
   }
 
@@ -57,6 +66,9 @@ class Transaction {
     double? rewardAmount,
     String? currencyCode,
     double? baseCurrencyAmount,
+    bool? isPending,
+    double? billingAmount,
+    String? billingCurrencyCode,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -71,6 +83,9 @@ class Transaction {
       rewardAmount: rewardAmount ?? this.rewardAmount,
       currencyCode: currencyCode ?? this.currencyCode,
       baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
+      isPending: isPending ?? this.isPending,
+      billingAmount: billingAmount ?? this.billingAmount,
+      billingCurrencyCode: billingCurrencyCode ?? this.billingCurrencyCode,
     );
   }
 
@@ -88,6 +103,9 @@ class Transaction {
       rewardAmount: map['rewardAmount'],
       currencyCode: map['currencyCode'] ?? 'SGD',
       baseCurrencyAmount: map['baseCurrencyAmount'] ?? map['amount'],
+      isPending: map['isPending'] == 1 || map['isPending'] == true,
+      billingAmount: map['billingAmount'] ?? map['amount'],
+      billingCurrencyCode: map['billingCurrencyCode'] ?? map['currencyCode'] ?? 'SGD',
     );
   }
 }

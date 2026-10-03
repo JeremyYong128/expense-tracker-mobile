@@ -54,6 +54,9 @@ class Transactions extends Table {
   TextColumn get currencyCode => text().withDefault(const Constant('SGD'))();
   RealColumn get baseCurrencyAmount =>
       real().withDefault(const Constant(0.0))();
+  BoolColumn get isPending => boolean().withDefault(const Constant(false))();
+  RealColumn get billingAmount => real().withDefault(const Constant(0.0))();
+  TextColumn get billingCurrencyCode => text().withDefault(const Constant('SGD'))();
 }
 
 @DataClassName('CardTableData')
@@ -144,7 +147,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration {
@@ -427,6 +430,18 @@ class AppDatabase extends _$AppDatabase {
             }
           } catch (e, stack) {
             AppLogger.error('Failed to clean up tombstones', e, stack);
+            rethrow;
+          }
+        }
+        if (from < 21) {
+          try {
+            await customStatement('''
+              UPDATE transactions 
+              SET billing_amount = amount, billing_currency_code = currency_code
+              WHERE billing_amount = 0.0 OR billing_amount IS NULL;
+            ''');
+          } catch (e, stack) {
+            AppLogger.error('Failed to populate billing amounts', e, stack);
             rethrow;
           }
         }

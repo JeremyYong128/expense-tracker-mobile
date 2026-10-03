@@ -66,6 +66,9 @@ class TransactionProvider extends ChangeNotifier {
     double? rewardAmount,
     String currencyCode = 'SGD',
     double? baseCurrencyAmount,
+    bool isPending = false,
+    required double billingAmount,
+    required String billingCurrencyCode,
   }) async {
     await DataService.addTransaction(
       amountText: amountText,
@@ -82,6 +85,9 @@ class TransactionProvider extends ChangeNotifier {
       rewardAmount: rewardAmount,
       currencyCode: currencyCode,
       baseCurrencyAmount: baseCurrencyAmount,
+      isPending: isPending,
+      billingAmount: billingAmount,
+      billingCurrencyCode: billingCurrencyCode,
     );
     await fetchTransactions();
   }

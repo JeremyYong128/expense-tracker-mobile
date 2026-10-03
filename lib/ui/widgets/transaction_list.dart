@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
@@ -463,18 +464,49 @@ class _TransactionListState extends State<TransactionList> {
                                         Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              transaction.isIncome
-                                                  ? '+${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}'
-                                                  : '-${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 16,
-                                                color: transaction.isIncome
-                                                    ? AppColors.income
-                                                    : AppColors.expense,
-                                              ),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if (transaction.isPending)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(right: 6.0),
+                                                    child: JustTheTooltip(
+                                                      triggerMode: TooltipTriggerMode.tap,
+                                                      backgroundColor: AppColors.background,
+                                                      content: const Padding(
+                                                        padding: EdgeInsets.all(12.0),
+                                                        child: Text(
+                                                          'This amount is estimated. Tap to settle once it posts to your statement.',
+                                                          style: TextStyle(
+                                                            color: AppColors.textPrimary,
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.access_time_filled,
+                                                        size: 16,
+                                                        color: Colors.orange,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                Text(
+                                                  transaction.isIncome
+                                                      ? '+${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}'
+                                                      : '-${CurrencyFormatter.format(transaction.amount, transaction.currencyCode)}',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 16,
+                                                    color: transaction.isIncome
+                                                        ? AppColors.income
+                                                        : AppColors.expense,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),

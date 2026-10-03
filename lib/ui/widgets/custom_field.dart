@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
+import 'package:just_the_tooltip/just_the_tooltip.dart';
 
 class CustomField extends StatelessWidget {
   final String? label;
@@ -25,38 +26,46 @@ class CustomField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (label != null) ...[
-            Text(
-              label!,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label!,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+                if (infoText != null) ...[
+                  const SizedBox(width: 8),
+                  JustTheTooltip(
+                    content: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 220,
+                        child: Text(
+                          infoText!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    backgroundColor: Colors.black87,
+                    tailBaseWidth: 16,
+                    tailLength: 8,
+                    isModal: true,
+                    margin: const EdgeInsets.all(16),
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: AppColors.textSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 8.0),
           ],
           if (height != null) SizedBox(height: height, child: child) else child,
-          if (infoText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, left: 4.0, right: 4.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      infoText!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

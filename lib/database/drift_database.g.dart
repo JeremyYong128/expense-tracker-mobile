@@ -1951,6 +1951,45 @@ class $TransactionsTable extends Transactions
         requiredDuringInsert: false,
         defaultValue: const Constant(0.0),
       );
+  static const VerificationMeta _isPendingMeta = const VerificationMeta(
+    'isPending',
+  );
+  @override
+  late final GeneratedColumn<bool> isPending = GeneratedColumn<bool>(
+    'is_pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pending" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _billingAmountMeta = const VerificationMeta(
+    'billingAmount',
+  );
+  @override
+  late final GeneratedColumn<double> billingAmount = GeneratedColumn<double>(
+    'billing_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _billingCurrencyCodeMeta =
+      const VerificationMeta('billingCurrencyCode');
+  @override
+  late final GeneratedColumn<String> billingCurrencyCode =
+      GeneratedColumn<String>(
+        'billing_currency_code',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('SGD'),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1965,6 +2004,9 @@ class $TransactionsTable extends Transactions
     cardId,
     currencyCode,
     baseCurrencyAmount,
+    isPending,
+    billingAmount,
+    billingCurrencyCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2067,6 +2109,30 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('is_pending')) {
+      context.handle(
+        _isPendingMeta,
+        isPending.isAcceptableOrUnknown(data['is_pending']!, _isPendingMeta),
+      );
+    }
+    if (data.containsKey('billing_amount')) {
+      context.handle(
+        _billingAmountMeta,
+        billingAmount.isAcceptableOrUnknown(
+          data['billing_amount']!,
+          _billingAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('billing_currency_code')) {
+      context.handle(
+        _billingCurrencyCodeMeta,
+        billingCurrencyCode.isAcceptableOrUnknown(
+          data['billing_currency_code']!,
+          _billingCurrencyCodeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2124,6 +2190,18 @@ class $TransactionsTable extends Transactions
         DriftSqlType.double,
         data['${effectivePrefix}base_currency_amount'],
       )!,
+      isPending: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pending'],
+      )!,
+      billingAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}billing_amount'],
+      )!,
+      billingCurrencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}billing_currency_code'],
+      )!,
     );
   }
 
@@ -2147,6 +2225,9 @@ class TransactionTableData extends DataClass
   final int? cardId;
   final String currencyCode;
   final double baseCurrencyAmount;
+  final bool isPending;
+  final double billingAmount;
+  final String billingCurrencyCode;
   const TransactionTableData({
     required this.id,
     required this.amount,
@@ -2160,6 +2241,9 @@ class TransactionTableData extends DataClass
     this.cardId,
     required this.currencyCode,
     required this.baseCurrencyAmount,
+    required this.isPending,
+    required this.billingAmount,
+    required this.billingCurrencyCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2184,6 +2268,9 @@ class TransactionTableData extends DataClass
     }
     map['currency_code'] = Variable<String>(currencyCode);
     map['base_currency_amount'] = Variable<double>(baseCurrencyAmount);
+    map['is_pending'] = Variable<bool>(isPending);
+    map['billing_amount'] = Variable<double>(billingAmount);
+    map['billing_currency_code'] = Variable<String>(billingCurrencyCode);
     return map;
   }
 
@@ -2207,6 +2294,9 @@ class TransactionTableData extends DataClass
           : Value(cardId),
       currencyCode: Value(currencyCode),
       baseCurrencyAmount: Value(baseCurrencyAmount),
+      isPending: Value(isPending),
+      billingAmount: Value(billingAmount),
+      billingCurrencyCode: Value(billingCurrencyCode),
     );
   }
 
@@ -2230,6 +2320,11 @@ class TransactionTableData extends DataClass
       baseCurrencyAmount: serializer.fromJson<double>(
         json['baseCurrencyAmount'],
       ),
+      isPending: serializer.fromJson<bool>(json['isPending']),
+      billingAmount: serializer.fromJson<double>(json['billingAmount']),
+      billingCurrencyCode: serializer.fromJson<String>(
+        json['billingCurrencyCode'],
+      ),
     );
   }
   @override
@@ -2248,6 +2343,9 @@ class TransactionTableData extends DataClass
       'cardId': serializer.toJson<int?>(cardId),
       'currencyCode': serializer.toJson<String>(currencyCode),
       'baseCurrencyAmount': serializer.toJson<double>(baseCurrencyAmount),
+      'isPending': serializer.toJson<bool>(isPending),
+      'billingAmount': serializer.toJson<double>(billingAmount),
+      'billingCurrencyCode': serializer.toJson<String>(billingCurrencyCode),
     };
   }
 
@@ -2264,6 +2362,9 @@ class TransactionTableData extends DataClass
     Value<int?> cardId = const Value.absent(),
     String? currencyCode,
     double? baseCurrencyAmount,
+    bool? isPending,
+    double? billingAmount,
+    String? billingCurrencyCode,
   }) => TransactionTableData(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -2277,6 +2378,9 @@ class TransactionTableData extends DataClass
     cardId: cardId.present ? cardId.value : this.cardId,
     currencyCode: currencyCode ?? this.currencyCode,
     baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
+    isPending: isPending ?? this.isPending,
+    billingAmount: billingAmount ?? this.billingAmount,
+    billingCurrencyCode: billingCurrencyCode ?? this.billingCurrencyCode,
   );
   TransactionTableData copyWithCompanion(TransactionsCompanion data) {
     return TransactionTableData(
@@ -2302,6 +2406,13 @@ class TransactionTableData extends DataClass
       baseCurrencyAmount: data.baseCurrencyAmount.present
           ? data.baseCurrencyAmount.value
           : this.baseCurrencyAmount,
+      isPending: data.isPending.present ? data.isPending.value : this.isPending,
+      billingAmount: data.billingAmount.present
+          ? data.billingAmount.value
+          : this.billingAmount,
+      billingCurrencyCode: data.billingCurrencyCode.present
+          ? data.billingCurrencyCode.value
+          : this.billingCurrencyCode,
     );
   }
 
@@ -2319,7 +2430,10 @@ class TransactionTableData extends DataClass
           ..write('recurringId: $recurringId, ')
           ..write('cardId: $cardId, ')
           ..write('currencyCode: $currencyCode, ')
-          ..write('baseCurrencyAmount: $baseCurrencyAmount')
+          ..write('baseCurrencyAmount: $baseCurrencyAmount, ')
+          ..write('isPending: $isPending, ')
+          ..write('billingAmount: $billingAmount, ')
+          ..write('billingCurrencyCode: $billingCurrencyCode')
           ..write(')'))
         .toString();
   }
@@ -2338,6 +2452,9 @@ class TransactionTableData extends DataClass
     cardId,
     currencyCode,
     baseCurrencyAmount,
+    isPending,
+    billingAmount,
+    billingCurrencyCode,
   );
   @override
   bool operator ==(Object other) =>
@@ -2354,7 +2471,10 @@ class TransactionTableData extends DataClass
           other.recurringId == this.recurringId &&
           other.cardId == this.cardId &&
           other.currencyCode == this.currencyCode &&
-          other.baseCurrencyAmount == this.baseCurrencyAmount);
+          other.baseCurrencyAmount == this.baseCurrencyAmount &&
+          other.isPending == this.isPending &&
+          other.billingAmount == this.billingAmount &&
+          other.billingCurrencyCode == this.billingCurrencyCode);
 }
 
 class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
@@ -2370,6 +2490,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
   final Value<int?> cardId;
   final Value<String> currencyCode;
   final Value<double> baseCurrencyAmount;
+  final Value<bool> isPending;
+  final Value<double> billingAmount;
+  final Value<String> billingCurrencyCode;
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2383,6 +2506,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.cardId = const Value.absent(),
     this.currencyCode = const Value.absent(),
     this.baseCurrencyAmount = const Value.absent(),
+    this.isPending = const Value.absent(),
+    this.billingAmount = const Value.absent(),
+    this.billingCurrencyCode = const Value.absent(),
   });
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -2397,6 +2523,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     this.cardId = const Value.absent(),
     this.currencyCode = const Value.absent(),
     this.baseCurrencyAmount = const Value.absent(),
+    this.isPending = const Value.absent(),
+    this.billingAmount = const Value.absent(),
+    this.billingCurrencyCode = const Value.absent(),
   }) : amount = Value(amount),
        title = Value(title),
        date = Value(date),
@@ -2414,6 +2543,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Expression<int>? cardId,
     Expression<String>? currencyCode,
     Expression<double>? baseCurrencyAmount,
+    Expression<bool>? isPending,
+    Expression<double>? billingAmount,
+    Expression<String>? billingCurrencyCode,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2429,6 +2561,10 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       if (currencyCode != null) 'currency_code': currencyCode,
       if (baseCurrencyAmount != null)
         'base_currency_amount': baseCurrencyAmount,
+      if (isPending != null) 'is_pending': isPending,
+      if (billingAmount != null) 'billing_amount': billingAmount,
+      if (billingCurrencyCode != null)
+        'billing_currency_code': billingCurrencyCode,
     });
   }
 
@@ -2445,6 +2581,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     Value<int?>? cardId,
     Value<String>? currencyCode,
     Value<double>? baseCurrencyAmount,
+    Value<bool>? isPending,
+    Value<double>? billingAmount,
+    Value<String>? billingCurrencyCode,
   }) {
     return TransactionsCompanion(
       id: id ?? this.id,
@@ -2459,6 +2598,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
       cardId: cardId ?? this.cardId,
       currencyCode: currencyCode ?? this.currencyCode,
       baseCurrencyAmount: baseCurrencyAmount ?? this.baseCurrencyAmount,
+      isPending: isPending ?? this.isPending,
+      billingAmount: billingAmount ?? this.billingAmount,
+      billingCurrencyCode: billingCurrencyCode ?? this.billingCurrencyCode,
     );
   }
 
@@ -2501,6 +2643,17 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
     if (baseCurrencyAmount.present) {
       map['base_currency_amount'] = Variable<double>(baseCurrencyAmount.value);
     }
+    if (isPending.present) {
+      map['is_pending'] = Variable<bool>(isPending.value);
+    }
+    if (billingAmount.present) {
+      map['billing_amount'] = Variable<double>(billingAmount.value);
+    }
+    if (billingCurrencyCode.present) {
+      map['billing_currency_code'] = Variable<String>(
+        billingCurrencyCode.value,
+      );
+    }
     return map;
   }
 
@@ -2518,7 +2671,10 @@ class TransactionsCompanion extends UpdateCompanion<TransactionTableData> {
           ..write('recurringId: $recurringId, ')
           ..write('cardId: $cardId, ')
           ..write('currencyCode: $currencyCode, ')
-          ..write('baseCurrencyAmount: $baseCurrencyAmount')
+          ..write('baseCurrencyAmount: $baseCurrencyAmount, ')
+          ..write('isPending: $isPending, ')
+          ..write('billingAmount: $billingAmount, ')
+          ..write('billingCurrencyCode: $billingCurrencyCode')
           ..write(')'))
         .toString();
   }
@@ -4871,6 +5027,9 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<int?> cardId,
       Value<String> currencyCode,
       Value<double> baseCurrencyAmount,
+      Value<bool> isPending,
+      Value<double> billingAmount,
+      Value<String> billingCurrencyCode,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
     TransactionsCompanion Function({
@@ -4886,6 +5045,9 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int?> cardId,
       Value<String> currencyCode,
       Value<double> baseCurrencyAmount,
+      Value<bool> isPending,
+      Value<double> billingAmount,
+      Value<String> billingCurrencyCode,
     });
 
 final class $$TransactionsTableReferences
@@ -5001,6 +5163,21 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<double> get baseCurrencyAmount => $composableBuilder(
     column: $table.baseCurrencyAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPending => $composableBuilder(
+    column: $table.isPending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get billingAmount => $composableBuilder(
+    column: $table.billingAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get billingCurrencyCode => $composableBuilder(
+    column: $table.billingCurrencyCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5129,6 +5306,21 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isPending => $composableBuilder(
+    column: $table.isPending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get billingAmount => $composableBuilder(
+    column: $table.billingAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get billingCurrencyCode => $composableBuilder(
+    column: $table.billingCurrencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5239,6 +5431,19 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<double> get baseCurrencyAmount => $composableBuilder(
     column: $table.baseCurrencyAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPending =>
+      $composableBuilder(column: $table.isPending, builder: (column) => column);
+
+  GeneratedColumn<double> get billingAmount => $composableBuilder(
+    column: $table.billingAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get billingCurrencyCode => $composableBuilder(
+    column: $table.billingCurrencyCode,
     builder: (column) => column,
   );
 
@@ -5357,6 +5562,9 @@ class $$TransactionsTableTableManager
                 Value<int?> cardId = const Value.absent(),
                 Value<String> currencyCode = const Value.absent(),
                 Value<double> baseCurrencyAmount = const Value.absent(),
+                Value<bool> isPending = const Value.absent(),
+                Value<double> billingAmount = const Value.absent(),
+                Value<String> billingCurrencyCode = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -5370,6 +5578,9 @@ class $$TransactionsTableTableManager
                 cardId: cardId,
                 currencyCode: currencyCode,
                 baseCurrencyAmount: baseCurrencyAmount,
+                isPending: isPending,
+                billingAmount: billingAmount,
+                billingCurrencyCode: billingCurrencyCode,
               ),
           createCompanionCallback:
               ({
@@ -5385,6 +5596,9 @@ class $$TransactionsTableTableManager
                 Value<int?> cardId = const Value.absent(),
                 Value<String> currencyCode = const Value.absent(),
                 Value<double> baseCurrencyAmount = const Value.absent(),
+                Value<bool> isPending = const Value.absent(),
+                Value<double> billingAmount = const Value.absent(),
+                Value<String> billingCurrencyCode = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -5398,6 +5612,9 @@ class $$TransactionsTableTableManager
                 cardId: cardId,
                 currencyCode: currencyCode,
                 baseCurrencyAmount: baseCurrencyAmount,
+                isPending: isPending,
+                billingAmount: billingAmount,
+                billingCurrencyCode: billingCurrencyCode,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -2,6 +2,8 @@ import 'package:expense_tracker_mobile/models/transaction.dart';
 import 'package:expense_tracker_mobile/services/data_service.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/utils/business_logic.dart';
+import 'package:expense_tracker_mobile/services/exchange_rate_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecurringProcessingService {
   /// Fetches all recurring transactions whose nextDueDate has passed
@@ -10,10 +12,33 @@ class RecurringProcessingService {
     final now = DateTime.now();
     List<Transaction> pendingInstances = [];
 
+    final prefs = await SharedPreferences.getInstance();
+    final baseCurrency = prefs.getString('baseCurrency') ?? 'SGD';
+    final allCards = await DataService.getCards();
+    final cardMap = {for (var c in allCards) c.id: c};
+
     for (var tx in allRecurring) {
       var currentDueDate = tx.nextDueDate;
       while (currentDueDate.isBefore(now) ||
           currentDueDate.isAtSameMomentAs(now)) {
+        String? billingCurrencyCode;
+        if (tx.cardId != null) {
+          billingCurrencyCode = cardMap[tx.cardId]?.currencyCode;
+        }
+
+        final result = await ExchangeRateService.calculateTransactionAmounts(
+          amount: tx.amount,
+          transactionCurrencyCode: tx.currencyCode,
+          billingCurrencyCode: billingCurrencyCode,
+          baseCurrency: baseCurrency,
+          date: currentDueDate,
+        );
+
+        double baseCurrencyAmount = result.baseCurrencyAmount;
+        double billingAmount = result.billingAmount;
+        bool isPending = result.isPending;
+        billingCurrencyCode ??= tx.currencyCode;
+
         pendingInstances.add(
           Transaction(
             amount: tx.amount,
@@ -26,7 +51,10 @@ class RecurringProcessingService {
             cardId: tx.cardId,
             rewardAmount: tx.rewardAmount,
             currencyCode: tx.currencyCode,
-            baseCurrencyAmount: tx.amount,
+            baseCurrencyAmount: baseCurrencyAmount,
+            billingAmount: billingAmount,
+            billingCurrencyCode: billingCurrencyCode,
+            isPending: isPending,
           ),
         );
 

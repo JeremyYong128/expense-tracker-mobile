@@ -38,6 +38,9 @@ class DataService {
       rewardAmount: data.rewardAmount,
       currencyCode: data.currencyCode,
       baseCurrencyAmount: data.baseCurrencyAmount,
+      isPending: data.isPending,
+      billingAmount: data.billingAmount,
+      billingCurrencyCode: data.billingCurrencyCode,
     );
   }
 
@@ -351,6 +354,9 @@ class DataService {
     double? rewardAmount,
     String currencyCode = 'SGD',
     double? baseCurrencyAmount,
+    bool isPending = false,
+    required double billingAmount,
+    required String billingCurrencyCode,
   }) async {
     final amount = double.parse(amountText);
     final actualBaseCurrencyAmount = baseCurrencyAmount ?? amount;
@@ -404,6 +410,9 @@ class DataService {
               rewardAmount: drift.Value(rewardAmount),
               currencyCode: drift.Value(currencyCode),
               baseCurrencyAmount: drift.Value(actualBaseCurrencyAmount),
+              isPending: drift.Value(isPending),
+              billingAmount: drift.Value(billingAmount),
+              billingCurrencyCode: drift.Value(billingCurrencyCode),
             ),
           );
     }
@@ -425,6 +434,9 @@ class DataService {
         rewardAmount: drift.Value(transaction.rewardAmount),
         currencyCode: drift.Value(transaction.currencyCode),
         baseCurrencyAmount: drift.Value(transaction.baseCurrencyAmount),
+        isPending: drift.Value(transaction.isPending),
+        billingAmount: drift.Value(transaction.billingAmount),
+        billingCurrencyCode: drift.Value(transaction.billingCurrencyCode),
       ),
     );
   }
