@@ -202,7 +202,6 @@ class _CardFormState extends State<CardForm> {
                   ),
                 ),
               CustomField(
-                label: 'Card Name'.cased(context),
                 child: TextField(
                   autofocus: true,
                   controller: _nameController,
@@ -245,8 +244,6 @@ class _CardFormState extends State<CardForm> {
               const SizedBox(height: 24),
 
               CustomDropdownField<String>(
-                label: 'Billing Currency'.cased(context),
-                infoText: 'Transactions in a foreign currency will be marked pending. They will temporarily use an estimated converted amount until the transaction settles.'.cased(context),
                 items: CurrencyFormatter.commonCurrencies,
                 selectedItem: _selectedCurrency,
                 displayText: (currency) => currency,
@@ -300,7 +297,6 @@ class _CardFormState extends State<CardForm> {
               const SizedBox(height: 24),
 
               CustomDropdownField<String>(
-                label: 'Reward Type'.cased(context),
                 items: const ['None', 'Cashback', 'Miles', 'Points'],
                 selectedItem: _rewardType,
                 displayText: (type) => type.cased(context),
@@ -317,12 +313,6 @@ class _CardFormState extends State<CardForm> {
               ),
               const SizedBox(height: 24.0),
               CustomField(
-                label: _rewardType == 'Cashback'
-                    ? 'Reward Rate (%)'.cased(context)
-                    : 'Reward Rate (per $symbol)'.cased(context),
-                infoText: _rewardType != 'None'
-                    ? 'This will be the default rate applied to new transactions. You can modify or remove the rewards on individual transactions later.'
-                    : null,
                 child: TextField(
                   controller: _rateController,
                   enabled: _rewardType != 'None',

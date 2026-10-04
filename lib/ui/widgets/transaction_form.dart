@@ -22,6 +22,7 @@ import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/services/exchange_rate_service.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
+import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 
 class TransactionFormData {
   final double amount;
@@ -468,8 +469,6 @@ class TransactionFormState extends State<TransactionForm> {
 
       if (catId != null) {
         _selectedCategory = categoryProvider.getCategoryById(catId);
-      } else if (_categories.isNotEmpty) {
-        _selectedCategory = _categories.first;
       }
 
       if (ccId != null) {
@@ -584,7 +583,7 @@ class TransactionFormState extends State<TransactionForm> {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
       hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.grey),
+      hintStyle: AppStyles.formPlaceholderText,
       prefixIcon: prefixIcon,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -595,16 +594,10 @@ class TransactionFormState extends State<TransactionForm> {
     );
   }
 
-  Widget _buildRecurringDropdown(
-    BuildContext context, {
-    bool showLabel = false,
-  }) {
+  Widget _buildRecurringDropdown(BuildContext context) {
     return CustomField(
       padding: EdgeInsets.zero,
       child: CustomDropdownField<RecurringTransaction?>(
-        label: showLabel
-            ? 'Link to existing recurring transaction'.cased(context)
-            : '',
         items: [null, ..._recurringTransactions],
         selectedItem: _selectedRecurring,
         displayText: (r) => r?.title ?? 'None'.cased(context),
@@ -666,14 +659,8 @@ class TransactionFormState extends State<TransactionForm> {
                         ? _selectedCategory!.isIncome
                         : _selectedCategory!.isExpense;
                     if (!isValid) {
-                      _selectedCategory = validCategories.isNotEmpty
-                          ? validCategories.first
-                          : null;
+                      _selectedCategory = null;
                     }
-                  } else {
-                    _selectedCategory = validCategories.isNotEmpty
-                        ? validCategories.first
-                        : null;
                   }
                 }
 
@@ -685,15 +672,13 @@ class TransactionFormState extends State<TransactionForm> {
             },
           ),
           const SizedBox(height: 32.0),
+          SectionHeader(title: 'Transaction details'.cased(context)),
 
           CustomField(
-            label: 'Title'.cased(context),
             child: TextField(
               autofocus: true,
               controller: _titleController,
-              decoration: _getInputDecoration(
-                hintText: 'e.g. Groceries'.cased(context),
-              ),
+              decoration: _getInputDecoration(hintText: 'Title'.cased(context)),
             ),
           ),
 
@@ -703,7 +688,6 @@ class TransactionFormState extends State<TransactionForm> {
               Expanded(
                 flex: 2,
                 child: CustomField(
-                  label: 'Amount'.cased(context),
                   padding: EdgeInsets.only(
                     bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
                     right: 16.0,
@@ -713,10 +697,8 @@ class TransactionFormState extends State<TransactionForm> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: _getInputDecoration(hintText: '0.00'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    decoration: _getInputDecoration(
+                      hintText: 'Amount'.cased(context),
                     ),
                   ),
                 ),
@@ -724,12 +706,10 @@ class TransactionFormState extends State<TransactionForm> {
               Expanded(
                 flex: 1,
                 child: CustomField(
-                  label: 'Currency'.cased(context),
                   padding: EdgeInsets.only(
                     bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
                   ),
                   child: CustomDropdownField<String>(
-                    label: '',
                     items: CurrencyFormatter.commonCurrencies,
                     selectedItem: _selectedCurrency,
                     displayText: (c) => c,
@@ -746,8 +726,7 @@ class TransactionFormState extends State<TransactionForm> {
           ),
           if (_selectedCurrency !=
               context.read<UserPreferencesProvider>().defaultInputCurrency)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
+            CustomField(
               child: GestureDetector(
                 onTap: () => setState(
                   () => _saveAsDefaultCurrency = !_saveAsDefaultCurrency,
@@ -776,24 +755,41 @@ class TransactionFormState extends State<TransactionForm> {
                       'Set $_selectedCurrency as default currency'.cased(
                         context,
                       ),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppStyles.formOptionText(_saveAsDefaultCurrency),
                     ),
                   ],
                 ),
               ),
             ),
 
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CustomDatePickerField(
+                    selectedDate: _selectedDate,
+                    onDateSelected: (newDate) =>
+                        setState(() => _selectedDate = newDate),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: CustomTimePickerField(
+                    selectedTime: _selectedDate,
+                    onTimeSelected: (newTime) =>
+                        setState(() => _selectedDate = newTime),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           CustomField(
             child: _isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
                 : CustomDropdownField<Category?>(
-                    label: 'Category'.cased(context),
-                    infoText: 'Add or edit categories under \'Manage\'.'.cased(
-                      context,
-                    ),
+                    hintText: 'Category'.cased(context),
                     items: _filteredCategories,
                     selectedItem: _selectedCategory,
                     displayText: (cat) => cat?.name ?? '',
@@ -808,113 +804,124 @@ class TransactionFormState extends State<TransactionForm> {
                   ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: CustomDatePickerField(
-                    label: 'Date'.cased(context),
-                    selectedDate: _selectedDate,
-                    onDateSelected: (newDate) =>
-                        setState(() => _selectedDate = newDate),
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: CustomTimePickerField(
-                    label: 'Time'.cased(context),
-                    selectedTime: _selectedDate,
-                    onTimeSelected: (newTime) =>
-                        setState(() => _selectedDate = newTime),
-                  ),
-                ),
-              ],
+          CustomField(
+            child: TextField(
+              controller: _noteController,
+              maxLines: 3,
+              decoration: _getInputDecoration(
+                hintText: 'Notes'.cased(context),
+              ).copyWith(contentPadding: const EdgeInsets.all(16.0)),
             ),
           ),
 
           if (!_isIncome)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeader(title: 'Payment'.cased(context)),
+                CustomField(
+                  child: CustomDropdownField<Card?>(
+                    hintText: 'Card'.cased(context),
+                    selectedItem: _selectedCard,
+                    items: [null, ..._cards],
+                    displayText: (card) =>
+                        card == null ? 'None'.cased(context) : card.name,
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedCard = val;
+                        if (val != null && val.rewardRate > 0) {
+                          _hasRewards = true;
+                        } else {
+                          _hasRewards = false;
+                          _rewardAmountController.clear();
+                        }
+                        _lockRewardRecalculation = false;
+                        _onAmountChanged();
+                      });
+                    },
+                  ),
+                ),
+
+                if (showBillingAmount) ...[
                   CustomField(
-                    padding: EdgeInsets.zero,
-                    child: CustomDropdownField<Card?>(
-                      label: 'Card'.cased(context),
-                      infoText: 'Add or edit cards under \'Manage\'.'.cased(
-                        context,
+                    infoText:
+                        'The billed amount has been estimated based on exchange rate data. You can manually enter a value or mark the transaction as pending to settle it at another time.'
+                            .cased(context),
+                    child: TextField(
+                      controller: _billingAmountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
-                      selectedItem: _selectedCard,
-                      items: [null, ..._cards],
-                      displayText: (card) =>
-                          card == null ? 'None'.cased(context) : card.name,
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedCard = val;
-                          if (val != null && val.rewardRate > 0) {
-                            _hasRewards = true;
-                          } else {
-                            _hasRewards = false;
-                            _rewardAmountController.clear();
-                          }
-                          _lockRewardRecalculation = false;
-                          _onAmountChanged();
-                        });
-                      },
+                      onChanged: _onManualBillingAmountChanged,
+                      decoration:
+                          _getInputDecoration(
+                            hintText: 'Billed amount'.cased(context),
+                          ).copyWith(
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _billingCurrencyCode ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.refresh, size: 20),
+                                  color: AppColors.primary,
+                                  onPressed: _convertCurrency,
+                                ),
+                              ],
+                            ),
+                          ),
                     ),
                   ),
-
-                  if (showBillingAmount) ...[
-                    const SizedBox(height: 24),
-                    CustomField(
-                      padding: EdgeInsets.zero,
-                      label: 'Billed Amount'.cased(context),
-                      infoText:
-                          'This is an estimated value based on exchange rate data. You can manually enter a value or mark the transaction as pending to settle it at another time.'
-                              .cased(context),
-                      child: TextField(
-                        controller: _billingAmountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: _onManualBillingAmountChanged,
-                        decoration: _getInputDecoration(
-                          hintText: '0.00',
-                        ).copyWith(suffixText: _billingCurrencyCode),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _isPending,
-                          onChanged: (val) {
-                            setState(() {
-                              _isPending = val ?? false;
-                            });
-                          },
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Mark transaction as pending'.cased(context),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textPrimary.withValues(
-                                alpha: 0.7,
+                  CustomField(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isPending = !_isPending;
+                        });
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Checkbox(
+                              value: _isPending,
+                              onChanged: (val) {
+                                setState(() {
+                                  _isPending = val ?? false;
+                                });
+                              },
+                              activeColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Mark transaction as pending'.cased(context),
+                              style: AppStyles.formOptionText(
+                                _isPending,
+                                boldWhenSelected: true,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
+                ],
 
-                  if (_selectedCard != null &&
-                      _selectedCard!.rewardRate > 0) ...[
-                    const SizedBox(height: 24),
-                    Stack(
+                if (_selectedCard != null && _selectedCard!.rewardRate > 0) ...[
+                  CustomField(
+                    child: Stack(
                       clipBehavior: Clip.none,
                       alignment: Alignment.centerLeft,
                       children: [
@@ -947,165 +954,114 @@ class TransactionFormState extends State<TransactionForm> {
                         ),
                       ],
                     ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeInOut,
-                      switchOutCurve: Curves.easeInOut,
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              alignment: const Alignment(-1.0, -1.0),
-                              child: child,
-                            );
-                          },
-                      child: _hasRewards
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: CustomField(
-                                padding: EdgeInsets.zero,
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.baseline,
-                                  textBaseline: TextBaseline.alphabetic,
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _rewardAmountController,
-                                        keyboardType:
-                                            const TextInputType.numberWithOptions(
-                                              decimal: true,
-                                            ),
-                                        decoration: _getInputDecoration(
-                                          hintText: '0.00',
-                                          prefixIcon:
-                                              _selectedCard!.rewardType ==
-                                                  'Cashback'
-                                              ? const Icon(
-                                                  Icons.attach_money,
-                                                  color: AppColors.primary,
-                                                )
-                                              : null,
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeInOut,
+                    switchOutCurve: Curves.easeInOut,
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return SizeTransition(
+                            sizeFactor: animation,
+                            alignment: const Alignment(-1.0, -1.0),
+                            child: child,
+                          );
+                        },
+                    child: _hasRewards
+                        ? CustomField(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _rewardAmountController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
                                         ),
-                                        onChanged: (_) {
-                                          _lockRewardRecalculation = true;
-                                        },
-                                      ),
+                                    decoration: _getInputDecoration(
+                                      hintText: '0.00',
+                                      prefixIcon:
+                                          _selectedCard!.rewardType ==
+                                              'Cashback'
+                                          ? const Icon(
+                                              Icons.attach_money,
+                                              color: AppColors.primary,
+                                            )
+                                          : null,
                                     ),
-                                    const SizedBox(width: 16.0),
-                                    Text(
-                                      _selectedCard!.rewardType == 'Cashback'
-                                          ? 'cashback'
-                                          : _selectedCard!.rewardType
-                                                .toLowerCase(),
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ],
+                                    onChanged: (_) {
+                                      _lockRewardRecalculation = true;
+                                    },
+                                  ),
                                 ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
+                                const SizedBox(width: 16.0),
+                                Text(
+                                  _selectedCard!.rewardType == 'Cashback'
+                                      ? 'cashback'
+                                      : _selectedCard!.rewardType.toLowerCase(),
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 ],
-              ),
+              ],
             ),
 
           // Recurrence Section
+          SectionHeader(title: 'Repeat'.cased(context)),
           if (!isEditMode) ...[
             // Add Mode: Unified Recurrence Section
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 16.0,
-              ), // 16.0 instead of 24.0 to compensate for list's internal 8.0 padding
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Repeat'.cased(context),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+            CustomField(
+              child: ExpandableSelectionList<RecurringSelection>(
+                items: [
+                  ExpandableSelectionItem(
+                    value: RecurringSelection.none,
+                    title: 'Does not repeat'.cased(context),
                   ),
-                  // Removed SizedBox(height: 8.0) because ExpandableSelectionList has top padding of 8.0 internally
-                  ExpandableSelectionList<RecurringSelection>(
-                    items: [
-                      ExpandableSelectionItem(
-                        value: RecurringSelection.none,
-                        title: 'Does not repeat'.cased(context),
-                      ),
-                      ExpandableSelectionItem(
-                        value: RecurringSelection.createNew,
-                        title: 'Save as new recurring transaction'.cased(
-                          context,
-                        ),
-                        expandedWidget: _buildRecurringInputs(context),
-                      ),
-                      ExpandableSelectionItem(
-                        value: RecurringSelection.linkExisting,
-                        title: 'Link to existing recurring transaction'.cased(
-                          context,
-                        ),
-                        expandedWidget: _buildRecurringDropdown(context),
-                      ),
-                    ],
-                    selectedValue: _recurringSelection,
-                    onChanged: (val) {
-                      setState(() {
-                        _recurringSelection = val;
-                        if (val == RecurringSelection.createNew) {
-                          _isRecurring = true;
-                          _selectedRecurring = null;
-                        } else if (val == RecurringSelection.linkExisting) {
-                          _isRecurring = false;
-                        } else {
-                          _isRecurring = false;
-                          _selectedRecurring = null;
-                        }
-                      });
-                    },
+                  ExpandableSelectionItem(
+                    value: RecurringSelection.createNew,
+                    title: 'Save as new recurring transaction'.cased(context),
+                    expandedWidget: _buildRecurringInputs(context),
+                  ),
+                  ExpandableSelectionItem(
+                    value: RecurringSelection.linkExisting,
+                    title: 'Link to existing recurring transaction'.cased(
+                      context,
+                    ),
+                    expandedWidget: _buildRecurringDropdown(context),
                   ),
                 ],
+                selectedValue: _recurringSelection,
+                onChanged: (val) {
+                  setState(() {
+                    _recurringSelection = val;
+                    if (val == RecurringSelection.createNew) {
+                      _isRecurring = true;
+                      _selectedRecurring = null;
+                    } else if (val == RecurringSelection.linkExisting) {
+                      _isRecurring = false;
+                    } else {
+                      _isRecurring = false;
+                      _selectedRecurring = null;
+                    }
+                  });
+                },
               ),
             ),
           ] else if (widget.transaction != null) ...[
             // Edit Mode (Normal Transaction): Just show the dropdown
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: _buildRecurringDropdown(context, showLabel: true),
-            ),
+            CustomField(child: _buildRecurringDropdown(context)),
           ] else if (widget.recurringTransaction != null) ...[
             // Edit Mode (Recurring): Show frequency without toggle
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Repeat frequency'.cased(context),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  _buildRecurringInputs(context),
-                ],
-              ),
-            ),
+            CustomField(child: _buildRecurringInputs(context)),
           ],
 
-          CustomField(
-            label: 'Note (optional)'.cased(context),
-            child: TextField(
-              controller: _noteController,
-              maxLines: 3,
-              decoration: _getInputDecoration(
-                hintText: 'Add details...'.cased(context),
-              ).copyWith(contentPadding: const EdgeInsets.all(16.0)),
-            ),
-          ),
+
 
           if (widget.showSaveButton)
             SizedBox(
@@ -1158,7 +1114,6 @@ class TransactionFormState extends State<TransactionForm> {
         Expanded(
           flex: 2,
           child: CustomDropdownField<String>(
-            label: '',
             items: _recurringPeriods,
             selectedItem: _recurringPeriod,
             displayText: (val) => val.cased(context),

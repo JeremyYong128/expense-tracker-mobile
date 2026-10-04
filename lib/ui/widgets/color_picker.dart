@@ -49,7 +49,6 @@ class ColorPicker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CustomField(
-                  label: 'Custom Colour'.localized(context).cased(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -107,7 +106,6 @@ class ColorPicker extends StatelessWidget {
                   ),
                 ),
                 CustomField(
-                  label: 'Hex'.cased(context),
                   child: TextField(
                     controller: hexController,
                     maxLength: 6,

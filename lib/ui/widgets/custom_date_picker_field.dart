@@ -6,7 +6,7 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class CustomDatePickerField extends StatelessWidget {
-  final String label;
+
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateSelected;
   final DateTime? minimumDate;
@@ -14,7 +14,6 @@ class CustomDatePickerField extends StatelessWidget {
 
   const CustomDatePickerField({
     super.key,
-    required this.label,
     required this.selectedDate,
     required this.onDateSelected,
     this.minimumDate,
@@ -56,17 +55,9 @@ class CustomDatePickerField extends StatelessWidget {
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
+
                       CupertinoButton(
                         padding: EdgeInsets.zero,
                         child: Text(
@@ -128,11 +119,7 @@ class CustomDatePickerField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
-        const SizedBox(height: 8.0),
+
         InkWell(
           onTap: () => _showPicker(context),
           borderRadius: BorderRadius.circular(12.0),

@@ -5,13 +5,11 @@ import 'package:expense_tracker_mobile/utils/app_theme.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 
 class CustomTimePickerField extends StatelessWidget {
-  final String label;
   final DateTime selectedTime;
   final ValueChanged<DateTime> onTimeSelected;
 
   const CustomTimePickerField({
     super.key,
-    required this.label,
     required this.selectedTime,
     required this.onTimeSelected,
   });
@@ -41,17 +39,8 @@ class CustomTimePickerField extends StatelessWidget {
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
                       CupertinoButton(
                         padding: EdgeInsets.zero,
                         child: Text(
@@ -104,11 +93,6 @@ class CustomTimePickerField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
-        const SizedBox(height: 8.0),
         InkWell(
           onTap: () => _showPicker(context),
           borderRadius: BorderRadius.circular(12.0),

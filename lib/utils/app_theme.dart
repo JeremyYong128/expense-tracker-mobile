@@ -86,6 +86,15 @@ class AppStyles {
     fontSize: 16,
   );
 
+  static TextStyle formOptionText(bool isSelected, {bool boldWhenSelected = false}) => TextStyle(
+    fontSize: 16.0,
+    fontWeight: (isSelected && boldWhenSelected) ? FontWeight.w600 : FontWeight.normal,
+    color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+  );
+
+  static TextStyle get formPlaceholderText =>
+      formOptionText(false).copyWith(color: AppColors.grey);
+
   static const double sectionHeaderBottomSpacing = 12.0;
   static const double cardInternalPadding = 20.0;
   static const double sectionContentSpacing = 20.0;
@@ -143,6 +152,14 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: TextStyle(fontSize: 12.0),
         unselectedLabelStyle: TextStyle(fontSize: 12.0),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        side: WidgetStateBorderSide.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const BorderSide(color: AppColors.primary, width: 2.0);
+          }
+          return const BorderSide(color: AppColors.grey, width: 2.0);
+        }),
       ),
     );
   }

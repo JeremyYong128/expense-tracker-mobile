@@ -234,7 +234,6 @@ class _CategoryFormState extends State<CategoryForm> {
 
               // 2. Name Text Field
               CustomField(
-                label: 'Category Name'.cased(context),
                 child: TextField(
                   autofocus: true,
                   controller: _nameController,

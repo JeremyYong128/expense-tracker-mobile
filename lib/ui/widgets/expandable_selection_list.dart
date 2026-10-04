@@ -29,8 +29,13 @@ class ExpandableSelectionList<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: items.map((item) {
+      children: items.asMap().entries.map((entry) {
+        final index = entry.key;
+        final item = entry.value;
         final isSelected = selectedValue == item.value;
+        final isFirst = index == 0;
+        final isLast = index == items.length - 1;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -38,7 +43,10 @@ class ExpandableSelectionList<T> extends StatelessWidget {
               onTap: () => onChanged(item.value),
               borderRadius: BorderRadius.circular(12.0),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: EdgeInsets.only(
+                  top: isFirst ? 0.0 : 8.0,
+                  bottom: isLast ? 0.0 : 8.0,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -52,15 +60,7 @@ class ExpandableSelectionList<T> extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.title,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
-                        ),
+                        style: AppStyles.formOptionText(isSelected, boldWhenSelected: true),
                       ),
                     ),
                   ],
@@ -73,10 +73,10 @@ class ExpandableSelectionList<T> extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: isSelected && item.expandedWidget != null
                   ? Padding(
-                      padding: const EdgeInsets.only(
+                      padding: EdgeInsets.only(
                         left:
                             36.0, // Indent to align with the text, past the radio button
-                        top: 4.0,
+                        top: isLast ? 12.0 : 4.0,
                         bottom: 8.0,
                         right: 0.0,
                       ),

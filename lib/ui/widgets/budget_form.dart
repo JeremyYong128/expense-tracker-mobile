@@ -80,10 +80,7 @@ class _BudgetFormState extends State<BudgetForm> {
           _selectedCategory = _categories.firstWhere((c) => c.id == widget.existingBudget!.categoryId);
         } catch (_) {}
       }
-      if (_selectedCategory == null && _categories.isNotEmpty) {
-        _selectedCategory = _categories.first;
-      }
-      
+
       _cards = cardProvider.getAvailableCardsForDropdown(null);
       _isLoadingCards = false;
 
@@ -91,9 +88,6 @@ class _BudgetFormState extends State<BudgetForm> {
         try {
           _selectedCard = _cards.firstWhere((c) => c.id == widget.existingBudget!.cardId);
         } catch (_) {}
-      }
-      if (_selectedCard == null && _cards.isNotEmpty) {
-        _selectedCard = _cards.first;
       }
     });
   }
@@ -213,7 +207,6 @@ class _BudgetFormState extends State<BudgetForm> {
               ),
 
               CustomField(
-                label: 'Amount'.cased(context),
                 child: TextField(
                   autofocus: true,
                   controller: _amountController,
@@ -260,7 +253,7 @@ class _BudgetFormState extends State<BudgetForm> {
                   child: _isLoadingCategories
                       ? const Center(child: CircularProgressIndicator())
                       : CustomDropdownField<Category?>(
-                          label: 'Category'.cased(context),
+                          hintText: 'Category'.cased(context),
                           items: _categories,
                           selectedItem: _selectedCategory,
                           displayText: (cat) => cat?.name ?? '',
@@ -276,8 +269,8 @@ class _BudgetFormState extends State<BudgetForm> {
                   child: _isLoadingCards
                       ? const Center(child: CircularProgressIndicator())
                       : CustomDropdownField<app_card.Card?>(
-                          label: 'Card'.cased(context),
-                          items: _cards,
+                          hintText: 'Card'.cased(context),
+                          items: [null, ..._cards],
                           selectedItem: _selectedCard,
                           displayText: (c) => c?.name ?? '',
                           onChanged: (val) {
