@@ -113,6 +113,7 @@ class TransactionFormState extends State<TransactionForm> {
   String? _billingCurrencyCode;
   late String _baseCurrency;
   bool _saveAsDefaultCurrency = false;
+  String _lastAmountText = '';
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -224,6 +225,7 @@ class TransactionFormState extends State<TransactionForm> {
     _amountController = TextEditingController(
       text: initialAmount?.toStringAsFixed(2) ?? '',
     );
+    _lastAmountText = _amountController.text;
     _titleController = TextEditingController(text: initialTitle ?? '');
     _noteController = TextEditingController(text: initialNote ?? '');
     _billingAmountController = TextEditingController(
@@ -254,6 +256,8 @@ class TransactionFormState extends State<TransactionForm> {
   }
 
   void _onAmountChanged() {
+    if (_amountController.text == _lastAmountText) return;
+    _lastAmountText = _amountController.text;
     _convertCurrency();
     _recalculateRewards();
   }
@@ -350,6 +354,9 @@ class TransactionFormState extends State<TransactionForm> {
 
   Future<void> _convertCurrency() async {
     final amt = double.tryParse(_amountController.text) ?? 0.0;
+    
+    _billingCurrencyCode = _selectedCard?.currencyCode;
+
     if (amt == 0) {
       if (mounted) {
         setState(() {
@@ -357,7 +364,6 @@ class TransactionFormState extends State<TransactionForm> {
 
           _billingAmountController.text = '';
           _isPending = false;
-          _billingCurrencyCode = null;
         });
       }
       return;
@@ -368,8 +374,6 @@ class TransactionFormState extends State<TransactionForm> {
 
       });
     }
-
-    _billingCurrencyCode = _selectedCard?.currencyCode;
 
     final result = await ExchangeRateService.calculateTransactionAmounts(
       amount: amt,
