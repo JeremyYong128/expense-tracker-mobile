@@ -12,7 +12,6 @@ import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
 import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
-import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 
@@ -32,7 +31,6 @@ class _CardFormState extends State<CardForm> {
   String? _rewardType;
   late String _colorHex;
   String? _selectedCurrency;
-  bool _saveAsDefaultCurrency = false;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
@@ -136,11 +134,6 @@ class _CardFormState extends State<CardForm> {
       }
 
       if (mounted) {
-        if (_saveAsDefaultCurrency) {
-          context.read<UserPreferencesProvider>().setDefaultInputCurrency(
-            _selectedCurrency!,
-          );
-        }
         widget.onSaved?.call();
         Navigator.pop(context);
       }
@@ -237,6 +230,7 @@ class _CardFormState extends State<CardForm> {
                 hintText: 'Billing Currency'.cased(context),
                 items: CurrencyFormatter.commonCurrencies,
                 selectedItem: _selectedCurrency,
+                enabled: widget.card == null,
                 displayText: (currency) => currency ?? '',
                 onChanged: (value) {
                   setState(() {
@@ -244,52 +238,13 @@ class _CardFormState extends State<CardForm> {
                   });
                 },
               ),
-              if (_selectedCurrency != null &&
-                  _selectedCurrency !=
-                      context.read<UserPreferencesProvider>().defaultInputCurrency)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: GestureDetector(
-                    onTap: () => setState(
-                      () => _saveAsDefaultCurrency = !_saveAsDefaultCurrency,
-                    ),
-                    behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: Checkbox(
-                            value: _saveAsDefaultCurrency,
-                            onChanged: (val) {
-                              setState(() {
-                                _saveAsDefaultCurrency = val ?? false;
-                              });
-                            },
-                            activeColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${'Set'.cased(context)} $_selectedCurrency ${'as default currency'.cased(context)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               const SizedBox(height: AppStyles.formFieldSpacing),
 
               CustomDropdownField<String?>(
                 hintText: 'Reward type'.cased(context),
                 items: const [null, 'Cashback', 'Miles', 'Points'],
                 selectedItem: _rewardType,
+                enabled: widget.card == null,
                 displayText: (type) =>
                     type == null ? 'No rewards'.cased(context) : type.cased(context),
                 onChanged: (value) {
@@ -309,6 +264,7 @@ class _CardFormState extends State<CardForm> {
                   padding: EdgeInsets.zero,
                   child: TextField(
                     controller: _rateController,
+                    enabled: widget.card == null,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
