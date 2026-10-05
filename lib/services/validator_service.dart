@@ -245,9 +245,13 @@ class ValidatorService {
     required String rewardType,
     required String rateText,
     required String colorHex,
-    required String currencyCode,
+    required String? currencyCode,
   }) {
     final cardProvider = context.read<CardProvider>();
+
+    if (currencyCode == null || !Validators.isPresent(currencyCode)) {
+      throw ValidationException('Please select a billing currency.');
+    }
 
     final parsedName = nameText.trim();
     if (parsedName.toLowerCase() == 'none') {

@@ -13,7 +13,7 @@ import 'package:expense_tracker_mobile/utils/logger.dart';
 import 'package:expense_tracker_mobile/ui/widgets/color_picker.dart';
 import 'package:expense_tracker_mobile/services/snackbar_service.dart';
 import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
-import 'package:intl/intl.dart';
+
 import 'package:expense_tracker_mobile/utils/currency_utils.dart';
 
 class CardForm extends StatefulWidget {
@@ -29,9 +29,9 @@ class CardForm extends StatefulWidget {
 class _CardFormState extends State<CardForm> {
   late TextEditingController _nameController;
   late TextEditingController _rateController;
-  late String _rewardType;
+  String? _rewardType;
   late String _colorHex;
-  late String _selectedCurrency;
+  String? _selectedCurrency;
   bool _saveAsDefaultCurrency = false;
   String? _formError;
   final _formKey = GlobalKey<FormState>();
@@ -47,13 +47,13 @@ class _CardFormState extends State<CardForm> {
     _rateController = TextEditingController(
       text: isEditing ? widget.card!.rewardRate.toString() : '0.0',
     );
-    _rewardType = isEditing ? widget.card!.rewardType : 'None';
+    _rewardType = isEditing && widget.card!.rewardType != 'None'
+        ? widget.card!.rewardType
+        : null;
     _colorHex = isEditing
         ? widget.card!.colorHex
         : AppColors.colorPaletteHexes.first;
-    _selectedCurrency = isEditing
-        ? widget.card!.currencyCode
-        : context.read<UserPreferencesProvider>().defaultInputCurrency;
+    _selectedCurrency = isEditing ? widget.card!.currencyCode : null;
   }
 
   bool get _hasChanges {
@@ -65,7 +65,7 @@ class _CardFormState extends State<CardForm> {
     final currentRate = double.tryParse(_rateController.text.trim()) ?? 0.0;
 
     return currentName != widget.card!.name ||
-        _rewardType != widget.card!.rewardType ||
+        (_rewardType ?? 'None') != widget.card!.rewardType ||
         currentRate != widget.card!.rewardRate ||
         _colorHex != widget.card!.colorHex ||
         _selectedCurrency != widget.card!.currencyCode;
@@ -96,7 +96,7 @@ class _CardFormState extends State<CardForm> {
         context: context,
         id: widget.card?.id,
         nameText: name,
-        rewardType: _rewardType,
+        rewardType: _rewardType ?? 'None',
         rateText: rateText,
         colorHex: _colorHex,
         currencyCode: _selectedCurrency,
@@ -138,7 +138,7 @@ class _CardFormState extends State<CardForm> {
       if (mounted) {
         if (_saveAsDefaultCurrency) {
           context.read<UserPreferencesProvider>().setDefaultInputCurrency(
-            _selectedCurrency,
+            _selectedCurrency!,
           );
         }
         widget.onSaved?.call();
@@ -170,26 +170,36 @@ class _CardFormState extends State<CardForm> {
     }
   }
 
+  String _getRewardRateHintText(BuildContext context) {
+    if (_rewardType == 'Cashback') {
+      return 'Reward rate (%)'.cased(context);
+    }
+    if (_selectedCurrency != null) {
+      if (_rewardType == 'Points') {
+        return '${'Reward rate (Points per'.cased(context)} $_selectedCurrency)';
+      } else if (_rewardType == 'Miles') {
+        return '${'Reward rate (Miles per'.cased(context)} $_selectedCurrency)';
+      }
+    }
+    return 'Reward rate'.cased(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final baseCurrency = context.watch<UserPreferencesProvider>().baseCurrency;
-    final symbol = NumberFormat.simpleCurrency(
-      name: baseCurrency,
-    ).currencySymbol;
 
     return SlideUpModal(
       leftButtonTitle: 'Cancel'.cased(context),
       onLeftButtonPressed: () => Navigator.pop(context),
       rightButtonTitle: 'Save'.cased(context),
       onRightButtonPressed: _saveCard,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      isScrollable: true,
+      scrollController: _scrollController,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
               if (_formError != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -206,14 +216,14 @@ class _CardFormState extends State<CardForm> {
                   autofocus: true,
                   controller: _nameController,
                   decoration: InputDecoration(
-                    hintText: 'e.g. Chase Sapphire'.cased(context),
-                    hintStyle: const TextStyle(color: AppColors.grey),
+                    hintText: 'Name'.cased(context),
+                    hintStyle: AppStyles.formPlaceholderText,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
-                      vertical: 16.0,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius:
+                          BorderRadius.circular(AppStyles.formFieldRadius),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
@@ -223,38 +233,20 @@ class _CardFormState extends State<CardForm> {
                 ),
               ),
 
-              // Colors Picker
-              Text(
-                'Colour'.localized(context).cased(context),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ColorPicker(
-                selectedColorHex: _colorHex,
-                onColorSelected: (hex) {
-                  setState(() {
-                    _colorHex = hex;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-
-              CustomDropdownField<String>(
+              CustomDropdownField<String?>(
+                hintText: 'Billing Currency'.cased(context),
                 items: CurrencyFormatter.commonCurrencies,
                 selectedItem: _selectedCurrency,
-                displayText: (currency) => currency,
+                displayText: (currency) => currency ?? '',
                 onChanged: (value) {
                   setState(() {
                     _selectedCurrency = value;
                   });
                 },
               ),
-              if (_selectedCurrency !=
-                  context.read<UserPreferencesProvider>().defaultInputCurrency)
+              if (_selectedCurrency != null &&
+                  _selectedCurrency !=
+                      context.read<UserPreferencesProvider>().defaultInputCurrency)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: GestureDetector(
@@ -282,9 +274,7 @@ class _CardFormState extends State<CardForm> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Set $_selectedCurrency as default currency'.cased(
-                            context,
-                          ),
+                          '${'Set'.cased(context)} $_selectedCurrency ${'as default currency'.cased(context)}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -294,16 +284,18 @@ class _CardFormState extends State<CardForm> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppStyles.formFieldSpacing),
 
-              CustomDropdownField<String>(
-                items: const ['None', 'Cashback', 'Miles', 'Points'],
+              CustomDropdownField<String?>(
+                hintText: 'Reward type'.cased(context),
+                items: const [null, 'Cashback', 'Miles', 'Points'],
                 selectedItem: _rewardType,
-                displayText: (type) => type.cased(context),
+                displayText: (type) =>
+                    type == null ? 'No rewards'.cased(context) : type.cased(context),
                 onChanged: (value) {
                   setState(() {
                     _rewardType = value;
-                    if (_rewardType == 'None') {
+                    if (_rewardType == null) {
                       _rateController.text = '0.0';
                     } else if (_rateController.text == '0.0') {
                       _rateController.text = '';
@@ -311,38 +303,57 @@ class _CardFormState extends State<CardForm> {
                   });
                 },
               ),
-              const SizedBox(height: 24.0),
-              CustomField(
-                child: TextField(
-                  controller: _rateController,
-                  enabled: _rewardType != 'None',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '0.0',
-                    hintStyle: const TextStyle(color: AppColors.grey),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
+              if (_rewardType != null) ...[
+                const SizedBox(height: AppStyles.formFieldSpacing),
+                CustomField(
+                  padding: EdgeInsets.zero,
+                  child: TextField(
+                    controller: _rateController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide.none,
+                    decoration: InputDecoration(
+                      hintText: _getRewardRateHintText(context),
+                      hintStyle: AppStyles.formPlaceholderText,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppStyles.formFieldRadius),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.white,
                     ),
-                    filled: true,
-                    fillColor: _rewardType == 'None'
-                        ? Colors.grey.shade200
-                        : Colors.white,
+                    onSubmitted: (_) => _saveCard(),
                   ),
-                  onSubmitted: (_) => _saveCard(),
                 ),
+              ],
+              const SizedBox(height: AppStyles.formFieldSpacing),
+
+              // Colors Picker
+              Text(
+                'Colour'.localized(context).cased(context),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ColorPicker(
+                selectedColorHex: _colorHex,
+                onColorSelected: (hex) {
+                  setState(() {
+                    _colorHex = hex;
+                  });
+                },
               ),
               SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
             ],
           ),
         ),
-      ),
     );
   }
 }

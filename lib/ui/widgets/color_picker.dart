@@ -41,11 +41,11 @@ class ColorPicker extends StatelessWidget {
         onColorSelected(hex);
         Navigator.pop(context);
       },
+      isScrollable: true,
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CustomField(
@@ -55,30 +55,26 @@ class ColorPicker extends StatelessWidget {
                       // Square Shade Picker
                       AspectRatio(
                         aspectRatio: 1.0,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: flutter_colorpicker.ColorPickerArea(
-                            currentHsvColor,
-                            (HSVColor color) {
-                              setState(() {
-                                currentHsvColor = color;
-                                pickerColor = color.toColor();
-                                final newHex = pickerColor
-                                    .toARGB32()
-                                    .toRadixString(16)
-                                    .padLeft(8, '0')
-                                    .substring(2, 8)
-                                    .toUpperCase();
-                                if (hexController.text != newHex) {
-                                  hexController.text = newHex;
-                                }
-                              });
-                            },
-                            flutter_colorpicker.PaletteType.hsv,
-                          ),
+                        child: flutter_colorpicker.ColorPickerArea(
+                          currentHsvColor,
+                          (HSVColor color) {
+                            setState(() {
+                              currentHsvColor = color;
+                              pickerColor = color.toColor();
+                              final newHex = pickerColor
+                                  .toARGB32()
+                                  .toRadixString(16)
+                                  .padLeft(8, '0')
+                                  .substring(2, 8)
+                                  .toUpperCase();
+                              if (hexController.text != newHex) {
+                                hexController.text = newHex;
+                              }
+                            });
+                          },
+                          flutter_colorpicker.PaletteType.hsv,
                         ),
                       ),
-                      const SizedBox(height: 16),
                       // Horizontal Hue Slider
                       SizedBox(
                         height: 40,
@@ -117,11 +113,11 @@ class ColorPicker extends StatelessWidget {
                         horizontal: 16.0,
                       ),
                       hintText: '000000',
-                      hintStyle: const TextStyle(color: AppColors.grey),
+                      hintStyle: AppStyles.formPlaceholderText,
                       prefixText: '#',
                       counterText: '',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
@@ -140,8 +136,7 @@ class ColorPicker extends StatelessWidget {
                 ),
                 SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
               ],
-            ),
-          );
+            );
         },
       ),
     );

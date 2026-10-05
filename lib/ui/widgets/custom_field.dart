@@ -11,7 +11,7 @@ class CustomField extends StatelessWidget {
     super.key,
     required this.child,
     this.height,
-    this.padding = const EdgeInsets.only(bottom: 24.0),
+    this.padding = const EdgeInsets.only(bottom: AppStyles.formFieldSpacing),
     this.infoText,
   });
 

@@ -150,24 +150,23 @@ class _TransactionModalState extends State<TransactionModal> {
       onRightButtonPressed: () {
         _formKey.currentState?.submit();
       },
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TransactionForm(
-              key: _formKey,
-              transaction: widget.transaction,
-              recurringTransaction: widget.recurringTransaction,
-              initialIsRecurring: widget.initialIsRecurring,
-              showSaveButton: false,
-              scrollController: _scrollController,
-              onSave: _saveTransaction,
-            ),
-            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
-          ],
-        ),
+      isScrollable: true,
+      scrollController: _scrollController,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TransactionForm(
+            key: _formKey,
+            transaction: widget.transaction,
+            recurringTransaction: widget.recurringTransaction,
+            initialIsRecurring: widget.initialIsRecurring,
+            showSaveButton: false,
+            scrollController: _scrollController,
+            onSave: _saveTransaction,
+          ),
+          SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+        ],
       ),
     );
   }

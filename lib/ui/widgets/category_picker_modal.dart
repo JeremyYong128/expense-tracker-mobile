@@ -101,7 +101,7 @@ class CategoryDropdown extends StatelessWidget {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
         borderSide: BorderSide.none,
       ),
       filled: true,

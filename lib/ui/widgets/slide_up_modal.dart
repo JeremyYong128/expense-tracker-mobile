@@ -11,6 +11,8 @@ class SlideUpModal extends StatelessWidget {
   final VoidCallback? onRightButtonPressed;
   final Widget child;
   final double heightFraction;
+  final bool isScrollable;
+  final ScrollController? scrollController;
 
   const SlideUpModal({
     super.key,
@@ -21,6 +23,8 @@ class SlideUpModal extends StatelessWidget {
     this.onRightButtonPressed,
     required this.child,
     this.heightFraction = 0.9,
+    this.isScrollable = false,
+    this.scrollController,
   });
 
   static Future<T?> show<T>({
@@ -32,6 +36,8 @@ class SlideUpModal extends StatelessWidget {
     VoidCallback? onRightButtonPressed,
     required Widget child,
     double heightFraction = 0.8,
+    bool isScrollable = false,
+    ScrollController? scrollController,
   }) {
     return showCustom<T>(
       context: context,
@@ -42,6 +48,8 @@ class SlideUpModal extends StatelessWidget {
         rightButtonTitle: rightButtonTitle,
         onRightButtonPressed: onRightButtonPressed,
         heightFraction: heightFraction,
+        isScrollable: isScrollable,
+        scrollController: scrollController,
         child: child,
       ),
     );
@@ -126,11 +134,16 @@ class SlideUpModal extends StatelessWidget {
 
             // Content
             Expanded(
-              child: SafeArea(
-                bottom: true,
-                top: false,
-                child: Padding(padding: AppStyles.modalPadding, child: child),
-              ),
+              child: isScrollable
+                  ? SingleChildScrollView(
+                      controller: scrollController,
+                      padding: AppStyles.modalPadding,
+                      child: child,
+                    )
+                  : Padding(
+                      padding: AppStyles.modalPadding,
+                      child: child,
+                    ),
             ),
           ],
         ),

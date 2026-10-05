@@ -120,6 +120,7 @@ flutter run
     - Exclude pending transactions from analytics?
     - Look at scrollabel area of all screens especially forms. bottoms and tops shouldn't be cut off by invisible boundaries.
     - DO NEXT: FIX EVERY FORM, TRANSACTION FORM DONE
+    - Budget in other currencies?
 
 - Medium priority
 

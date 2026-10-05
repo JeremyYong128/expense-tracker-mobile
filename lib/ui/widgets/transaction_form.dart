@@ -108,10 +108,8 @@ class TransactionFormState extends State<TransactionForm> {
 
   late String _selectedCurrency;
   double? _baseCurrencyAmount;
-  bool _isConvertingCurrency = false;
   bool _isPending = false;
   late final TextEditingController _billingAmountController;
-  double? _billingAmount;
   String? _billingCurrencyCode;
   late String _baseCurrency;
   bool _saveAsDefaultCurrency = false;
@@ -265,7 +263,7 @@ class TransactionFormState extends State<TransactionForm> {
     if (amt != null) {
       setState(() {
         _isPending = false;
-        _billingAmount = amt;
+
       });
       _recalculateBaseFromBilling(amt);
       _recalculateRewards();
@@ -283,7 +281,7 @@ class TransactionFormState extends State<TransactionForm> {
     }
 
     setState(() {
-      _isConvertingCurrency = true;
+
     });
 
     final baseAmt =
@@ -298,7 +296,7 @@ class TransactionFormState extends State<TransactionForm> {
     if (mounted) {
       setState(() {
         _baseCurrencyAmount = baseAmt;
-        _isConvertingCurrency = false;
+
       });
     }
   }
@@ -356,7 +354,7 @@ class TransactionFormState extends State<TransactionForm> {
       if (mounted) {
         setState(() {
           _baseCurrencyAmount = 0.0;
-          _billingAmount = null;
+
           _billingAmountController.text = '';
           _isPending = false;
           _billingCurrencyCode = null;
@@ -367,7 +365,7 @@ class TransactionFormState extends State<TransactionForm> {
 
     if (mounted) {
       setState(() {
-        _isConvertingCurrency = true;
+
       });
     }
 
@@ -385,9 +383,9 @@ class TransactionFormState extends State<TransactionForm> {
 
     if (mounted) {
       setState(() {
-        _isConvertingCurrency = false;
+
         _baseCurrencyAmount = result.baseCurrencyAmount;
-        _billingAmount = result.billingAmount;
+
         _billingAmountController.text = result.billingAmount.toStringAsFixed(2);
       });
     }
@@ -586,7 +584,7 @@ class TransactionFormState extends State<TransactionForm> {
       hintStyle: AppStyles.formPlaceholderText,
       prefixIcon: prefixIcon,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -609,7 +607,6 @@ class TransactionFormState extends State<TransactionForm> {
   @override
   Widget build(BuildContext context) {
     bool showBillingAmount =
-        !_isRecurring &&
         _billingCurrencyCode != null &&
         _selectedCurrency != _billingCurrencyCode;
 
@@ -652,7 +649,6 @@ class TransactionFormState extends State<TransactionForm> {
                 _isIncome = value;
 
                 // Auto-select fallback category if current one is invalid, UNLESS it's locked by a recurring transaction
-                final validCategories = _filteredCategories;
                 if (_selectedRecurring == null) {
                   if (_selectedCategory != null) {
                     final isValid = _isIncome
@@ -671,8 +667,7 @@ class TransactionFormState extends State<TransactionForm> {
               });
             },
           ),
-          const SizedBox(height: 32.0),
-          SectionHeader(title: 'Transaction details'.cased(context)),
+          const SizedBox(height: AppStyles.formFieldSpacing),
 
           CustomField(
             child: TextField(
@@ -689,7 +684,9 @@ class TransactionFormState extends State<TransactionForm> {
                 flex: 2,
                 child: CustomField(
                   padding: EdgeInsets.only(
-                    bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
+                    bottom: _selectedCurrency != _baseCurrency
+                        ? 8.0
+                        : AppStyles.formFieldSpacing,
                     right: 16.0,
                   ),
                   child: TextField(
@@ -707,7 +704,9 @@ class TransactionFormState extends State<TransactionForm> {
                 flex: 1,
                 child: CustomField(
                   padding: EdgeInsets.only(
-                    bottom: _selectedCurrency != _baseCurrency ? 8.0 : 24.0,
+                    bottom: _selectedCurrency != _baseCurrency
+                        ? 8.0
+                        : AppStyles.formFieldSpacing,
                   ),
                   child: CustomDropdownField<String>(
                     items: CurrencyFormatter.commonCurrencies,
@@ -752,9 +751,7 @@ class TransactionFormState extends State<TransactionForm> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Set $_selectedCurrency as default currency'.cased(
-                        context,
-                      ),
+                      '${'Set'.cased(context)} $_selectedCurrency ${'as default currency'.cased(context)}',
                       style: AppStyles.formOptionText(_saveAsDefaultCurrency),
                     ),
                   ],
@@ -763,7 +760,7 @@ class TransactionFormState extends State<TransactionForm> {
             ),
 
           Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
+            padding: const EdgeInsets.only(bottom: AppStyles.formFieldSpacing),
             child: Row(
               children: [
                 Expanded(

@@ -73,6 +73,12 @@ class AppStyles {
 
   // Standardized border radius for cards
   static const double cardRadius = 24.0;
+  
+  // Standardized border radius for form fields
+  static const double formFieldRadius = 12.0;
+
+  // Standardized spacing between form fields
+  static const double formFieldSpacing = 24.0;
 
   // Standardized formatting for section headers
   static const TextStyle sectionHeader = TextStyle(

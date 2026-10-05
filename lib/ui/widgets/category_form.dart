@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/ui/widgets/text_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/core/exceptions.dart';
@@ -171,13 +172,13 @@ class _CategoryFormState extends State<CategoryForm> {
       onLeftButtonPressed: () => Navigator.of(context).pop(),
       rightButtonTitle: 'Save',
       onRightButtonPressed: _saveCategory,
+      isScrollable: true,
+      scrollController: _scrollController,
       child: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
               if (_formError != null) ...[
                 Text(
                   _formError!,
@@ -210,7 +211,7 @@ class _CategoryFormState extends State<CategoryForm> {
                 backgroundColor: AppColors.white,
                 onChanged: (val) => setState(() => _typeSelection = val),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppStyles.formFieldSpacing),
 
               // 1. Icon Preview
               Center(
@@ -230,7 +231,7 @@ class _CategoryFormState extends State<CategoryForm> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24.0),
+              const SizedBox(height: AppStyles.formFieldSpacing),
 
               // 2. Name Text Field
               CustomField(
@@ -238,12 +239,12 @@ class _CategoryFormState extends State<CategoryForm> {
                   autofocus: true,
                   controller: _nameController,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
-                    ),
+                    hintText: 'Name'.cased(context),
+                    hintStyle: AppStyles.formPlaceholderText,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16.0),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
@@ -254,15 +255,7 @@ class _CategoryFormState extends State<CategoryForm> {
               ),
 
               // 3. Colors Picker
-              Text(
-                'Colour'.localized(context).cased(context),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
+              SectionHeader(title: 'Colour'.localized(context).cased(context)),
               ColorPicker(
                 selectedColorHex: _colorHex,
                 onColorSelected: (hex) {
@@ -271,18 +264,10 @@ class _CategoryFormState extends State<CategoryForm> {
                   });
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppStyles.formFieldSpacing),
 
               // 4. Icons Picker
-              Text(
-                'Icon'.cased(context),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
+              SectionHeader(title: 'Icon'.cased(context)),
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -320,7 +305,6 @@ class _CategoryFormState extends State<CategoryForm> {
             ],
           ),
         ),
-      ),
     );
   }
 }

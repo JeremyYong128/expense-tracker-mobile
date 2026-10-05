@@ -11,6 +11,9 @@ class CustomDatePickerField extends StatelessWidget {
   final ValueChanged<DateTime> onDateSelected;
   final DateTime? minimumDate;
   final DateTime? maximumDate;
+  final CupertinoDatePickerMode mode;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
 
   const CustomDatePickerField({
     super.key,
@@ -18,6 +21,9 @@ class CustomDatePickerField extends StatelessWidget {
     required this.onDateSelected,
     this.minimumDate,
     this.maximumDate,
+    this.mode = CupertinoDatePickerMode.date,
+    this.prefixIcon = const Icon(Icons.calendar_today, color: AppColors.primary),
+    this.suffixIcon,
   });
 
   void _showPicker(BuildContext context) {
@@ -77,18 +83,20 @@ class CustomDatePickerField extends StatelessWidget {
                       _LowercaseCupertinoLocalizationsDelegate(context),
                     ],
                     child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
+                      mode: mode,
                       initialDateTime: selectedDate,
                       minimumDate: minDate,
                       maximumDate: maxDate,
                       onDateTimeChanged: (DateTime newDateTime) {
-                        final updatedDate = DateTime(
-                          newDateTime.year,
-                          newDateTime.month,
-                          newDateTime.day,
-                          selectedDate.hour,
-                          selectedDate.minute,
-                        );
+                        final updatedDate = mode == CupertinoDatePickerMode.monthYear
+                            ? DateTime(newDateTime.year, newDateTime.month)
+                            : DateTime(
+                                newDateTime.year,
+                                newDateTime.month,
+                                newDateTime.day,
+                                selectedDate.hour,
+                                selectedDate.minute,
+                              );
                         onDateSelected(updatedDate);
                       },
                     ),
@@ -106,7 +114,7 @@ class CustomDatePickerField extends StatelessWidget {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -127,11 +135,15 @@ class CustomDatePickerField extends StatelessWidget {
             decoration: _getInputDecoration(),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, color: AppColors.primary),
-                const SizedBox(width: 8.0),
+                if (prefixIcon != null) ...[
+                  prefixIcon!,
+                  const SizedBox(width: 8.0),
+                ],
                 Expanded(
                   child: Text(
-                    DateFormat.yMMMd().format(selectedDate).cased(context),
+                    mode == CupertinoDatePickerMode.monthYear
+                        ? DateFormat('MMMM yyyy').format(selectedDate).cased(context)
+                        : DateFormat.yMMMd().format(selectedDate).cased(context),
                     style: const TextStyle(
                       fontSize: 16,
                       color: AppColors.textPrimary,
@@ -139,6 +151,10 @@ class CustomDatePickerField extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                if (suffixIcon != null) ...[
+                  const SizedBox(width: 8.0),
+                  suffixIcon!,
+                ],
               ],
             ),
           ),

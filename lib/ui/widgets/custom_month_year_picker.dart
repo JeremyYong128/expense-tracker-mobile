@@ -75,12 +75,63 @@ class CustomMonthYearPicker extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.monthYear,
-                    initialDateTime: selectedDate,
-                    onDateTimeChanged: (DateTime newDateTime) {
-                      tempDate = newDateTime;
-                    },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CupertinoPicker(
+                          scrollController: FixedExtentScrollController(
+                              initialItem: tempDate.month - 1),
+                          itemExtent: 32.0,
+                          useMagnifier: true,
+                          magnification: 1.2,
+                          squeeze: 1.25,
+                          selectionOverlay: const CupertinoPickerDefaultSelectionOverlay(),
+                          onSelectedItemChanged: (int index) {
+                            tempDate = DateTime(tempDate.year, index + 1);
+                          },
+                          children: List<Widget>.generate(12, (int index) {
+                            return Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Text(
+                                  DateFormat('MMMM')
+                                      .format(DateTime(2000, index + 1))
+                                      .cased(context),
+                                  style: CupertinoTheme.of(context).textTheme.dateTimePickerTextStyle,
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      Expanded(
+                        child: CupertinoPicker(
+                          scrollController: FixedExtentScrollController(
+                              initialItem: tempDate.year - 2000),
+                          itemExtent: 32.0,
+                          useMagnifier: true,
+                          magnification: 1.2,
+                          squeeze: 1.25,
+                          selectionOverlay: const CupertinoPickerDefaultSelectionOverlay(),
+                          onSelectedItemChanged: (int index) {
+                            tempDate = DateTime(2000 + index, tempDate.month);
+                          },
+                          children: List<Widget>.generate(200, (int index) {
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Text(
+                                  (2000 + index).toString(),
+                                  style: CupertinoTheme.of(context).textTheme.dateTimePickerTextStyle,
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -97,7 +148,7 @@ class CustomMonthYearPicker extends StatelessWidget {
         horizontal: 16.0,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -126,7 +177,7 @@ class CustomMonthYearPicker extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    DateFormat('MMMM yyyy').format(selectedDate),
+                    DateFormat('MMMM yyyy').format(selectedDate).cased(context),
                     style: TextStyle(
                       fontSize: 16,
                       color: enabled

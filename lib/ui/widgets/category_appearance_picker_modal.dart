@@ -44,10 +44,10 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
         Navigator.of(context).pop();
       },
 
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      isScrollable: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             // Current Selection Preview
             Center(
               child: Container(
@@ -133,7 +133,6 @@ class _CategoryAppearancePickerState extends State<CategoryAppearancePicker> {
             const SizedBox(height: 24),
           ],
         ),
-      ),
     );
   }
 }

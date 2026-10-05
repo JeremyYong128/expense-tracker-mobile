@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:expense_tracker_mobile/database/drift_database.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker_mobile/providers/budget_provider.dart';
 import 'package:expense_tracker_mobile/providers/category_provider.dart';
 import 'package:expense_tracker_mobile/models/category.dart';
+import 'package:expense_tracker_mobile/providers/user_preferences_provider.dart';
 import 'package:expense_tracker_mobile/models/card.dart' as app_card;
 import 'package:expense_tracker_mobile/providers/card_provider.dart';
 import 'package:expense_tracker_mobile/utils/app_theme.dart';
@@ -12,7 +14,7 @@ import 'package:expense_tracker_mobile/core/exceptions.dart';
 import 'package:expense_tracker_mobile/utils/string_extensions.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_dropdown_field.dart';
-import 'package:expense_tracker_mobile/ui/widgets/custom_month_year_picker.dart';
+import 'package:expense_tracker_mobile/ui/widgets/custom_date_picker_field.dart';
 import 'package:expense_tracker_mobile/ui/widgets/custom_segment_toggle.dart';
 
 import 'package:expense_tracker_mobile/ui/widgets/slide_up_modal.dart';
@@ -155,10 +157,10 @@ class _BudgetFormState extends State<BudgetForm> {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
       hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.grey),
+      hintStyle: AppStyles.formPlaceholderText,
       prefixIcon: prefixIcon,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(AppStyles.formFieldRadius),
         borderSide: BorderSide.none,
       ),
       filled: true,
@@ -173,10 +175,10 @@ class _BudgetFormState extends State<BudgetForm> {
       onLeftButtonPressed: () => Navigator.pop(context),
       rightButtonTitle: _isSaving ? 'Saving...' : 'Save'.cased(context),
       onRightButtonPressed: _isSaving ? null : _saveBudget,
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
+      isScrollable: true,
+      child: Form(
+        key: _formKey,
+        child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -193,42 +195,7 @@ class _BudgetFormState extends State<BudgetForm> {
                 ),
 
               Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: CustomMonthYearPicker(
-                  label: 'Month'.cased(context),
-                  selectedDate: DateTime(_selectedYear, _selectedMonth),
-                  onChanged: (DateTime newDate) {
-                    setState(() {
-                      _selectedMonth = newDate.month;
-                      _selectedYear = newDate.year;
-                    });
-                  },
-                ),
-              ),
-
-              CustomField(
-                child: TextField(
-                  autofocus: true,
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: _getInputDecoration(
-                    hintText: '0.00',
-                    prefixIcon: const Icon(
-                      Icons.attach_money,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
+                padding: const EdgeInsets.only(bottom: AppStyles.formFieldSpacing),
                 child: CustomSegmentToggle<String>(
                   activeValue: _budgetType,
                   options: [
@@ -281,11 +248,57 @@ class _BudgetFormState extends State<BudgetForm> {
                         ),
                 ),
 
+              Padding(
+                padding:
+                    const EdgeInsets.only(bottom: AppStyles.formFieldSpacing),
+                child: CustomDatePickerField(
+                  mode: CupertinoDatePickerMode.monthYear,
+                  selectedDate: DateTime(_selectedYear, _selectedMonth),
+                  onDateSelected: (DateTime newDate) {
+                    setState(() {
+                      _selectedMonth = newDate.month;
+                      _selectedYear = newDate.year;
+                    });
+                  },
+                ),
+              ),
+
+              CustomField(
+                padding: EdgeInsets.zero,
+                child: TextField(
+                  autofocus: true,
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: _getInputDecoration(
+                    hintText: 'Amount'.cased(context),
+                  ).copyWith(
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.read<UserPreferencesProvider>().defaultInputCurrency,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 32),
             ],
           ),
         ),
-      ),
     );
   }
 }
