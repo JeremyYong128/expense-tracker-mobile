@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart' hide Card;
 import 'package:expense_tracker_mobile/models/transaction.dart' as t;
 import 'package:expense_tracker_mobile/models/recurring_transaction.dart';
@@ -114,6 +115,7 @@ class TransactionFormState extends State<TransactionForm> {
   late String _baseCurrency;
   bool _saveAsDefaultCurrency = false;
   String _lastAmountText = '';
+  Timer? _debounce;
 
   static const List<String> _recurringPeriods = [
     'Day(s)',
@@ -258,8 +260,20 @@ class TransactionFormState extends State<TransactionForm> {
   void _onAmountChanged() {
     if (_amountController.text == _lastAmountText) return;
     _lastAmountText = _amountController.text;
-    _convertCurrency();
-    _recalculateRewards();
+    
+    _triggerRecalculation();
+  }
+
+  void _triggerRecalculation() {
+    setState(() {
+      _billingCurrencyCode = _selectedCard?.currencyCode;
+    });
+
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _convertCurrency();
+      _recalculateRewards();
+    });
   }
 
   void _onManualBillingAmountChanged(String val) async {
@@ -269,8 +283,12 @@ class TransactionFormState extends State<TransactionForm> {
         _isPending = false;
 
       });
-      _recalculateBaseFromBilling(amt);
-      _recalculateRewards();
+      
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        _recalculateBaseFromBilling(amt);
+        _recalculateRewards();
+      });
     }
   }
 
@@ -502,6 +520,7 @@ class TransactionFormState extends State<TransactionForm> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _amountController.removeListener(_onAmountChanged);
     _rewardAmountController.dispose();
     _amountController.dispose();
@@ -720,7 +739,7 @@ class TransactionFormState extends State<TransactionForm> {
                       setState(() {
                         _selectedCurrency = val;
                       });
-                      _convertCurrency();
+                      _triggerRecalculation();
                     },
                   ),
                 ),
@@ -837,7 +856,7 @@ class TransactionFormState extends State<TransactionForm> {
                           _rewardAmountController.clear();
                         }
                         _lockRewardRecalculation = false;
-                        _onAmountChanged();
+                        _triggerRecalculation();
                       });
                     },
                   ),
@@ -945,7 +964,7 @@ class TransactionFormState extends State<TransactionForm> {
                                 _hasRewards = val;
                                 if (val) {
                                   _lockRewardRecalculation = false;
-                                  _onAmountChanged();
+                                  _triggerRecalculation();
                                 } else {
                                   _rewardAmountController.clear();
                                 }
