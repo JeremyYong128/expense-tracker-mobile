@@ -4,6 +4,7 @@ import 'package:expense_tracker_mobile/utils/logger.dart';
 
 class ExchangeRateService {
   static const String _baseUrl = 'https://api.frankfurter.app';
+  static final Map<String, double> _cache = {};
 
   /// Converts [amount] from [fromCurrency] to [toCurrency] using live rates.
   /// If [fromCurrency] and [toCurrency] are the same, returns [amount].
@@ -21,6 +22,12 @@ class ExchangeRateService {
       if (date != null) {
         dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       }
+
+      final cacheKey = '$dateStr-$fromCurrency-$toCurrency';
+      if (_cache.containsKey(cacheKey)) {
+        return amount * _cache[cacheKey]!;
+      }
+
       final url = Uri.parse('$_baseUrl/$dateStr?from=$fromCurrency&to=$toCurrency');
       final response = await http.get(url).timeout(const Duration(seconds: 10));
 
@@ -30,6 +37,7 @@ class ExchangeRateService {
         
         if (rates.containsKey(toCurrency)) {
           final rate = (rates[toCurrency] as num).toDouble();
+          _cache[cacheKey] = rate;
           return amount * rate;
         }
       } else {
